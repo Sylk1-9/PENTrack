@@ -32,7 +32,8 @@ secondaries 1
 #MRThetaIEnergy 54 2.5E-9 20E-9 0 1.570796327 0 1000
 
 #Format used for logging output, can be "txt" for raw text, "ROOT" for ROOT trees and files, and "HDF5" for HDF5 files
-logtype txt
+# logtype txt 
+logtype HDF5
 
 
 [GEOMETRY]
@@ -193,8 +194,10 @@ polarization 1	# initial polarization is randomly chosen, weighted by this varia
 
 #3Dfield 	table-file	BFieldScale	BoundaryWidth	CoordinateScale
 #4 COMSOL	Test.txt	1		    0		        1
-4 COMSOL	Octupole_3D_shifted.txt	1		    0		        1
-5 COMSOL	3D_lfield_test.txt	1		    0		        1
+# 4 COMSOL	Octupole_3D_shifted.txt	1		    0		        1
+4 COMSOL	octupole_field.txt	1		    0		        1
+# 5 COMSOL	3D_lfield_test.txt	1		    0		        1
+5 COMSOL	long_field_storage.txt	1		    0		        1
 #5 COMSOL	output.txt	1		    0		        0.001
 
 
