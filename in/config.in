@@ -38,7 +38,7 @@ logtype HDF5
 
 [GEOMETRY]
 ############# Solids the program will load ################
-#  Each solid has to be assigned unique ID and a material from above.
+# Each solid has to be assigned unique ID and a material from above.
 # IDs have to be larger than 0, ID 1 will be assumed to be the default medium which is always present.
 # Particles absorbed in a solid will be flagged with the ID of the solid.
 # The ID also defines the order in which overlapping solids are handled (highest ID will be considered first).
@@ -48,7 +48,7 @@ logtype HDF5
 # PENtrack_Test
 1	ignored				default
 #2	spinflip_volume.STL		SpinFlipper
-2	octupole.stl		UCNdet
+2	octupole.stl			UCNdet
 #3	detector_zclean.stl			UCNdet			200-10000
 #3	polarizer.STL			FePolarizerOnAl
 #4	storagevolume_60degfeeder_bellow.STL		PolishedSteel
@@ -145,18 +145,18 @@ spectrum sqrt(x)
 
 
 # Initial direction of particles
-#  Volume sources only! Surface sources produce velocities cosine(theta)-distributed around the surface normal
-#phi_v_min 0		# min. azimuth angle of velocity [degree]
+# !! ==> Volume sources only! Surface sources produce velocities cosine(theta)-distributed around the surface normal
+#phi_v_min 0	# min. azimuth angle of velocity [degree]
 #phi_v_max 0	# max. azimuth angle of velocity [degree]
-#phi_v sin(x)			# differential initial distribution of azimuth angle of velocity
+#phi_v sin(x)	# differential initial distribution of azimuth angle of velocity
 
 #theta_v_min 0	# min. polar angle of velocity [degree]
 #theta_v_max 0	# max. polar angle of velocity [degree]
 #theta_v sin(x)	# differential initial distribution of polar angle of velocity
 
-phi_v_min 0		# min. azimuth angle of velocity [degree]
+phi_v_min 0	# min. azimuth angle of velocity [degree]
 phi_v_max 360	# max. azimuth angle of velocity [degree]
-phi_v 1			# differential initial distribution of azimuth angle of velocity
+phi_v 1		# differential initial distribution of azimuth angle of velocity
 
 theta_v_min -45	# min. polar angle of velocity [degree]
 theta_v_max 45	# max. polar angle of velocity [degree]
