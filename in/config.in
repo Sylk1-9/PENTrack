@@ -164,7 +164,7 @@ theta_v cos(x)
 #theta_v sin(x)	# differential initial distribution of polar angle of velocity
 
 
-polarization 1	# initial polarization is randomly chosen, weighted by this variable (1: low-field-seekers only, -1: high-field-seekers only) [-1..1]
+polarization 0	# initial polarization is randomly chosen, weighted by this variable (1: low-field-seekers only, -1: high-field-seekers only) [-1..1]
 
 
 [FIELDS]
@@ -193,12 +193,12 @@ polarization 1	# initial polarization is randomly chosen, weighted by this varia
 #3 OPERA3D	3Dtable.tab	1		    1		    0		        1
 
 #3Dfield 	table-file	BFieldScale	BoundaryWidth	CoordinateScale
-#4 COMSOL	Test.txt	1		    0		        1
-# 4 COMSOL	Octupole_3D_shifted.txt	1		    0		        1
-4 COMSOL	octupole_field.txt	1		    0		        1
-# 5 COMSOL	3D_lfield_test.txt	1		    0		        1
-5 COMSOL	long_field_storage.txt	1		    0		        1
-#5 COMSOL	output.txt	1		    0		        0.001
+# # 4 COMSOL	Test.txt	1		    0		        1
+# # 4 COMSOL	Octupole_3D_shifted.txt	1		    0		        1
+# 4 COMSOL	octupole_field.txt	1		    0		        1
+# # 5 COMSOL	3D_lfield_test.txt	1		    0		        1
+# 5 COMSOL	long_field_storage.txt	1		    0		        1
+# # 5 COMSOL	output.txt	1		    0		        0.001
 
 
 # Simulate magnetic field from a current I flowing from point (x1, y1, z1) to (x2, y2, z2)
@@ -291,6 +291,20 @@ polarization 1	# initial polarization is randomly chosen, weighted by this varia
 
 # CustomBField Bx-formula By-formula Bz-formula xmax xmin ymax ymin zmax zmin BoundaryWidth scale
 #15 CustomBField Bx By Bz 0.054 -0.054 0.054 -0.054 1.055 0.905 0 1
+
+## Magpy calculates the three field components from magnet magpy object provided by a .py file section.
+# Each component can depend on the spatial coordinates x, y, z and a time variable t. Field derivatives are approximated numerically using a five-point stencil method.
+# The field is only evaluated within x/y/z min/max boundaries. If a BoundaryWidth is defined, the field will be brought smoothly to zero at these boundaries.
+
+#file-type 	magpy-file	BFieldScale
+# 16 Magpy 	magpytest	1	 
+# 16 Magpy 	magpytest	1	 
+16 Magpy 	coil		1
+17 Magpy	octupole	1
+
+# CustomBField xmax xmin ymax ymin zmax zmin BoundaryWidth scale
+# 16 Magpy       magpytest.py 0.054 -0.054 0.054 -0.054 1.055 0.905 0 1
+
 
 ######### default values for particle-specific settings ############
 [PARTICLES]
