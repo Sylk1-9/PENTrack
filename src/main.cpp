@@ -5,6 +5,9 @@
  * Create particles to your liking...
  */
 
+#define PY_SSIZE_T_CLEAN
+#include <Python.h>
+
 #include <csignal>
 #include <iostream>
 #include <string>
@@ -76,6 +79,8 @@ int main(int argc, char **argv){
 	" ###                      Welcome to PENTrack,                       ###\n"
 	" ### a simulation tool for ultracold neutrons, protons and electrons ###\n"
 	" #######################################################################\n";
+
+	Py_Initialize(); // sly TODO
 
 	//Initialize signal-analizing
 	quit.store(false);
@@ -192,6 +197,10 @@ int main(int argc, char **argv){
 	    cout << "Simulation killed by signal!\n";
 	else
     	cout << "That's it... Have a nice day!\n";
+
+	if (Py_FinalizeEx() < 0) {
+	  return 120;
+	}
 	
 	return 0;
 }

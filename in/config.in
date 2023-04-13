@@ -164,7 +164,7 @@ theta_v cos(x)
 #theta_v sin(x)	# differential initial distribution of polar angle of velocity
 
 
-polarization 0	# initial polarization is randomly chosen, weighted by this variable (1: low-field-seekers only, -1: high-field-seekers only) [-1..1]
+polarization 1	# initial polarization is randomly chosen, weighted by this variable (1: low-field-seekers only, -1: high-field-seekers only) [-1..1]
 
 
 [FIELDS]
@@ -299,8 +299,9 @@ polarization 0	# initial polarization is randomly chosen, weighted by this varia
 #file-type 	magpy-file	BFieldScale
 # 16 Magpy 	magpytest	1	 
 # 16 Magpy 	magpytest	1	 
-16 Magpy 	coil		1
-17 Magpy	octupole	1
+16 Magpy	octupole	1
+# 17 Magpy	coil		1
+# 18 Magpy 	coil-copy	0.001
 
 # CustomBField xmax xmin ymax ymin zmax zmin BoundaryWidth scale
 # 16 Magpy       magpytest.py 0.054 -0.054 0.054 -0.054 1.055 0.905 0 1

@@ -366,6 +366,8 @@ private:
   std::unique_ptr<double> tvar, xvar, yvar, zvar; ///< Variables used to evaluate formulas, they need to be pointers to make sure references stored in the exprtk expression do not get invalidated when copying
   PyObject *pMagnetObject;
   PyObject *pBFieldFunc;
+  // mutable PyObject *pArgs, *pBfieldValue;
+
 
 public:
   /**
@@ -390,7 +392,7 @@ public:
   //  */
   // GetpFunc(const char *moduleName, const char *funcName, PyObject *pFunc){
 
-  void GetpBField(double B[3], const double x, const double y, const double z, const double t) const;
+  void GetpBField(double B[3], const double x, const double y, const double z, const double t) const ;
 
 
   /**
