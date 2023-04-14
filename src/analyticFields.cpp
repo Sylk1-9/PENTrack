@@ -494,20 +494,23 @@ void TMagpy::BField(const double x, const double y, const double z, const double
 
     // std::cout << "Computing dBi_dxj" << std::endl;
 
-    for (int i=0; i<3; ++i) {
-      B_xmh[i] = Bs[1][i];
-      B_xph[i] = Bs[2][i];
-      B_ymh[i] = Bs[3][i];
-      B_yph[i] = Bs[4][i];
-      B_zmh[i] = Bs[5][i];
-      B_zph[i] = Bs[6][i];
-    }
-
+    // for (int i=0; i<3; ++i) {
+    //   B_xmh[i] = Bs[1][i];
+    //   B_xph[i] = Bs[2][i];
+    //   B_ymh[i] = Bs[3][i];
+    //   B_yph[i] = Bs[4][i];
+    //   B_zmh[i] = Bs[5][i];
+    //   B_zph[i] = Bs[6][i];
+    // }
 
     for(int i=0; i<3; ++i){
-      dBi_dxj[i][0] = (B_xph[i] - B_xmh[i])/(2*h);
-      dBi_dxj[i][1] = (B_yph[i] - B_ymh[i])/(2*h);
-      dBi_dxj[i][2] = (B_zph[i] - B_zmh[i])/(2*h);
+      // dBi_dxj[i][0] = (B_xph[i] - B_xmh[i])/(2*h);
+      // dBi_dxj[i][1] = (B_yph[i] - B_ymh[i])/(2*h);
+      // dBi_dxj[i][2] = (B_zph[i] - B_zmh[i])/(2*h);
+      dBi_dxj[i][0] = (Bs[2][i] - Bs[1][i])/(2*h);
+      dBi_dxj[i][1] = (Bs[4][i] - Bs[3][i])/(2*h);
+      dBi_dxj[i][2] = (Bs[6][i] - Bs[5][i])/(2*h);
+      
     }
     
     trace_3 = (dBi_dxj[0][0] + dBi_dxj[1][1] + dBi_dxj[2][2])/3;
