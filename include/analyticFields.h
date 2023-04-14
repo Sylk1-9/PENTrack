@@ -363,11 +363,8 @@ public:
  */
 class TMagpy: public TField{
 private:
-  std::unique_ptr<double> tvar, xvar, yvar, zvar; ///< Variables used to evaluate formulas, they need to be pointers to make sure references stored in the exprtk expression do not get invalidated when copying
   PyObject *pMagnetObject;
   PyObject *pBFieldFunc;
-  // mutable PyObject *pArgs, *pBfieldValue;
-
 
 public:
   /**
@@ -376,23 +373,6 @@ public:
    * @ft string of the file name containing a function that returns a magnet magpy object.
    */
   TMagpy(const std::string ft);
-
-
-  // /**
-  //  * Return python function object
-  //  * @param moduleName
-  //  * @param funcName
-  //  * @param pFunc
-  //  */
-  // GetpFunc(const char *moduleName, const char *funcName, PyObject *pFunc){
-
-
-  // /**
-  //  * Return Bfield cpp double array from python function
-  //  */
-  // GetpFunc(const char *moduleName, const char *funcName, PyObject *pFunc){
-
-  void GetpBField(double B[3], const double x, const double y, const double z, const double t) const ;
 
 
   /**

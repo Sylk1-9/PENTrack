@@ -257,15 +257,8 @@ void GetpFunc(const char *moduleName, const char *funcName, PyObject **pFunc){
 
 
 TMagpy::TMagpy(const std::string ft){
-  tvar = unique_ptr<double>(new double(0.0));
-  xvar = unique_ptr<double>(new double(0.0));
-  yvar = unique_ptr<double>(new double(0.0));
-  zvar = unique_ptr<double>(new double(0.0));
 
-  char* ftc = const_cast<char*>(ft.c_str());
-  PyObject *pMagnetFunc;
-
-  std::cout << "TMapy : initializing python" << std::endl;
+  // std::cout << "TMapy : initializing python" << std::endl;
   
   // PyRun_SimpleString("import sys"); 
   // PyRun_SimpleString("sys.path.append(\".\")");
@@ -281,15 +274,21 @@ TMagpy::TMagpy(const std::string ft){
   pBFieldFunc = PyObject_GetAttrString(magpymodule, "getB");
 
   //////////////////////////
+  
+  char* ftc = const_cast<char*>(ft.c_str());
+  PyObject* magnetmodule = PyImport_ImportModule(ftc);
+  PyObject* pMagnetFunc = PyObject_GetAttrString(magnetmodule, "BuildMagnet");
+  pMagnetObject = PyObject_CallObject(pMagnetFunc, NULL);
+  Py_DECREF(magnetmodule);
+  Py_DECREF(pMagnetFunc);
 
 
   
   // std::cout << "TMapy : Get function BuildMagnet" << std::endl;
-  GetpFunc(ftc, "BuildMagnet", &pMagnetFunc);
+  // GetpFunc(ftc, "BuildMagnet", &pMagnetFunc);
 
   // std::cout << "TMapy : two functions are loaded." << std::endl;
 
-  pMagnetObject = PyObject_CallObject(pMagnetFunc, NULL);
   // std::cout << "TMapy : magnet loaded." << std::endl;
 
   // pArgs = PyTuple_New(4);
@@ -297,89 +296,6 @@ TMagpy::TMagpy(const std::string ft){
   // Py_DECREF(pMagnetFunc); // TODO : comment or not for multiple call?
       
 }
-
-
-void TMagpy::GetpBField(double B[3], const double x, const double y, const double z, const double t) const {
-
-  // Py_Initialize();
-  
-  PyObject *pArgs, *pBfieldValue;
-
-  // std::cout << "GetpBField" << std::endl;
-  
-  pArgs = PyTuple_New(2);
-  PyObject *pxyzArgs;
-  pxyzArgs = PyTuple_New(3);
-  
-  // std::cout << "PyTyple set" << std::endl;
-
-  PyTuple_SetItem(pArgs, 0, pMagnetObject);
-  PyTuple_SetItem(pxyzArgs, 0, PyFloat_FromDouble(1000*x));
-  PyTuple_SetItem(pxyzArgs, 1, PyFloat_FromDouble(1000*y));
-  PyTuple_SetItem(pxyzArgs, 2, PyFloat_FromDouble(1000*z));
-  PyTuple_SetItem(pArgs, 1, pxyzArgs);
-
-  // std::cout << "PyObject call set" << std::endl;
-
-  
-  PyObject* numpyArray = PyObject_CallObject(pBFieldFunc, pArgs);
-
-  // std::cout << "Reinterpret cast" << std::endl;
-
- 
-  // pBfieldValue = PyObject_CallObject(pBFieldFunc, pArgs);
-
-  /////////////////////////////////
-
-
-  // if (numpyArray != NULL) {
-  PyArrayObject* npArray = reinterpret_cast<PyArrayObject*>(numpyArray);
-  for (int i=0; i<3; i++) {
-    // B[i] = 0.001 * PyFloat_AsDouble(PyList_GetItem(pBfieldValue, i));
-    B[i] = 0.001*(*reinterpret_cast<double*>(PyArray_GETPTR1(npArray, i)));
-    // B[i] = 0.001*(PyArray_GETITEM(npArray, void *itemptr)):
-    // printf("B[%d] = %f, ", i, B[i]);
-  }
-  // printf("\n");
-  // }
-  // else{
-  //   printf("!! numpyArray == NULL !!");
-  // }
-
-  // PyRun_SimpleString("import magpylib as magpy\n"
-  // 		     "print('Today is', ctime(time()))\n");
-  
-  //   import magpylib as magpy
-  //     import numpy as np
-
-  //     print("Script visited : -- -MagpyField in /in")
-  // # take mm, output mT
-  //     def BField(magnet, x, y, z):    
-  //     return list(magnet.getB((x, y, z)))
-
-  //////////////////////////////////////
-
-
-
-  // std::cout << "Looping for GetpBField" << std::endl;
-
-  // if (pBfieldValue != NULL) {
-  //   for (int i=0; i<3; i++) {
-  //     // B[i] = 0.001 * PyFloat_AsDouble(PyList_GetItem(pBfieldValue, i));
-  //     B[i] = 0.001*(*(reinterpret_cast<float*>(PyArray_GETPTR1(npArray, i))));
-  //     // printf("B[%d] = %f, ", i, B[i]);
-  //   }
-  //   // printf("\n");
-  // }
-  // else{
-  //   printf("!! pBifledValue == NULL !!");
-  // }
-
-  // Py_DECREF(pBfieldValue); // TODO : why cause issue next time same function is called?
-  // Py_DECREF(pArgs); // TODO : why cause issue next time same function is called?
-
-}
-
 
 void TMagpy::BField(const double x, const double y, const double z, const double t, double B[3], double dBidxj[3][3]) const{
 
@@ -430,83 +346,33 @@ void TMagpy::BField(const double x, const double y, const double z, const double
   }
 
 
-  // PyObject *pxyzArgs = PyTuple_New(3);
-  
-  // std::cout << "PyTyple set" << std::endl;
-
-  // PyObject* pMagnetcopy = PyObject_CallObject(Py_TYPE(pMagnetObject), nullptr);
-  // PyObject* pMagnetcopy = PyEval_CallObject(pMagnetObject, NULL);
-  // Py_INCREF(pMagnetcopy);
-
-  // PyTuple_SetItem(pArgs, 0, pMagnetcopy);
   PyTuple_SetItem(pArgs, 0, pMagnetObject);
   PyTuple_SetItem(pArgs, 1, pList);
 
-  // std::cout << "Call B field python" << std::endl;
-  // pBfieldValue = PyObject_CallObject(pBFieldFunc, pArgs);
-  
 
   /////////////////////////////////
 
-  // std::cout << "Bs" << std::endl;
   double Bs[dimarg][3];
-  // if (numpyArray != NULL) {
-  // PyObject* numpyArray = PyObject_CallObject(pBFieldFunc, pArgs);
-
   npArray = reinterpret_cast<PyArrayObject*>(PyObject_CallObject(pBFieldFunc, pArgs));
   for (int i=0; i<dimarg; ++i) {
     for (int j=0; j<3; ++j) {
       Bs[i][j] = 0.001 * (*reinterpret_cast<double*>(PyArray_GETPTR2(npArray, i, j)));
-      // printf("Bs[%d, %d] = %f, ", i, j, Bs[i][j]);
     }
   }
-  // Py_DECREF(numpyArray);
     
 
   for (int i=0; i<3; ++i) {
     B[i] = Bs[0][i];
   }
 
-  /////////////////////////////////
-  // TMagpy::GetpBField(B, x, y, z, t);
-
   // std::cout << "Bi = " << B[0] << ", " << B[1] << ", " << B[2] << "\n" << std::endl;
 
   if (dBidxj != nullptr){
 
     double trace_3;
-
-    double B_xmh[3];
-    double B_ymh[3];
-    double B_zmh[3];
-    double B_xph[3];
-    double B_yph[3];
-    double B_zph[3];
-
     double dBi_dxj[3][3];
-    
-    // TMagpy::GetpBField(B_xph, x+h, y, z, t);
-    // TMagpy::GetpBField(B_xmh, x-h, y, z, t);
-    // TMagpy::GetpBField(B_yph, x, y+h, z, t);
-    // TMagpy::GetpBField(B_ymh, x, y-h, z, t);
-    // TMagpy::GetpBField(B_zph, x, y, z+h, t);
-    // TMagpy::GetpBField(B_zmh, x, y, z-h, t);
-
-    // std::cout << "Computing dBi_dxj" << std::endl;
-
-    // for (int i=0; i<3; ++i) {
-    //   B_xmh[i] = Bs[1][i];
-    //   B_xph[i] = Bs[2][i];
-    //   B_ymh[i] = Bs[3][i];
-    //   B_yph[i] = Bs[4][i];
-    //   B_zmh[i] = Bs[5][i];
-    //   B_zph[i] = Bs[6][i];
-    // }
 
     for(int i=0; i<3; ++i){
-      // dBi_dxj[i][0] = (B_xph[i] - B_xmh[i])/(2*h);
-      // dBi_dxj[i][1] = (B_yph[i] - B_ymh[i])/(2*h);
-      // dBi_dxj[i][2] = (B_zph[i] - B_zmh[i])/(2*h);
       dBi_dxj[i][0] = (Bs[2][i] - Bs[1][i])/(2*h);
       dBi_dxj[i][1] = (Bs[4][i] - Bs[3][i])/(2*h);
       dBi_dxj[i][2] = (Bs[6][i] - Bs[5][i])/(2*h);
