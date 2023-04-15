@@ -95,8 +95,8 @@ add_executable(PENTrack src/main.cpp $<TARGET_OBJECTS:PENTrack_src> $<TARGET_OBJ
 target_link_libraries (PENTrack ${Boost_LIBRARIES} ${CGAL_LIBRARIES} Python3::Python)
 
 # Copy the Python module to the build directory
-configure_file(src/MagpyField.py MagpyField.py COPYONLY)
-configure_file(in/magpytest.py magpytest.py COPYONLY)
+# configure_file(src/MagpyField.py MagpyField.py COPYONLY)
+# configure_file(in/magpytest.py magpytest.py COPYONLY)
 
 
 find_package(ROOT)
