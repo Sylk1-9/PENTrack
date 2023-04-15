@@ -7,9 +7,12 @@
 #ifndef ANALYTICFIELDS_H_
 #define ANALYTICFIELDS_H_
 
-#define PY_SSIZE_T_CLEAN
-#include <Python.h>
+// #define PY_SSIZE_T_CLEAN
+// #include <Python.h>
+#include <boost/python.hpp>
+
 #include "field.h"
+
 
 /**
  * B field described by:
@@ -363,8 +366,10 @@ public:
  */
 class TMagpy: public TField{
 private:
-  PyObject *pMagnetObject;
-  PyObject *pBFieldFunc;
+  // PyObject *pMagnetObject;
+  // PyObject *pBFieldFunc;
+  boost::python::object bpBFieldFunc;
+  boost::python::object bpMagnetObject;
 
 public:
   /**

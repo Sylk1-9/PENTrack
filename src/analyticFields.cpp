@@ -4,9 +4,14 @@
  *
  */
 
-#define PY_SSIZE_T_CLEAN
-#include <Python.h>
-#include <numpy/arrayobject.h>
+// #define PY_SSIZE_T_CLEAN
+// #include <Python.h>
+// #include <numpy/arrayobject.h>
+
+#include <boost/python.hpp>
+#include <boost/python/numpy.hpp>
+// #include <numpy/arrayobject.h>
+#include <vector>
 
 #include <iostream>
 
@@ -206,94 +211,35 @@ void TCustomBField::BField(const double x, const double y, const double z, const
 
 
 
-
-/**
- * Load python a function from a python module
- *
- * @param v_r Radial component of vector
- * @param v_phi Azimuthal component of vector
- * @param phi Azimuth of vector origin
- * @param v_x Returns x component of vector
- * @param v_y Returns y component of vector
- */
-void GetpFunc(const char *moduleName, const char *funcName, PyObject **pFunc){
-
-  PyObject *pModuleName, *pModule;
-  pModuleName = PyUnicode_DecodeFSDefault(moduleName);
-  /* TODO Error checking of pName left out */
-
-  pModule = PyImport_Import(pModuleName);
-  Py_DECREF(pModuleName);
-
-  if (pModule != NULL) {
-    *pFunc = PyObject_GetAttrString(pModule, funcName);
-    
-    if (!*pFunc && !PyCallable_Check(*pFunc)) {
-      if (PyErr_Occurred()){
-	PyErr_Print();
-	fprintf(stderr, "Failed to load \"%s\"\n", funcName); // TODO : duplicate
-	Py_DECREF(pModule);
-	Py_DECREF(pModuleName);
-	throw std::runtime_error((boost::format("Failed to load python function %1%") % funcName).str());	  
-      }
-    }
-    else{
-      fprintf(stderr, "Sucess to load \"%s\", is callable \n", funcName); // TODO : duplicate
-    }
-  }
-  else {
-    PyErr_Print();
-    fprintf(stderr, "Failed to load \"%s\"\n", moduleName);
-    Py_DECREF(pModule);
-    Py_DECREF(pModuleName);
-    throw std::runtime_error((boost::format("Failed to load python module %1%") % moduleName).str());	  
-  }
-  
-  Py_DECREF(pModule);
-  Py_DECREF(pModuleName);
-  
-}
-
-
-
 TMagpy::TMagpy(const std::string ft){
-
-  // std::cout << "TMapy : initializing python" << std::endl;
   
   // PyRun_SimpleString("import sys"); 
   // PyRun_SimpleString("sys.path.append(\".\")");
 
-  // std::cout << "TMapy : get function BField" << std::endl;
+  // PyObject* magpymodule = PyImport_ImportModule("magpylib");
+  // pBFieldFunc = PyObject_GetAttrString(magpymodule, "getB");
 
+  // std::cout << " mag pylib import" << std::endl;
+
+  boost::python::object bmagpymodule = boost::python::import("magpylib");
+  bpBFieldFunc = bmagpymodule.attr("getB");
+  // boost::python::object bmagpymodule = boost::python::import("MagpyField");
+  // bpBFieldFunc = bmagpymodule.attr("BField");
+
+  // std::cout << " magnet module import" << std::endl;
   
-  // GetpFunc("MagpyField", "BField", &pBFieldFunc);
-
-  /////////////////////////////
-
-  PyObject* magpymodule = PyImport_ImportModule("magpylib");
-  pBFieldFunc = PyObject_GetAttrString(magpymodule, "getB");
-
-  //////////////////////////
+  // char* ftc = const_cast<char*>(ft.c_str());
+  boost::python::str bftc(ft);
+  boost::python::object bmagnetmodule = boost::python::import(bftc);
+  boost::python::object buildmagnetFunc = bmagnetmodule.attr("BuildMagnet");
+  bpMagnetObject = buildmagnetFunc();
+  // bpMagnetObject = boost::python::call_method<boost::python::object>(, NULL);
   
-  char* ftc = const_cast<char*>(ft.c_str());
-  PyObject* magnetmodule = PyImport_ImportModule(ftc);
-  PyObject* pMagnetFunc = PyObject_GetAttrString(magnetmodule, "BuildMagnet");
-  pMagnetObject = PyObject_CallObject(pMagnetFunc, NULL);
-  Py_DECREF(magnetmodule);
-  Py_DECREF(pMagnetFunc);
-
-
-  
-  // std::cout << "TMapy : Get function BuildMagnet" << std::endl;
-  // GetpFunc(ftc, "BuildMagnet", &pMagnetFunc);
-
-  // std::cout << "TMapy : two functions are loaded." << std::endl;
-
-  // std::cout << "TMapy : magnet loaded." << std::endl;
-
-  // pArgs = PyTuple_New(4);
-      
-  // Py_DECREF(pMagnetFunc); // TODO : comment or not for multiple call?
+  // PyObject* magnetmodule = PyImport_ImportModule(ftc);
+  // PyObject* pMagnetFunc = PyObject_GetAttrString(magnetmodule, "BuildMagnet");
+  // pMagnetObject = PyObject_CallObject(pMagnetFunc, NULL);
+  // Py_DECREF(magnetmodule);
+  // Py_DECREF(pMagnetFunc);
       
 }
 
@@ -301,11 +247,15 @@ void TMagpy::BField(const double x, const double y, const double z, const double
 
   const double h = 1e-6;
   int dimarg = (dBidxj != nullptr) ? 7 : 1;
-  PyObject *pArgs = PyTuple_New(2);
-  PyObject *pList = PyList_New(dimarg);
-  PyObject *pxyzList;
-  PyArrayObject* npArray;
+  // PyObject *pArgs = PyTuple_New(2);
+  // PyObject *pList = PyList_New(dimarg);
+  // PyObject *pxyzList;
+  // PyArrayObject* npArray;
   double xyz[3];
+
+  boost::python::list bpList;    
+
+  // std::cout << " building list args" << std::endl;
 
   for(int i=0; i<dimarg; ++i){
 
@@ -338,28 +288,43 @@ void TMagpy::BField(const double x, const double y, const double z, const double
       printf("out of case");
     }
 
-    pxyzList = PyList_New(3);
+    // pxyzList = PyList_New(3);
+    boost::python::list bpxyzList;
+
     for(int j=0; j<3; ++j){
-      PyList_SetItem(pxyzList, j, PyFloat_FromDouble(1000 * xyz[j]));
+      // PyList_SetItem(pxyzList, j, PyFloat_FromDouble(1000 * xyz[j]));
+      bpxyzList.append(1000 * xyz[j]);
     }
-    PyList_SetItem(pList, i, pxyzList);
+    // PyList_SetItem(pList, i, pxyzList);
+    bpList.append(bpxyzList);
   }
 
+  // PyTuple_SetItem(pArgs, 0, pMagnetObject);
+  // PyTuple_SetItem(pArgs, 1, pList);
 
-  PyTuple_SetItem(pArgs, 0, pMagnetObject);
-  PyTuple_SetItem(pArgs, 1, pList);
-
-
-  /////////////////////////////////
-
-  double Bs[dimarg][3];
-  npArray = reinterpret_cast<PyArrayObject*>(PyObject_CallObject(pBFieldFunc, pArgs));
-  for (int i=0; i<dimarg; ++i) {
-    for (int j=0; j<3; ++j) {
-      Bs[i][j] = 0.001 * (*reinterpret_cast<double*>(PyArray_GETPTR2(npArray, i, j)));
-    }
-  }
+  // std::cout << "calling getBs" << std::endl;
     
+  double Bs[dimarg][3];
+  // npArray = reinterpret_cast<PyArrayObject*>(PyObject_CallObject(pBFieldFunc, pArgs));
+  boost::python::tuple args = boost::python::make_tuple(bpMagnetObject, bpList);
+  boost::python::object bnpArray = bpBFieldFunc(bpMagnetObject, bpList);
+  
+  // std::cout << "getting Bs" << std::endl;
+
+  if (dBidxj != nullptr){
+    for (int i=0; i<dimarg; ++i) {
+      for (int j=0; j<3; ++j) {
+      // Bs[i][j] = 0.001 * (*reinterpret_cast<double*>(PyArray_GETPTR2(npArray, i, j)));
+	Bs[i][j] = 0.001 * boost::python::extract<double>(bnpArray[i][j]);
+      }
+    }
+  }
+  else{
+    for (int j=0; j<3; ++j) {
+      Bs[0][j] = 0.001 * boost::python::extract<double>(bnpArray[j]);  
+    }
+  }
+
 
   for (int i=0; i<3; ++i) {
     B[i] = Bs[0][i];
@@ -373,9 +338,9 @@ void TMagpy::BField(const double x, const double y, const double z, const double
     double dBi_dxj[3][3];
 
     for(int i=0; i<3; ++i){
-      dBi_dxj[i][0] = (Bs[2][i] - Bs[1][i])/(2*h);
-      dBi_dxj[i][1] = (Bs[4][i] - Bs[3][i])/(2*h);
-      dBi_dxj[i][2] = (Bs[6][i] - Bs[5][i])/(2*h);
+      dBi_dxj[i][0] = Bs[2][i]/(2*h) - Bs[1][i]/(2*h);
+      dBi_dxj[i][1] = Bs[4][i]/(2*h) - Bs[3][i]/(2*h);
+      dBi_dxj[i][2] = Bs[6][i]/(2*h) - Bs[5][i]/(2*h);
       
     }
     
@@ -396,10 +361,10 @@ void TMagpy::BField(const double x, const double y, const double z, const double
 
   }
 
-  Py_DECREF(npArray);
-  Py_DECREF(pList);
-  PyTuple_SET_ITEM(pArgs, 0, pxyzList);
-  Py_DECREF(pxyzList);
-  Py_DECREF(pArgs);
+  // Py_DECREF(npArray);
+  // Py_DECREF(pList);
+  // PyTuple_SET_ITEM(pArgs, 0, pxyzList);
+  // Py_DECREF(pxyzList);
+  // Py_DECREF(pArgs);
 
 }

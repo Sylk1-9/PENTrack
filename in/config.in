@@ -7,7 +7,7 @@
 simtype 1
 
 # number of primary particles to be simulated
-simcount 10
+simcount 3
 
 # max. simulation time [s]
 simtime 10000
@@ -164,7 +164,7 @@ theta_v cos(x)
 #theta_v sin(x)	# differential initial distribution of polar angle of velocity
 
 
-polarization 0	# initial polarization is randomly chosen, weighted by this variable (1: low-field-seekers only, -1: high-field-seekers only) [-1..1]
+polarization 1	# initial polarization is randomly chosen, weighted by this variable (1: low-field-seekers only, -1: high-field-seekers only) [-1..1]
 
 
 [FIELDS]
@@ -299,8 +299,8 @@ polarization 0	# initial polarization is randomly chosen, weighted by this varia
 #file-type 	magpy-file	BFieldScale
 # 16 Magpy 	magpytest	1	 
 # 16 Magpy 	magpytest	1	 
-16 Magpy	octupole	1
-17 Magpy	coil		1
+2 Magpy	octupole	1
+3 Magpy	coil		1
 # 18 Magpy 	coil-copy	0.001
 
 # CustomBField xmax xmin ymax ymin zmax zmin BoundaryWidth scale
@@ -361,11 +361,11 @@ tmax 1e-5
 ############ define formulas used for CustomBField or output to log files
 ## see the supported syntax in the ExprTk documentation at http://partow.net/programming/exprtk/index.html
 [FORMULAS]
-magnetRamp  t < 400 ? 0 : (t < 500 ? 0.01*(t-400) : (t < 700 ? 1 : (t<800?0.01*(800-t) : 0)))    # ramp magnetic field from 0% to 100% between t=400s and t=500s, then ramp back down between t=700s and t=800s
+# magnetRamp  t < 400 ? 0 : (t < 500 ? 0.01*(t-400) : (t < 700 ? 1 : (t<800?0.01*(800-t) : 0)))    # ramp magnetic field from 0% to 100% between t=400s and t=500s, then ramp back down between t=700s and t=800s
 
-vabs        sqrt(vxstart^2 + vystart^2 + vzstart^2)     # for example, you could now add "vabs" to the list of endlogvars to print the absolute inital velocity to the endlog
-detected    solidend == 14                              # for example, you could set this as an endlogfilter to only log particles that are absorbed in the detector
+# vabs        sqrt(vxstart^2 + vystart^2 + vzstart^2)     # for example, you could now add "vabs" to the list of endlogvars to print the absolute inital velocity to the endlog
+# detected    solidend == 14                              # for example, you could set this as an endlogfilter to only log particles that are absorbed in the detector
 
-Bx 0.005*cos(38.3148640032*t)                                               # These are the field components used for the CustomBField defined in the FIELDS section
-By 0.005*sin(38.3148640032*t)  
-Bz 0.5-0.4*z
+# Bx 0.005*cos(38.3148640032*t)                                               # These are the field components used for the CustomBField defined in the FIELDS section
+# By 0.005*sin(38.3148640032*t)  
+# Bz 0.5-0.4*z
