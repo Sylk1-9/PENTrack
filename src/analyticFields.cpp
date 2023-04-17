@@ -330,7 +330,7 @@ void TMagpy::BField(const double x, const double y, const double z, const double
     B[i] = Bs[0][i];
   }
 
-  // std::cout << "Bi = " << B[0] << ", " << B[1] << ", " << B[2] << "\n" << std::endl;
+  // std::cout << "Bi = " << B[0] << ", " << B[1] << ", " << B[2] << std::endl;
 
   if (dBidxj != nullptr){
 
@@ -345,6 +345,8 @@ void TMagpy::BField(const double x, const double y, const double z, const double
     }
     
     trace_3 = (dBi_dxj[0][0] + dBi_dxj[1][1] + dBi_dxj[2][2])/3;
+    // std::cout << trace_3 << std::endl;
+
     
     dBidxj[0][0] = dBi_dxj[0][0] - trace_3;
     dBidxj[1][1] = dBi_dxj[1][1] - trace_3;

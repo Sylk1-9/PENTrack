@@ -7,10 +7,10 @@
 simtype 1
 
 # number of primary particles to be simulated
-simcount 3
+simcount 10
 
 # max. simulation time [s]
-simtime 10000
+simtime 100
 
 # path of file containing materials, paths are assumed to be relative to this config file's path
 materials_file materials.in
@@ -44,11 +44,22 @@ logtype HDF5
 # The ID also defines the order in which overlapping solids are handled (highest ID will be considered first).
 # If paths to StL files are relative they have to be defined relative to this config file.
 # Ignore times are pairs of times [s] in between the solid will be ignored, e.g. 100-200 500-1000.
-#ID	STLfile    material_name    ignore_times
+#ID	STLfile    	    	      	 	     	material_name    ignore_times
 # PENtrack_Test
-1	ignored				default
+1	ignored						default
+2	CAD/aSPECT_tube.stl				UCNdet
+3	CAD/halbach.stl					UCNdet
+4	CAD/stabilisation_tubes.stl			UCNdet
+5	CAD/store/detector_store.stl			UCNdet
+6	CAD/store/foil_store.stl			UCNdet
+7	CAD/store/SF_copper_store.stl			UCNdet
+8	CAD/store/SF_tube_store.stl			UCNdet
+9	CAD/store/SF_quartztube_store.stl		UCNdet
+10	CAD/store/SF_quartztube1_store.stl		UCNdet
+11	CAD/store/SF_seperation_foil_store.stl		UCNdet
+
 #2	spinflip_volume.STL		SpinFlipper
-2	octupole.stl			UCNdet
+# 2	octupole.stl			UCNdet
 #3	detector_zclean.stl			UCNdet			200-10000
 #3	polarizer.STL			FePolarizerOnAl
 #4	storagevolume_60degfeeder_bellow.STL		PolishedSteel
@@ -71,6 +82,8 @@ logtype HDF5
 #21	PENtrack_Test.STL				PolishedSteel
 
 
+
+
 [SOURCE]
 ############ sourcemodes ###############
 # STLvolume: source volume is given by a STL file, particles are created in the space completely enclosed in the STL surface
@@ -89,7 +102,8 @@ logtype HDF5
 
 #sourcemode	STLsurface
 #sourcemode	STLvolume
-sourcemode	cylvolume
+# sourcemode	cylvolume
+sourcemode	boxvolume
 
 
 #STLfile		sourcevolume.STL	# STL volume used for STLvolume/STLsurface source, path is assumed relative to this config file
@@ -97,10 +111,10 @@ sourcemode	cylvolume
 
 ### parameter ranges for sourcemode cylvolume/cylsurface/boxvolume
 #			r_min	r_max	phi_min	phi_max	z_min	z_max (cylvolume/cylsurface)
-parameters 0	0		0		360		1.000	1.000
+# parameters 0	0		0		360		0.600	0.601
 
-#			x_min	x_max	y_min	y_max	z_min	z_max	(boxvolume)
-#parameters	-0.69		-0.68		-0.01		0.01		-0.01		0.01
+#		x_min	x_max	y_min	y_max	z_min	z_max	(boxvolume)
+parameters	0.800	0.801	-0.001	0.001	-0.001	0.001
 ###
 
 particle	neutron		# type of particle the source should create
@@ -195,9 +209,9 @@ polarization 1	# initial polarization is randomly chosen, weighted by this varia
 #3Dfield 	table-file	BFieldScale	BoundaryWidth	CoordinateScale
 # # 4 COMSOL	Test.txt	1		    0		        1
 # # 4 COMSOL	Octupole_3D_shifted.txt	1		    0		        1
-# 4 COMSOL	octupole_field.txt	1		    0		        1
+4 COMSOL	octupole_field.txt	1		    0		        1
 # # 5 COMSOL	3D_lfield_test.txt	1		    0		        1
-# 5 COMSOL	long_field_storage.txt	1		    0		        1
+5 COMSOL	long_field_storage.txt	1		    0		        1
 # # 5 COMSOL	output.txt	1		    0		        0.001
 
 
@@ -299,8 +313,8 @@ polarization 1	# initial polarization is randomly chosen, weighted by this varia
 #file-type 	magpy-file	BFieldScale
 # 16 Magpy 	magpytest	1	 
 # 16 Magpy 	magpytest	1	 
-2 Magpy	octupole	1
-3 Magpy	coil		1
+# 17 Magpy	octupole	1
+# 18 Magpy	coil		1
 # 18 Magpy 	coil-copy	0.001
 
 # CustomBField xmax xmin ymax ymin zmax zmin BoundaryWidth scale

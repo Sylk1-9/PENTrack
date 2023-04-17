@@ -56,7 +56,7 @@ uint64_t seed = 0; ///< random seed used for random-number generator (generated 
  * 				e.g: "SIGFPE" is connected to number 8
  */
 void catch_alarm (int sig){
-    quit.store(true);
+  quit.store(true);
 }
 
 
@@ -69,140 +69,140 @@ void catch_alarm (int sig){
  *
  */
 int main(int argc, char **argv){
-	if ((argc > 1) && (strcmp(argv[1], "-h") == 0)){
-		cout << "Usage:\nPENTrack [jobnumber [location/of/config.in [path/to/out/files [seed]]]]" << endl;
-		return 0;
-	}
+  if ((argc > 1) && (strcmp(argv[1], "-h") == 0)){
+    cout << "Usage:\nPENTrack [jobnumber [location/of/config.in [path/to/out/files [seed]]]]" << endl;
+    return 0;
+  }
 
-	cout <<
-	" #######################################################################\n"
-	" ###                      Welcome to PENTrack,                       ###\n"
-	" ### a simulation tool for ultracold neutrons, protons and electrons ###\n"
-	" #######################################################################\n";
+  cout <<
+    " #######################################################################\n"
+    " ###                      Welcome to PENTrack,                       ###\n"
+    " ### a simulation tool for ultracold neutrons, protons and electrons ###\n"
+    " #######################################################################\n";
 
-	Py_Initialize(); // sly TODO
+  Py_InitializeEx(0);
 
-	//Initialize signal-analizing
-	quit.store(false);
-	signal (SIGINT, catch_alarm);
-	signal (SIGTERM, catch_alarm);
-	signal (SIGUSR1, catch_alarm);
-	signal (SIGUSR2, catch_alarm);
-	signal (SIGXCPU, catch_alarm);
+  //Initialize signal-analizing
+  quit.store(false);
+  signal (SIGINT, catch_alarm);
+  signal (SIGTERM, catch_alarm);
+  signal (SIGUSR1, catch_alarm);
+  signal (SIGUSR2, catch_alarm);
+  signal (SIGXCPU, catch_alarm);
 	
-	// read config
-	TConfig configin = ConfigInit(argc, argv);
+  // read config
+  TConfig configin = ConfigInit(argc, argv);
 
-	if (simtype == MR_THETA_OUT_ANGLE){
-		PrintMROutAngle(configin, outpath);
-		return 0;
-	}
-	else if (simtype == MR_THETA_I_ENERGY){
-		PrintMRThetaIEnergy(configin, outpath);
-		return 0;
-	}
-
-
-	cout << "Loading fields...\n";
-	// load field configuration from geometry.in
-	TFieldManager field(configin);
-
-	if (simtype == BF_ONLY){
-		PrintBField(outpath / "BF.out", field); // estimate ramp heating
-		return 0;
-	}
-	else if (simtype == BF_CUT){
-		PrintBFieldCut(configin, outpath / "BFCut.out", field); // print cut through B field
-		return 0;
-	}
+  if (simtype == MR_THETA_OUT_ANGLE){
+    PrintMROutAngle(configin, outpath);
+    return 0;
+  }
+  else if (simtype == MR_THETA_I_ENERGY){
+    PrintMRThetaIEnergy(configin, outpath);
+    return 0;
+  }
 
 
-	cout << "Loading geometry...\n";
-	//load geometry configuration from geometry.in
-	TGeometry geom(configin);
+  cout << "Loading fields...\n";
+  // load field configuration from geometry.in
+  TFieldManager field(configin);
+
+  if (simtype == BF_ONLY){
+    PrintBField(outpath / "BF.out", field); // estimate ramp heating
+    return 0;
+  }
+  else if (simtype == BF_CUT){
+    PrintBFieldCut(configin, outpath / "BFCut.out", field); // print cut through B field
+    return 0;
+  }
+
+
+  cout << "Loading geometry...\n";
+  //load geometry configuration from geometry.in
+  TGeometry geom(configin);
 	
-	if (simtype == GEOMETRY){
-		// print random points on walls in file to visualize geometry
-		PrintGeometry(outpath / "geometry.out", geom);
-		return 0;
-	}
+  if (simtype == GEOMETRY){
+    // print random points on walls in file to visualize geometry
+    PrintGeometry(outpath / "geometry.out", geom);
+    return 0;
+  }
 	
-	cout << "Loading random number generator...\n";
-	// load random number generator
-	TMCGenerator mc;
-	if (seed == 0){
-		// get high-resolution timestamp to generate seed
-		using namespace std::chrono;
-		seed = duration_cast<nanoseconds>(system_clock::now().time_since_epoch()).count();
-	}
-	std::cout << "Random Seed: " << seed << "\n\n";
-	mc.seed(seed);
+  cout << "Loading random number generator...\n";
+  // load random number generator
+  TMCGenerator mc;
+  if (seed == 0){
+    // get high-resolution timestamp to generate seed
+    using namespace std::chrono;
+    seed = duration_cast<nanoseconds>(system_clock::now().time_since_epoch()).count();
+  }
+  std::cout << "Random Seed: " << seed << "\n\n";
+  mc.seed(seed);
 
-	cout << "Loading source...\n";
-	// load source configuration from geometry.in
-	unique_ptr<TParticleSource> source(CreateParticleSource(configin, geom));
+  cout << "Loading source...\n";
+  // load source configuration from geometry.in
+  unique_ptr<TParticleSource> source(CreateParticleSource(configin, geom));
 
-	int ntotalsteps = 0;     // counters to determine average steps per integrator call
-	float InitTime = (1.*clock())/CLOCKS_PER_SEC; // time statistics
+  int ntotalsteps = 0;     // counters to determine average steps per integrator call
+  float InitTime = (1.*clock())/CLOCKS_PER_SEC; // time statistics
 
-	// simulation time counter
-	chrono::time_point<chrono::steady_clock> simstart = chrono::steady_clock::now();
+  // simulation time counter
+  chrono::time_point<chrono::steady_clock> simstart = chrono::steady_clock::now();
 
-	cout << "\n";
-	map<string, map<int, int> > ID_counter; // 2D map to store number of each ID for each particle type
+  cout << "\n";
+  map<string, map<int, int> > ID_counter; // 2D map to store number of each ID for each particle type
 
-	if (simtype == PARTICLE){ // if proton or neutron shall be simulated
-	    cout << "Simulating " << simcount << " " << source->GetParticleName() << "s...\n";
-        progress_display progress(simcount);
-		TTracker t(configin);
-		for (int iMC = 1; iMC <= simcount; iMC++)
-		{
-            if (quit.load())
-                break;
-
-            unique_ptr<TParticle> p(source->CreateParticle(mc, geom, field));
-			t.IntegrateParticle(p, SimTime, configin[p->GetName()], mc, geom, field); // integrate particle
-			ID_counter[p->GetName()][p->GetStopID()]++; // increment counters
-			ntotalsteps += p->GetNumberOfSteps();
-
-			if (secondaries == 1){
-				for (auto& i: p->GetSecondaryParticles()){
-                    if (quit.load())
-                        break;
-
-                    t.IntegrateParticle(i, SimTime, configin[i->GetName()], mc, geom, field); // integrate secondary particles
-					ID_counter[i->GetName()][i->GetStopID()]++;
-					ntotalsteps += i->GetNumberOfSteps();
-				}
-			}
-
-            ++progress;
-		}
-	}
-	else{
-		printf("\nDon't know simtype %i! Exiting...\n",simtype);
-		exit(-1);
-	}
-	cout << '\n';
-
-	OutputCodes(ID_counter); // print particle IDs
-	
-	// print statistics
-	printf("The integrator made %d steps. \n", ntotalsteps);
-	chrono::time_point<chrono::steady_clock> simend = chrono::steady_clock::now();
-	float SimulationTime = chrono::duration_cast<chrono::milliseconds>(simend - simstart).count()/1000.;
-	printf("Init: %.2fs, Simulation: %.2fs\n",
-			InitTime, SimulationTime);
+  if (simtype == PARTICLE){ // if proton or neutron shall be simulated
+    cout << "Simulating " << simcount << " " << source->GetParticleName() << "s...\n";
+    progress_display progress(simcount);
+    TTracker t(configin);
+    for (int iMC = 1; iMC <= simcount; iMC++)
+      {
 	if (quit.load())
-	    cout << "Simulation killed by signal!\n";
-	else
-    	cout << "That's it... Have a nice day!\n";
+	  break;
 
-	if (Py_FinalizeEx() < 0) {
-	  return 120;
+	unique_ptr<TParticle> p(source->CreateParticle(mc, geom, field));
+	t.IntegrateParticle(p, SimTime, configin[p->GetName()], mc, geom, field); // integrate particle
+	ID_counter[p->GetName()][p->GetStopID()]++; // increment counters
+	ntotalsteps += p->GetNumberOfSteps();
+
+	if (secondaries == 1){
+	  for (auto& i: p->GetSecondaryParticles()){
+	    if (quit.load())
+	      break;
+
+	    t.IntegrateParticle(i, SimTime, configin[i->GetName()], mc, geom, field); // integrate secondary particles
+	    ID_counter[i->GetName()][i->GetStopID()]++;
+	    ntotalsteps += i->GetNumberOfSteps();
+	  }
 	}
+
+	++progress;
+      }
+  }
+  else{
+    printf("\nDon't know simtype %i! Exiting...\n",simtype);
+    exit(-1);
+  }
+  cout << '\n';
+
+  OutputCodes(ID_counter); // print particle IDs
 	
-	return 0;
+  // print statistics
+  printf("The integrator made %d steps. \n", ntotalsteps);
+  chrono::time_point<chrono::steady_clock> simend = chrono::steady_clock::now();
+  float SimulationTime = chrono::duration_cast<chrono::milliseconds>(simend - simstart).count()/1000.;
+  printf("Init: %.2fs, Simulation: %.2fs\n",
+	 InitTime, SimulationTime);
+  if (quit.load())
+    cout << "Simulation killed by signal!\n";
+  else
+    cout << "That's it... Have a nice day!\n";
+
+  if (Py_FinalizeEx() < 0) {
+    return 120;
+  }
+	
+  return 0;
 }
 
 
@@ -210,53 +210,52 @@ int main(int argc, char **argv){
  * Read config file.
  *
  * @param argc Number of command line parameters
- * @param argv Array command line parameters
- * 
+ * @param argv Array command line parameters * 
  * @return Returns TConfig struct containing options map
  */
 TConfig ConfigInit(int argc, char **argv){
-	/* setting default values */
-	jobnumber = 0;
-	outpath = boost::filesystem::absolute("out/");
-	configpath = boost::filesystem::absolute("in/config.in");
-	seed = 0;
-	simtype = PARTICLE;
-	simcount = 1;
-	/*end default values*/
+  /* setting default values */
+  jobnumber = 0;
+  outpath = boost::filesystem::absolute("out/");
+  configpath = boost::filesystem::absolute("in/config.in");
+  seed = 0;
+  simtype = PARTICLE;
+  simcount = 1;
+  /*end default values*/
 
-	if(argc>1) // if user supplied at least 1 arg (jobnumber)
-		istringstream(argv[1]) >> jobnumber;
-	if(argc>2){ // if user supplied 2 or more args (jobnumber, configpath)
-		configpath = boost::filesystem::absolute(argv[2]); // input path pointer set
-		if (boost::filesystem::is_directory(configpath))
-			configpath /= "config.in";
-	}
-	if(argc>3) // if user supplied 3 or more args (jobnumber, configpath, outpath)
-		outpath = boost::filesystem::absolute(argv[3]); // set the output path pointer
-	if (argc>4) // if user supplied 4 or more args (jobnumber, configpath, outpath, seed)
-		istringstream(argv[4]) >> seed;
+  if(argc>1) // if user supplied at least 1 arg (jobnumber)
+    istringstream(argv[1]) >> jobnumber;
+  if(argc>2){ // if user supplied 2 or more args (jobnumber, configpath)
+    configpath = boost::filesystem::absolute(argv[2]); // input path pointer set
+    if (boost::filesystem::is_directory(configpath))
+      configpath /= "config.in";
+  }
+  if(argc>3) // if user supplied 3 or more args (jobnumber, configpath, outpath)
+    outpath = boost::filesystem::absolute(argv[3]); // set the output path pointer
+  if (argc>4) // if user supplied 4 or more args (jobnumber, configpath, outpath, seed)
+    istringstream(argv[4]) >> seed;
 	
-	TConfig config(configpath.native());
-	config.convert(configpath.native());
+  TConfig config(configpath.native());
+  config.convert(configpath.native());
 
-	/* read variables from map by casting strings in map into istringstreams and extracting value with ">>"-operator */
-	int stype;
-	istringstream(config["GLOBAL"]["simtype"])		>> stype;
-	simtype = static_cast<simType>(stype);
-	istringstream(config["GLOBAL"]["simcount"])		>> simcount;
-	istringstream(config["GLOBAL"]["simtime"])		>> SimTime;
-	istringstream(config["GLOBAL"]["secondaries"])	>> secondaries;
+  /* read variables from map by casting strings in map into istringstreams and extracting value with ">>"-operator */
+  int stype;
+  istringstream(config["GLOBAL"]["simtype"])		>> stype;
+  simtype = static_cast<simType>(stype);
+  istringstream(config["GLOBAL"]["simcount"])		>> simcount;
+  istringstream(config["GLOBAL"]["simtime"])		>> SimTime;
+  istringstream(config["GLOBAL"]["secondaries"])	>> secondaries;
 	
-	// add default parameters from PARTICLES section to each individual particle's parameters
-	for (auto i = config["PARTICLES"].begin(); i != config["PARTICLES"].end(); ++i){
-		config["neutron"].insert(*i);
-		config["proton"].insert(*i);
-		config["electron"].insert(*i);
-		config["mercury"].insert(*i);
-		config["xenon"].insert(*i);
-	}
+  // add default parameters from PARTICLES section to each individual particle's parameters
+  for (auto i = config["PARTICLES"].begin(); i != config["PARTICLES"].end(); ++i){
+    config["neutron"].insert(*i);
+    config["proton"].insert(*i);
+    config["electron"].insert(*i);
+    config["mercury"].insert(*i);
+    config["xenon"].insert(*i);
+  }
 	
-	return config;
+  return config;
 }
 
 
@@ -268,47 +267,47 @@ TConfig ConfigInit(int argc, char **argv){
  * @param outpath The file name of the file to which results will be printed
  *  
  * Other params are read in from the config.in file
-*/
+ */
 void PrintMROutAngle(TConfig &config, const boost::filesystem::path &outpath) {
-	vector<double> MRSolidAngleDRPParams; ///< params to output the  MR-DRP values for given theta_inc and phi_inc [Fermi potential, incident neutron energy, b (nm), w (nm), theta_i] (read from config)
-	istringstream ss(config["GLOBAL"]["MRSolidAngleDRP"]);
-	copy(istream_iterator<double>(ss), istream_iterator<double>(), back_inserter(MRSolidAngleDRPParams));
-	if (MRSolidAngleDRPParams.size() != 5)
-		throw std::runtime_error("Incorrect number of parameters to print micro-roughness distribution!");
+  vector<double> MRSolidAngleDRPParams; ///< params to output the  MR-DRP values for given theta_inc and phi_inc [Fermi potential, incident neutron energy, b (nm), w (nm), theta_i] (read from config)
+  istringstream ss(config["GLOBAL"]["MRSolidAngleDRP"]);
+  copy(istream_iterator<double>(ss), istream_iterator<double>(), back_inserter(MRSolidAngleDRPParams));
+  if (MRSolidAngleDRPParams.size() != 5)
+    throw std::runtime_error("Incorrect number of parameters to print micro-roughness distribution!");
 	
-	ostringstream oss;
-	oss << "MR-SldAngDRP" << "-F" << MRSolidAngleDRPParams[0] << "-En" << MRSolidAngleDRPParams[1] << "-b" << MRSolidAngleDRPParams[2] << "-w" << MRSolidAngleDRPParams[3] << "-th" << MRSolidAngleDRPParams[4] << ".out"; 
- 	boost::filesystem::path fileName = outpath / oss.str();
+  ostringstream oss;
+  oss << "MR-SldAngDRP" << "-F" << MRSolidAngleDRPParams[0] << "-En" << MRSolidAngleDRPParams[1] << "-b" << MRSolidAngleDRPParams[2] << "-w" << MRSolidAngleDRPParams[3] << "-th" << MRSolidAngleDRPParams[4] << ".out"; 
+  boost::filesystem::path fileName = outpath / oss.str();
 	
-	cout << "\nGenerating table of MR diffuse reflection probability for all solid angles in " << fileName << "...\n";	
+  cout << "\nGenerating table of MR diffuse reflection probability for all solid angles in " << fileName << "...\n";	
 	
-	ofstream mrproboutfile(fileName.c_str());
-	if (!mrproboutfile)
-		throw ((boost::format("Could not open %1%!") % fileName.c_str()).str());
+  ofstream mrproboutfile(fileName.c_str());
+  if (!mrproboutfile)
+    throw ((boost::format("Could not open %1%!") % fileName.c_str()).str());
 
-	//print file header
-	mrproboutfile << "phi_out theta_out mrdrp\n";
-	double theta_inc = MRSolidAngleDRPParams[4];
+  //print file header
+  mrproboutfile << "phi_out theta_out mrdrp\n";
+  double theta_inc = MRSolidAngleDRPParams[4];
 	
-	//determine neutron velocity corresponding to the energy and create a state_type vector from it
-	double vabs = sqrt(2*MRSolidAngleDRPParams[1]*1e-9/m_n);
-	double v[3] = {0, vabs*sin(theta_inc), -vabs*cos(theta_inc)};
-	double norm[] = { 0, 0, 1 };
+  //determine neutron velocity corresponding to the energy and create a state_type vector from it
+  double vabs = sqrt(2*MRSolidAngleDRPParams[1]*1e-9/m_n);
+  double v[3] = {0, vabs*sin(theta_inc), -vabs*cos(theta_inc)};
+  double norm[] = { 0, 0, 1 };
 
-	//write the mrprob values to the output file
-	for (double phi=-pi; phi<pi; phi+=(2*pi)/100) {
+  //write the mrprob values to the output file
+  for (double phi=-pi; phi<pi; phi+=(2*pi)/100) {
 		
-		for (double theta=0; theta<pi/2; theta+=(pi/2)/100) {
-			//the sin(theta) factor is needed to normalize for different size of surface elements in spherical coordinates
-			double mrprob = MR::MRDist(false, false, v, norm, MRSolidAngleDRPParams[0], MRSolidAngleDRPParams[2], MRSolidAngleDRPParams[3], theta, phi)*sin(theta);
-			mrproboutfile << phi << ' ' << theta << ' ' << mrprob << '\n';
-		}
-		for (double theta=0; theta<pi/2; theta+=(pi/2)/100) {
-			//the sin(theta) factor is needed to normalize for different size of surface elements in spherical coordinates
-			double mrprob = MR::MRDist(true, false, v, norm, MRSolidAngleDRPParams[0], MRSolidAngleDRPParams[2], MRSolidAngleDRPParams[3], theta, phi)*sin(theta);
-			mrproboutfile << phi << ' ' << pi - theta << ' ' << mrprob << '\n';
-		}
-	}
+    for (double theta=0; theta<pi/2; theta+=(pi/2)/100) {
+      //the sin(theta) factor is needed to normalize for different size of surface elements in spherical coordinates
+      double mrprob = MR::MRDist(false, false, v, norm, MRSolidAngleDRPParams[0], MRSolidAngleDRPParams[2], MRSolidAngleDRPParams[3], theta, phi)*sin(theta);
+      mrproboutfile << phi << ' ' << theta << ' ' << mrprob << '\n';
+    }
+    for (double theta=0; theta<pi/2; theta+=(pi/2)/100) {
+      //the sin(theta) factor is needed to normalize for different size of surface elements in spherical coordinates
+      double mrprob = MR::MRDist(true, false, v, norm, MRSolidAngleDRPParams[0], MRSolidAngleDRPParams[2], MRSolidAngleDRPParams[3], theta, phi)*sin(theta);
+      mrproboutfile << phi << ' ' << pi - theta << ' ' << mrprob << '\n';
+    }
+  }
 } // end PrintMRThetaIEnergy
 
 
@@ -318,49 +317,49 @@ void PrintMROutAngle(TConfig &config, const boost::filesystem::path &outpath) {
  *
  * @param config TConfig class containing parameters
  * @param outpath The file name to which the results will be printed
-*/
+ */
 void PrintMRThetaIEnergy(TConfig &config, const boost::filesystem::path &outpath) {
-	vector<double> MRThetaIEnergyParams; ///< params for which to output the integrated MR-DRP values [Fermi potential, b (nm), w (nm), theta_i_start, theta_i_end, neut_energy_start, neut_energy_end] (read from config.in)
-	istringstream ss(config["GLOBAL"]["MRThetaIEnergy"]);
-	copy(istream_iterator<double>(ss), istream_iterator<double>(), back_inserter(MRThetaIEnergyParams));
-	if (MRThetaIEnergyParams.size() != 7)
-		throw std::runtime_error("Incorrect number of parameters to print total micro-roughness-scattering probability!");
+  vector<double> MRThetaIEnergyParams; ///< params for which to output the integrated MR-DRP values [Fermi potential, b (nm), w (nm), theta_i_start, theta_i_end, neut_energy_start, neut_energy_end] (read from config.in)
+  istringstream ss(config["GLOBAL"]["MRThetaIEnergy"]);
+  copy(istream_iterator<double>(ss), istream_iterator<double>(), back_inserter(MRThetaIEnergyParams));
+  if (MRThetaIEnergyParams.size() != 7)
+    throw std::runtime_error("Incorrect number of parameters to print total micro-roughness-scattering probability!");
 
 
-	ostringstream oss;
-	oss << "MR-Tot-DRP" << "-F" << MRThetaIEnergyParams[0] << "-b" << MRThetaIEnergyParams[1] << "-w" << MRThetaIEnergyParams[2] << ".out"; 
- 	boost::filesystem::path fileName = outpath / oss.str();	
+  ostringstream oss;
+  oss << "MR-Tot-DRP" << "-F" << MRThetaIEnergyParams[0] << "-b" << MRThetaIEnergyParams[1] << "-w" << MRThetaIEnergyParams[2] << ".out"; 
+  boost::filesystem::path fileName = outpath / oss.str();	
 	
-	cout << "\nGenerating table of integrated MR diffuse reflection probability for different incident angle and energy in " << fileName << "...\n";	
+  cout << "\nGenerating table of integrated MR diffuse reflection probability for different incident angle and energy in " << fileName << "...\n";	
 
-	ofstream mroutfile(fileName.c_str());
-	if (!mroutfile)
-		throw ((boost::format("Could not open %1%!") % fileName).str());
+  ofstream mroutfile(fileName.c_str());
+  if (!mroutfile)
+    throw ((boost::format("Could not open %1%!") % fileName).str());
 
-	mroutfile << "theta_i neut_en totmrdrp\n"; //print the header
+  mroutfile << "theta_i neut_en totmrdrp\n"; //print the header
 	
-	//define the min and max values of the following for loop
-	double theta_start = MRThetaIEnergyParams[3];
-	double theta_end = MRThetaIEnergyParams[4];
-	double neute_start = MRThetaIEnergyParams[5];
-	double neute_end = MRThetaIEnergyParams[6];
-	double norm[] = { 0, 0, 1 };
- 	//write the integrated mrprob values to the output file
- 	progress_display progress(100);
-	for (double theta = theta_start; theta<theta_end; theta += (theta_end-theta_start)/100) {
-		//since this part can be slow it is helpful to monitor the progress
-        progress += 100*(theta - theta_start)/(theta_end - theta_start) - progress.count();
+  //define the min and max values of the following for loop
+  double theta_start = MRThetaIEnergyParams[3];
+  double theta_end = MRThetaIEnergyParams[4];
+  double neute_start = MRThetaIEnergyParams[5];
+  double neute_end = MRThetaIEnergyParams[6];
+  double norm[] = { 0, 0, 1 };
+  //write the integrated mrprob values to the output file
+  progress_display progress(100);
+  for (double theta = theta_start; theta<theta_end; theta += (theta_end-theta_start)/100) {
+    //since this part can be slow it is helpful to monitor the progress
+    progress += 100*(theta - theta_start)/(theta_end - theta_start) - progress.count();
 
-		for (double energy = neute_start; energy<neute_end; energy += (neute_end-neute_start)/100) {
-			//determine neutron velocity corresponding to the energy and create a state_type vector from it
-			double vabs = sqrt(2*energy*1e-9/m_n);
-			double v[3] = {0, vabs*sin(theta), -vabs*cos(theta)};
-			//the sin(theta) factor is needed to noramlize for different sizes of surface elements in spherical coordinates
-			double totmrprob = MR::MRProb(false, v, norm, MRThetaIEnergyParams[0], MRThetaIEnergyParams[1], MRThetaIEnergyParams[2]);
-			mroutfile << theta << ' ' << energy << ' ' << totmrprob << '\n';
-		}
-	}
-	cout << '\n';
+    for (double energy = neute_start; energy<neute_end; energy += (neute_end-neute_start)/100) {
+      //determine neutron velocity corresponding to the energy and create a state_type vector from it
+      double vabs = sqrt(2*energy*1e-9/m_n);
+      double v[3] = {0, vabs*sin(theta), -vabs*cos(theta)};
+      //the sin(theta) factor is needed to noramlize for different sizes of surface elements in spherical coordinates
+      double totmrprob = MR::MRProb(false, v, norm, MRThetaIEnergyParams[0], MRThetaIEnergyParams[1], MRThetaIEnergyParams[2]);
+      mroutfile << theta << ' ' << energy << ' ' << totmrprob << '\n';
+    }
+  }
+  cout << '\n';
 } // end PrintMRThetaIEnergy
 
 
@@ -370,22 +369,22 @@ void PrintMRThetaIEnergy(TConfig &config, const boost::filesystem::path &outpath
  * @param ID_counter A list of counters indicating the numbers of particles with each stopID.
  */
 void OutputCodes(const map<string, map<int, int> > &ID_counter){
-	cout << "\nThe simulated particles suffered following fates:\n";
-	for (auto i = ID_counter.begin(); i != ID_counter.end(); i++){
-		map<int, int> counts = i->second;
-		const char *name = i->first.c_str();
-		printf("%4i: %6i %10s(s) were absorbed on a surface\n",	 2, counts[ 2], name);
-		printf("%4i: %6i %10s(s) were absorbed in a material\n", 1, counts[ 1], name);
-		printf("%4i: %6i %10s(s) were not categorized\n",		 0, counts[ 0], name);
-		printf("%4i: %6i %10s(s) did not finish\n",				-1, counts[-1], name);
-		printf("%4i: %6i %10s(s) hit outer boundaries\n",		-2, counts[-2], name);
-		printf("%4i: %6i %10s(s) produced integration error\n", -3, counts[-3], name);
-		printf("%4i: %6i %10s(s) decayed\n",					-4, counts[-4], name);
-		printf("%4i: %6i %10s(s) found no initial position\n",	-5, counts[-5], name);
-		printf("%4i: %6i %10s(s) encountered CGAL error\n",		-6, counts[-6], name);
-		printf("%4i: %6i %10s(s) encountered geometry error\n",	-7, counts[-7], name);
-		printf("\n");
-	}
+  cout << "\nThe simulated particles suffered following fates:\n";
+  for (auto i = ID_counter.begin(); i != ID_counter.end(); i++){
+    map<int, int> counts = i->second;
+    const char *name = i->first.c_str();
+    printf("%4i: %6i %10s(s) were absorbed on a surface\n",	 2, counts[ 2], name);
+    printf("%4i: %6i %10s(s) were absorbed in a material\n", 1, counts[ 1], name);
+    printf("%4i: %6i %10s(s) were not categorized\n",		 0, counts[ 0], name);
+    printf("%4i: %6i %10s(s) did not finish\n",				-1, counts[-1], name);
+    printf("%4i: %6i %10s(s) hit outer boundaries\n",		-2, counts[-2], name);
+    printf("%4i: %6i %10s(s) produced integration error\n", -3, counts[-3], name);
+    printf("%4i: %6i %10s(s) decayed\n",					-4, counts[-4], name);
+    printf("%4i: %6i %10s(s) found no initial position\n",	-5, counts[-5], name);
+    printf("%4i: %6i %10s(s) encountered CGAL error\n",		-6, counts[-6], name);
+    printf("%4i: %6i %10s(s) encountered geometry error\n",	-7, counts[-7], name);
+    printf("\n");
+  }
 }
 
 
@@ -399,59 +398,59 @@ void OutputCodes(const map<string, map<int, int> > &ID_counter){
  * @param field TFieldManager structure which should be evaluated
  */
 void PrintBFieldCut(TConfig &config, const boost::filesystem::path &outfile, const TFieldManager &field){
-	double BCutPlanePoint[9]; ///< 3 points on plane for field slice (read from config)
-	int BCutPlaneSampleCount1; ///< number of field samples in BCutPlanePoint[3..5]-BCutPlanePoint[0..2] direction (read from config)
-	int BCutPlaneSampleCount2; ///< number of field samples in BCutPlanePoint[6..8]-BCutPlanePoint[0..2] direction (read from config)
-	double BCutTime;
-	istringstream str(config["GLOBAL"]["BCutPlane"]);
-	str	>> BCutPlanePoint[0] >> BCutPlanePoint[1] >> BCutPlanePoint[2]
-		>> BCutPlanePoint[3] >> BCutPlanePoint[4] >> BCutPlanePoint[5]
-		>> BCutPlanePoint[6] >> BCutPlanePoint[7] >> BCutPlanePoint[8]
-		>> BCutPlaneSampleCount1 >> BCutPlaneSampleCount2 >> BCutTime;
-	if (not str){
-		throw std::runtime_error("Missing config parameters for BCutPlane. 12 are expected");
-	}
+  double BCutPlanePoint[9]; ///< 3 points on plane for field slice (read from config)
+  int BCutPlaneSampleCount1; ///< number of field samples in BCutPlanePoint[3..5]-BCutPlanePoint[0..2] direction (read from config)
+  int BCutPlaneSampleCount2; ///< number of field samples in BCutPlanePoint[6..8]-BCutPlanePoint[0..2] direction (read from config)
+  double BCutTime;
+  istringstream str(config["GLOBAL"]["BCutPlane"]);
+  str	>> BCutPlanePoint[0] >> BCutPlanePoint[1] >> BCutPlanePoint[2]
+	>> BCutPlanePoint[3] >> BCutPlanePoint[4] >> BCutPlanePoint[5]
+	>> BCutPlanePoint[6] >> BCutPlanePoint[7] >> BCutPlanePoint[8]
+	>> BCutPlaneSampleCount1 >> BCutPlaneSampleCount2 >> BCutTime;
+  if (not str){
+    throw std::runtime_error("Missing config parameters for BCutPlane. 12 are expected");
+  }
 
-	// get directional vectors from points on plane by u = p2-p1, v = p3-p1
-	double u[3] = {BCutPlanePoint[3] - BCutPlanePoint[0], BCutPlanePoint[4] - BCutPlanePoint[1], BCutPlanePoint[5] - BCutPlanePoint[2]};
-	double v[3] = {BCutPlanePoint[6] - BCutPlanePoint[0], BCutPlanePoint[7] - BCutPlanePoint[1], BCutPlanePoint[8] - BCutPlanePoint[2]};
+  // get directional vectors from points on plane by u = p2-p1, v = p3-p1
+  double u[3] = {BCutPlanePoint[3] - BCutPlanePoint[0], BCutPlanePoint[4] - BCutPlanePoint[1], BCutPlanePoint[5] - BCutPlanePoint[2]};
+  double v[3] = {BCutPlanePoint[6] - BCutPlanePoint[0], BCutPlanePoint[7] - BCutPlanePoint[1], BCutPlanePoint[8] - BCutPlanePoint[2]};
 	
-	// open output file
-	ofstream cutfile(outfile.c_str());
-	if (!cutfile){
-		std::cout << "Could not open " << outfile << "!\n";
-		exit(-1);
-	}
-	// print file header
-	cutfile << "x y z Bx dBxdx dBxdy dBxdz By dBydx dBydy dBydz Bz dBzdx dBzdy dBzdz Ex Ey Ez V\n";
+  // open output file
+  ofstream cutfile(outfile.c_str());
+  if (!cutfile){
+    std::cout << "Could not open " << outfile << "!\n";
+    exit(-1);
+  }
+  // print file header
+  cutfile << "x y z Bx dBxdx dBxdy dBxdz By dBydx dBydy dBydz Bz dBzdx dBzdy dBzdz Ex Ey Ez V\n";
 	
-	double Pp[3];
-	double B[3], dBidxj[3][3],Ei[3],V;
-	float start = clock(); // do some time statistics
-	// sample field BCutPlaneSmapleCount1 times in u-direction and BCutPlaneSampleCount2 time in v-direction
-	for (int i = 0; i < BCutPlaneSampleCount1; i++) {
-		for (int j = 0; j < BCutPlaneSampleCount2; j++){
-			for (int k = 0; k < 3; k++)
-				Pp[k] = BCutPlanePoint[k] + i*u[k]/BCutPlaneSampleCount1 + j*v[k]/BCutPlaneSampleCount2;
-			// print B-/E-Field to file
-         			cutfile << Pp[0] << " " << Pp[1] << " " << Pp[2] << " ";
+  double Pp[3];
+  double B[3], dBidxj[3][3],Ei[3],V;
+  float start = clock(); // do some time statistics
+  // sample field BCutPlaneSmapleCount1 times in u-direction and BCutPlaneSampleCount2 time in v-direction
+  for (int i = 0; i < BCutPlaneSampleCount1; i++) {
+    for (int j = 0; j < BCutPlaneSampleCount2; j++){
+      for (int k = 0; k < 3; k++)
+	Pp[k] = BCutPlanePoint[k] + i*u[k]/BCutPlaneSampleCount1 + j*v[k]/BCutPlaneSampleCount2;
+      // print B-/E-Field to file
+      cutfile << Pp[0] << " " << Pp[1] << " " << Pp[2] << " ";
 			
-			field.BField(Pp[0], Pp[1], Pp[2], BCutTime, B, dBidxj);
-			for (int k = 0; k < 3; k++){
-				cutfile << B[k] << " ";
-				for (int l = 0; l < 3; l++)
-					cutfile << dBidxj[k][l] << " ";
-			}
+      field.BField(Pp[0], Pp[1], Pp[2], BCutTime, B, dBidxj);
+      for (int k = 0; k < 3; k++){
+	cutfile << B[k] << " ";
+	for (int l = 0; l < 3; l++)
+	  cutfile << dBidxj[k][l] << " ";
+      }
 
-			field.EField(Pp[0], Pp[1], Pp[2], BCutTime, V, Ei);
-			cutfile << Ei[0] << " " << Ei[1] << " " << Ei[2] << " " << V << "\n";
-		}
-	}
-	start = (clock() - start)/CLOCKS_PER_SEC;
-	//close file
-	cutfile.close();
-	// print time statistics
-	printf("\nWrote magnetic and electric fields %u times into %s in %fs (%fms per call)\n",BCutPlaneSampleCount1*BCutPlaneSampleCount2, outfile.c_str(), start, start/BCutPlaneSampleCount1/BCutPlaneSampleCount2*1000);
+      field.EField(Pp[0], Pp[1], Pp[2], BCutTime, V, Ei);
+      cutfile << Ei[0] << " " << Ei[1] << " " << Ei[2] << " " << V << "\n";
+    }
+  }
+  start = (clock() - start)/CLOCKS_PER_SEC;
+  //close file
+  cutfile.close();
+  // print time statistics
+  printf("\nWrote magnetic and electric fields %u times into %s in %fs (%fms per call)\n",BCutPlaneSampleCount1*BCutPlaneSampleCount2, outfile.c_str(), start, start/BCutPlaneSampleCount1/BCutPlaneSampleCount2*1000);
 }
 
 
@@ -465,54 +464,54 @@ void PrintBFieldCut(TConfig &config, const boost::filesystem::path &outfile, con
  * @param field TField structure which should be evaluated
  */
 void PrintBField(const boost::filesystem::path &outfile, const TFieldManager &field){
-	// print BField to file
-	ofstream bfile(outfile.c_str());
-	if (!bfile){
-		std::cout << "Could not open " << outfile << "!\n";
-		exit(-1);
-	}
+  // print BField to file
+  ofstream bfile(outfile.c_str());
+  if (!bfile){
+    std::cout << "Could not open " << outfile << "!\n";
+    exit(-1);
+  }
 
-	bfile << "r phi z Bx By Bz 0 0 Babs\n";
-	double rmin = 0.12, rmax = 0.5, zmin = 0, zmax = 1.2;
-	int E;
-	const int Emax = 108;
-	double dr = 0.1, dz = 0.1;
-	double VolumeB[Emax + 1];
-	for (E = 0; E <= Emax; E++) VolumeB[E] = 0;
+  bfile << "r phi z Bx By Bz 0 0 Babs\n";
+  double rmin = 0.12, rmax = 0.5, zmin = 0, zmax = 1.2;
+  int E;
+  const int Emax = 108;
+  double dr = 0.1, dz = 0.1;
+  double VolumeB[Emax + 1];
+  for (E = 0; E <= Emax; E++) VolumeB[E] = 0;
 	
-	double EnTest;
-	double B[3];
-	// sample space in cylindrical pattern
-	for (double r = rmin; r <= rmax; r += dr){
-		for (double z = zmin; z <= zmax; z += dz){
-			field.BField(r, 0, z, 500.0, B); // evaluate field
-			double Babs = sqrt(B[0]*B[0] + B[1]*B[1] + B[2]*B[2]);
-			// print field values
-			bfile << r << " " << 0.0 << " " << z << " " << B[0] << " " << B[1] << " " << B[2] << " " << 0.0 << " " << 0.0 << " " << Babs << "\n";
-			std::cout << "r=" << r << ", z=" << z << ", Br=" << B[0] << " T, Bz=" << B[2] << " T\n";
+  double EnTest;
+  double B[3];
+  // sample space in cylindrical pattern
+  for (double r = rmin; r <= rmax; r += dr){
+    for (double z = zmin; z <= zmax; z += dz){
+      field.BField(r, 0, z, 500.0, B); // evaluate field
+      double Babs = sqrt(B[0]*B[0] + B[1]*B[1] + B[2]*B[2]);
+      // print field values
+      bfile << r << " " << 0.0 << " " << z << " " << B[0] << " " << B[1] << " " << B[2] << " " << 0.0 << " " << 0.0 << " " << Babs << "\n";
+      std::cout << "r=" << r << ", z=" << z << ", Br=" << B[0] << " T, Bz=" << B[2] << " T\n";
 			
-			// Ramp Heating Analysis
-			for (E = 0; E <= Emax; E++){
-				EnTest = E*1.0e-9 - m_n*gravconst*z - mu_nSI/ele_e * Babs;
-				if (EnTest >= 0){
-					// add the volume segment to the volume that is accessible to a neutron with energy Energie
-					VolumeB[E] = VolumeB[E] + pi * dz * ((r+0.5*dr)*(r+0.5*dr) - (r-0.5*dr)*(r-0.5*dr));
-				}
-			}
-		}
+      // Ramp Heating Analysis
+      for (E = 0; E <= Emax; E++){
+	EnTest = E*1.0e-9 - m_n*gravconst*z - mu_nSI/ele_e * Babs;
+	if (EnTest >= 0){
+	  // add the volume segment to the volume that is accessible to a neutron with energy Energie
+	  VolumeB[E] = VolumeB[E] + pi * dz * ((r+0.5*dr)*(r+0.5*dr) - (r-0.5*dr)*(r-0.5*dr));
 	}
-	bfile.close();
+      }
+    }
+  }
+  bfile.close();
 
-	// for investigating ramp heating of neutrons, volume accessible to neutrons with and
-	// without B-field is calculated and the heating approximated by thermodynamical means
-	printf("\nEnergie [neV], Volumen ohne B-Feld, mit B-Feld, 'Erwaermung'");
-	double Volume;
-	for (E = 0; E <= Emax; E++) 
-	{
-		Volume = ((E * 1.0e-9 / (m_n * gravconst))) * pi * (rmax*rmax-rmin*rmin);
-		// isentropische zustandsnderung, kappa=5/3
-		printf("\n%i %.17g %.17g %.17g",E,Volume,VolumeB[E],E * pow((Volume/VolumeB[E]),(2.0/3.0)) - E);
-	}
+  // for investigating ramp heating of neutrons, volume accessible to neutrons with and
+  // without B-field is calculated and the heating approximated by thermodynamical means
+  printf("\nEnergie [neV], Volumen ohne B-Feld, mit B-Feld, 'Erwaermung'");
+  double Volume;
+  for (E = 0; E <= Emax; E++) 
+    {
+      Volume = ((E * 1.0e-9 / (m_n * gravconst))) * pi * (rmax*rmax-rmin*rmin);
+      // isentropische zustandsnderung, kappa=5/3
+      printf("\n%i %.17g %.17g %.17g",E,Volume,VolumeB[E],E * pow((Volume/VolumeB[E]),(2.0/3.0)) - E);
+    }
 }
 
 
@@ -526,22 +525,22 @@ void PrintBField(const boost::filesystem::path &outfile, const TFieldManager &fi
  * @param geom TGeometry structure which shall be sampled
  */
 void PrintGeometry(const boost::filesystem::path &outfile, TGeometry &geom){
-    unsigned count = 1000000;
+  unsigned count = 1000000;
 
-    ofstream f(outfile.c_str());
-    f << "x y z ID" << '\n'; // print file header
+  ofstream f(outfile.c_str());
+  f << "x y z ID" << '\n'; // print file header
 
-	chrono::time_point<chrono::steady_clock> collstart = chrono::steady_clock::now();
-	std::mt19937_64 r(std::chrono::duration_cast<std::chrono::nanoseconds>(collstart.time_since_epoch()).count());
-	for (unsigned i = 0; i < count; i++){
-        std::array<double, 3> p, n;
-        unsigned ID;
-        geom.mesh.RandomPointOnSurface(p, n, ID, r, geom.mesh.GetBoundingBox());
-		f << p[0] << " " << p[1] << " " << p[2] << " " << ID << '\n'; // print all intersection points into file
-    }
-	chrono::time_point<chrono::steady_clock> collend = chrono::steady_clock::now();
-	float colltimer = chrono::duration_cast<chrono::nanoseconds>(collend - collstart).count();
-    // print some time statistics
-    printf("Wrote %u points in %fms (%fms per point) into %s\n",count,colltimer/1e6,colltimer/count/1e6, outfile.c_str());
-    f.close();	
+  chrono::time_point<chrono::steady_clock> collstart = chrono::steady_clock::now();
+  std::mt19937_64 r(std::chrono::duration_cast<std::chrono::nanoseconds>(collstart.time_since_epoch()).count());
+  for (unsigned i = 0; i < count; i++){
+    std::array<double, 3> p, n;
+    unsigned ID;
+    geom.mesh.RandomPointOnSurface(p, n, ID, r, geom.mesh.GetBoundingBox());
+    f << p[0] << " " << p[1] << " " << p[2] << " " << ID << '\n'; // print all intersection points into file
+  }
+  chrono::time_point<chrono::steady_clock> collend = chrono::steady_clock::now();
+  float colltimer = chrono::duration_cast<chrono::nanoseconds>(collend - collstart).count();
+  // print some time statistics
+  printf("Wrote %u points in %fms (%fms per point) into %s\n",count,colltimer/1e6,colltimer/count/1e6, outfile.c_str());
+  f.close();	
 }

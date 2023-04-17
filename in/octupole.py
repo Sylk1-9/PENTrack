@@ -25,7 +25,7 @@ def BuildMagnet():
     # for i in np.arange(0, 24, 1):
         # for deg in np.arange(0, 360, 11.25 ):
         #     magnetization = (M*np.cos((k+1)*np.deg2rad(deg)), M*np.sin((k+1)*np.deg2rad(deg)),0)
-        #     position = (0, 54 + y/2, z/2+i*57.5*1.2 + 570)
+        #     position = (0, 54 + y/2, z/2+i*57.5 + 570)
         #     cube = magpy.magnet.Cuboid(magnetization=magnetization, dimension=dimension, position=position)
         #     octupole.add(cube.rotate_from_angax(deg, axis='z', anchor=0))
 
