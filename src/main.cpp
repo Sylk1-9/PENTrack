@@ -20,6 +20,12 @@
 #include <memory>
 #include <boost/format.hpp>
 
+#include <thread>
+// #include <mutex>
+// #include <atomic>
+// #include <boost/progress.hpp>
+
+
 #include "tracking.h"
 #include "particle.h"
 #include "config.h"
@@ -28,6 +34,7 @@
 #include "source.h"
 #include "mc.h" 
 #include "microroughness.h"
+
 
 using namespace std;
 
@@ -58,6 +65,36 @@ uint64_t seed = 0; ///< random seed used for random-number generator (generated 
 void catch_alarm (int sig){
   quit.store(true);
 }
+
+
+
+///////////////////////////// multithreading
+void SimulateParticles(int start, int end, int simcount, TParticleSource* source, TMCGenerator* mc, TGeometry* geom, TFieldManager* field, TConfig *configin, map<string, map<int, int>>& ID_counter, int& ntotalsteps, progress_display& progress) {
+  TTracker t(*configin);
+  cout << " Thread " << std::this_thread::get_id() << " assigned to particles " << start << " to " << end << endl; 
+  for (int iMC = start; iMC <= end; iMC++) {
+    if (quit.load())
+      break;
+    unique_ptr<TParticle> p(source->CreateParticle(*mc, *geom, *field));
+    t.IntegrateParticle(p, SimTime, (*configin)[p->GetName()], *mc, *geom, *field); // integrate particle
+    ID_counter[p->GetName()][p->GetStopID()]++; // increment counters
+    ntotalsteps += p->GetNumberOfSteps();
+
+    if (secondaries == 1) {
+      for (auto& i: p->GetSecondaryParticles()) {
+        if (quit.load())
+          break;
+
+        t.IntegrateParticle(i, SimTime, (*configin)[i->GetName()], *mc, *geom, *field); // integrate secondary particles
+        ID_counter[i->GetName()][i->GetStopID()]++;
+        ntotalsteps += i->GetNumberOfSteps();
+      }
+    }
+
+    ++progress;
+  }
+}
+
 
 
 /**
@@ -151,39 +188,62 @@ int main(int argc, char **argv){
   cout << "\n";
   map<string, map<int, int> > ID_counter; // 2D map to store number of each ID for each particle type
 
-  if (simtype == PARTICLE){ // if proton or neutron shall be simulated
+  // if (simtype == PARTICLE){ // if proton or neutron shall be simulated
+  //   cout << "Simulating " << simcount << " " << source->GetParticleName() << "s...\n";
+  //   progress_display progress(simcount);
+  //   TTracker t(configin);
+  //   for (int iMC = 1; iMC <= simcount; iMC++)
+  //     {
+  // 	if (quit.load())
+  // 	  break;
+
+  // 	unique_ptr<TParticle> p(source->CreateParticle(mc, geom, field));
+  // 	t.IntegrateParticle(p, SimTime, configin[p->GetName()], mc, geom, field); // integrate particle
+  // 	ID_counter[p->GetName()][p->GetStopID()]++; // increment counters
+  // 	ntotalsteps += p->GetNumberOfSteps();
+
+  // 	if (secondaries == 1){
+  // 	  for (auto& i: p->GetSecondaryParticles()){
+  // 	    if (quit.load())
+  // 	      break;
+
+  // 	    t.IntegrateParticle(i, SimTime, configin[i->GetName()], mc, geom, field); // integrate secondary particles
+  // 	    ID_counter[i->GetName()][i->GetStopID()]++;
+  // 	    ntotalsteps += i->GetNumberOfSteps();
+  // 	  }
+  // 	}
+
+  // 	++progress;
+  //     }
+  // }
+
+
+  if (simtype == PARTICLE) { // if proton or neutron shall be simulated
     cout << "Simulating " << simcount << " " << source->GetParticleName() << "s...\n";
+    int num_threads = std::thread::hardware_concurrency() - 1; // get the number of available cores
+    cout << "Number of threads = " << num_threads << endl;
+    if (num_threads <= 0) num_threads = 1; // if the number of cores cannot be determined, use 1 thread
+    vector<thread> threads;
+    int chunk_size = simcount / num_threads; // divide the iterations into equal-sized chunks
     progress_display progress(simcount);
-    TTracker t(configin);
-    for (int iMC = 1; iMC <= simcount; iMC++)
-      {
-	if (quit.load())
-	  break;
-
-	unique_ptr<TParticle> p(source->CreateParticle(mc, geom, field));
-	t.IntegrateParticle(p, SimTime, configin[p->GetName()], mc, geom, field); // integrate particle
-	ID_counter[p->GetName()][p->GetStopID()]++; // increment counters
-	ntotalsteps += p->GetNumberOfSteps();
-
-	if (secondaries == 1){
-	  for (auto& i: p->GetSecondaryParticles()){
-	    if (quit.load())
-	      break;
-
-	    t.IntegrateParticle(i, SimTime, configin[i->GetName()], mc, geom, field); // integrate secondary particles
-	    ID_counter[i->GetName()][i->GetStopID()]++;
-	    ntotalsteps += i->GetNumberOfSteps();
-	  }
-	}
-
-	++progress;
-      }
+    for (int i = 0; i < num_threads; i++) {
+      int start = i * chunk_size + 1;
+      int end = (i == num_threads - 1) ? simcount : (i + 1) * chunk_size;
+      threads.emplace_back(SimulateParticles, start, end, simcount, source.get(), &mc, &geom, &field, &configin, std::ref(ID_counter), std::ref(ntotalsteps), std::ref(progress));
+    }
+    quit.store(false); // set the quit flag to true to stop all threads
+    for (auto& th: threads) {
+      if (th.joinable())
+	th.join();
+    }
   }
   else{
     printf("\nDon't know simtype %i! Exiting...\n",simtype);
     exit(-1);
   }
   cout << '\n';
+
+  //////////////////////////////////////////////////////
 
   OutputCodes(ID_counter); // print particle IDs
 	
