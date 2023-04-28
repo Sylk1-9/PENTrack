@@ -7,10 +7,10 @@
 simtype 1
 
 # number of primary particles to be simulated
-simcount 10
+simcount 5
 
 # max. simulation time [s]
-simtime 10
+simtime 5
 
 # path of file containing materials, paths are assumed to be relative to this config file's path
 materials_file materials.in
@@ -32,8 +32,8 @@ secondaries 1
 #MRThetaIEnergy 54 2.5E-9 20E-9 0 1.570796327 0 1000
 
 #Format used for logging output, can be "txt" for raw text, "ROOT" for ROOT trees and files, and "HDF5" for HDF5 files
-# logtype txt 
-logtype HDF5
+logtype txt 
+# logtype HDF5
 
 
 [GEOMETRY]

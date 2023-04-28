@@ -141,6 +141,8 @@ public:
 class TTextLogger: public TLogger {
 private:
   std::map<std::string, std::ofstream> logstreams; ///< List of file streams used for logging
+  std::mutex text_mutex;
+
 
   /**
    * Logs given variables to selected text file
@@ -172,6 +174,8 @@ public:
 class TROOTLogger: public TLogger {
 private:
   TFile* ROOTfile; ///< ROOT file to print to
+  std::mutex root_mutex;
+
 
   /**
    * Logs given variables to selected ROOT tree

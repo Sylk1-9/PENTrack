@@ -160,6 +160,37 @@ int main(int argc, char **argv){
   cout << "\n";
   map<string, map<int, int> > ID_counter; // 2D map to store number of each ID for each particle type
 
+  
+  // if (simtype == PARTICLE){ // if proton or neutron shall be simulated
+  //   cout << "Simulating " << simcount << " " << source->GetParticleName() << "s...\n";
+  //   progress_display progress(simcount);
+  //   TTracker t(configin);
+  //   for (int iMC = 1; iMC <= simcount; iMC++)
+  //     {
+  // 	if (quit.load())
+  // 	  break;
+
+  // 	unique_ptr<TParticle> p(source->CreateParticle(mc, geom, field));
+  // 	t.IntegrateParticle(p, SimTime, configin[p->GetName()], mc, geom, field); // integrate particle
+  // 	ID_counter[p->GetName()][p->GetStopID()]++; // increment counters
+  // 	ntotalsteps += p->GetNumberOfSteps();
+
+  // 	if (secondaries == 1){
+  // 	  for (auto& i: p->GetSecondaryParticles()){
+  // 	    if (quit.load())
+  // 	      break;
+
+  // 	    t.IntegrateParticle(i, SimTime, configin[i->GetName()], mc, geom, field); // integrate secondary particles
+  // 	    ID_counter[i->GetName()][i->GetStopID()]++;
+  // 	    ntotalsteps += i->GetNumberOfSteps();
+  // 	  }
+  // 	}
+
+  // 	++progress;
+  //     }
+  // }
+
+  
   if (simtype == PARTICLE) { // if proton or neutron shall be simulated
     cout << "Simulating " << simcount << " " << source->GetParticleName() << "s...\n";
     if (numthreads <= 0) numthreads = 1; // if the number of cores cannot be determined, use 1 thread
