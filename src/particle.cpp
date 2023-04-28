@@ -97,7 +97,7 @@ void TParticle::derivs(const state_type &y, state_type &dydx, const value_type x
   double B[3], dBidxj[3][3], E[3], V; // magnetic/electric field and electric potential in lab frame
   if (q != 0 || (mu != 0 && y[7] != 0)) // if particle has charge or magnetic moment, calculate magnetic field
     field->BField(y[0],y[1],y[2], x, B, dBidxj);
-  if (q != 0) // if particle has charge caculate electric field
+  if (q != 0) // if particle has charge calculate electric field
     field->EField(y[0],y[1],y[2], x, V, E);
   EquationOfMotion(y, dydx, x, B, dBidxj, E);
 }

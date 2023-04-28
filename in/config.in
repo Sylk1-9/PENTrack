@@ -10,7 +10,7 @@ simtype 1
 simcount 10
 
 # max. simulation time [s]
-simtime 100
+simtime 10
 
 # path of file containing materials, paths are assumed to be relative to this config file's path
 materials_file materials.in
@@ -114,7 +114,7 @@ sourcemode	boxvolume
 # parameters 0	0		0		360		0.600	0.601
 
 #		x_min	x_max	y_min	y_max	z_min	z_max	(boxvolume)
-parameters	0.800	0.801	-0.001	0.001	-0.001	0.001
+parameters	1.2	1.21	-0.005	0.005	-0.005	0.005
 ###
 
 particle	neutron		# type of particle the source should create
@@ -160,21 +160,13 @@ spectrum sqrt(x)
 
 # Initial direction of particles
 # !! ==> Volume sources only! Surface sources produce velocities cosine(theta)-distributed around the surface normal
-#phi_v_min 0	# min. azimuth angle of velocity [degree]
-#phi_v_max 0	# max. azimuth angle of velocity [degree]
-#phi_v sin(x)	# differential initial distribution of azimuth angle of velocity
+phi_v_min -45	# min. azimuth angle of velocity [degree]
+phi_v_max 45	# max. azimuth angle of velocity [degree]
+phi_v cos(x)		# differential initial distribution of azimuth angle of velocity
 
-#theta_v_min 0	# min. polar angle of velocity [degree]
-#theta_v_max 0	# max. polar angle of velocity [degree]
-#theta_v sin(x)	# differential initial distribution of polar angle of velocity
-
-phi_v_min 0	# min. azimuth angle of velocity [degree]
-phi_v_max 360	# max. azimuth angle of velocity [degree]
-phi_v 1		# differential initial distribution of azimuth angle of velocity
-
-theta_v_min -45	# min. polar angle of velocity [degree]
-theta_v_max 45	# max. polar angle of velocity [degree]
-theta_v cos(x)
+theta_v_min 45	 # min. polar angle of velocity [degree]
+theta_v_max 135 # max. polar angle of velocity [degree]
+theta_v sin(x)
 #theta_v sin(x)	# differential initial distribution of polar angle of velocity
 
 
@@ -209,10 +201,29 @@ polarization 1	# initial polarization is randomly chosen, weighted by this varia
 #3Dfield 	table-file	BFieldScale	BoundaryWidth	CoordinateScale
 # # 4 COMSOL	Test.txt	1		    0		        1
 # # 4 COMSOL	Octupole_3D_shifted.txt	1		    0		        1
-4 COMSOL	octupole_field.txt	1		    0		        1
+# 4 COMSOL	fields/octupole_field.txt	1		    0		        1
 # # 5 COMSOL	3D_lfield_test.txt	1		    0		        1
-5 COMSOL	long_field_storage.txt	1		    0		        1
+# 5 COMSOL	fields/long_field_storage.txt	1		    0		        1
 # # 5 COMSOL	output.txt	1		    0		        0.001
+# 4 COMSOL	fields/octupole_field_xzswap.txt	1		    0		        1
+# 5 COMSOL	fields/long_field_storage_xzswap.txt	1		    0		        1
+# 4 COMSOL	fields/Bfield_octupole-monoseg_xmin0_xmax2000_hx10_yzmax60_hyz1.txt	1	0	1
+# 5 COMSOL	fields/Bfield_coil_xmin0_xmax2000_hx10_yzmax60_hyz1.txt			1	0	1
+4 COMSOL	fields/Bfield_octupole-monoseg_xmin0_xmax2000_hx100_yzmax60_hyz10.txt	1	0	1
+5 COMSOL	fields/Bfield_coil_xmin0_xmax2000_hx100_yzmax60_hyz10.txt		1	0	1
+
+
+## Magpy calculates the three field components from magnet magpy object provided by a .py file section.
+# Each component can depend on the spatial coordinates x, y, z and a time variable t. Field derivatives are approximated numerically using a five-point stencil method.
+# The field is only evaluated within x/y/z min/max boundaries. If a BoundaryWidth is defined, the field will be brought smoothly to zero at these boundaries.
+
+#file-type 	magpy-file	BFieldScale
+# 16 Magpy 	magpytest	1	 
+# 16 Magpy 	magpytest	1	 
+# 17 Magpy	octupole	1
+# 18 Magpy	coil		1
+# 18 Magpy 	coil-copy	0.001
+
 
 
 # Simulate magnetic field from a current I flowing from point (x1, y1, z1) to (x2, y2, z2)
@@ -306,16 +317,6 @@ polarization 1	# initial polarization is randomly chosen, weighted by this varia
 # CustomBField Bx-formula By-formula Bz-formula xmax xmin ymax ymin zmax zmin BoundaryWidth scale
 #15 CustomBField Bx By Bz 0.054 -0.054 0.054 -0.054 1.055 0.905 0 1
 
-## Magpy calculates the three field components from magnet magpy object provided by a .py file section.
-# Each component can depend on the spatial coordinates x, y, z and a time variable t. Field derivatives are approximated numerically using a five-point stencil method.
-# The field is only evaluated within x/y/z min/max boundaries. If a BoundaryWidth is defined, the field will be brought smoothly to zero at these boundaries.
-
-#file-type 	magpy-file	BFieldScale
-# 16 Magpy 	magpytest	1	 
-# 16 Magpy 	magpytest	1	 
-# 17 Magpy	octupole	1
-# 18 Magpy	coil		1
-# 18 Magpy 	coil-copy	0.001
 
 # CustomBField xmax xmin ymax ymin zmax zmin BoundaryWidth scale
 # 16 Magpy       magpytest.py 0.054 -0.054 0.054 -0.054 1.055 0.905 0 1

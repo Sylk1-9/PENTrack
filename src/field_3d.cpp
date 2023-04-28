@@ -314,9 +314,9 @@ void TabField3::CheckTab(const std::array<std::vector<double>, 3> &B, const std:
   //  calculate factors for conversion of coordinates to indexes  r = conv_rA + index * conv_rB
   std::cout << "The arrays are " << xyz[0].size() << " by " << xyz[1].size() << " by " << xyz[2].size()
 	    << " (" << B[0].size() << ", " << B[1].size() << ", " << B[2].size() << ", " << V.size() << " field components).\n";
-  std::cout << "The x values go from " << xyz[0].front() << " to " << xyz[0].back() << "\n";
-  std::cout << "The y values go from " << xyz[1].front() << " to " << xyz[1].back() << "\n";
-  std::cout << "The z values go from " << xyz[2].front() << " to " << xyz[2].back() << ".\n";
+  std::cout << "The x values go from " << xyz[0].front() << " to " << xyz[0].back() << " [m]\n";
+  std::cout << "The y values go from " << xyz[1].front() << " to " << xyz[1].back() << " [m]\n";
+  std::cout << "The z values go from " << xyz[2].front() << " to " << xyz[2].back() << " [m].\n";
 
   std::vector<double> Babs;
   std::transform( boost::make_zip_iterator(boost::make_tuple(B[0].begin(), B[1].begin(), B[2].begin())),

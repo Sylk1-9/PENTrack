@@ -12,6 +12,7 @@ using namespace std;
 
 TTracker::TTracker(TConfig& config){
     logger = CreateLogger(config);
+    // cout << "loger created" << endl;
 }
 
 void TTracker::IntegrateParticle(std::unique_ptr<TParticle>& p, const double tmax, std::map<std::string, std::string> &particleconf,

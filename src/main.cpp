@@ -45,13 +45,14 @@ void PrintBField(const boost::filesystem::path &outfile, const TFieldManager &fi
 void PrintGeometry(const boost::filesystem::path &outfile, TGeometry &geom); // do many random collisionchecks and write all collisions to outfile
 void PrintMROutAngle(TConfig &config, const boost::filesystem::path &outpath); // produce a 3d table of the MR-DRP for each outgoing solid angle
 void PrintMRThetaIEnergy(TConfig &config, const boost::filesystem::path &outpath); // produce a 3d table of the total (integrated) MR-DRP for a given incident angle and energy
-
+void SimulateParticles(int nparticle, TParticleSource* source, TMCGenerator* mc, TGeometry* geom, TFieldManager* field, TConfig *configin, TTracker *t,  map<string, map<int, int>>& ID_counter, int& ntotalsteps, progress_display& progress); // compute particles simulation on one thread
 
 double SimTime = 1500.; ///< max. simulation time
 int simcount = 1; ///< number of particles for MC simulation (read from config)
 simType simtype = PARTICLE; ///< type of particle which shall be simulated (read from config)
 int secondaries = 1; ///< should secondary particles be simulated? (read from config)
 uint64_t seed = 0; ///< random seed used for random-number generator (generated from high-resolution clock)
+int numthreads = 1; ///< number of threads for multithreading
 
 /**
  * Catch signals.
@@ -64,35 +65,6 @@ uint64_t seed = 0; ///< random seed used for random-number generator (generated 
  */
 void catch_alarm (int sig){
   quit.store(true);
-}
-
-
-
-///////////////////////////// multithreading
-void SimulateParticles(int start, int end, int simcount, TParticleSource* source, TMCGenerator* mc, TGeometry* geom, TFieldManager* field, TConfig *configin, map<string, map<int, int>>& ID_counter, int& ntotalsteps, progress_display& progress) {
-  TTracker t(*configin);
-  cout << " Thread " << std::this_thread::get_id() << " assigned to particles " << start << " to " << end << endl; 
-  for (int iMC = start; iMC <= end; iMC++) {
-    if (quit.load())
-      break;
-    unique_ptr<TParticle> p(source->CreateParticle(*mc, *geom, *field));
-    t.IntegrateParticle(p, SimTime, (*configin)[p->GetName()], *mc, *geom, *field); // integrate particle
-    ID_counter[p->GetName()][p->GetStopID()]++; // increment counters
-    ntotalsteps += p->GetNumberOfSteps();
-
-    if (secondaries == 1) {
-      for (auto& i: p->GetSecondaryParticles()) {
-        if (quit.load())
-          break;
-
-        t.IntegrateParticle(i, SimTime, (*configin)[i->GetName()], *mc, *geom, *field); // integrate secondary particles
-        ID_counter[i->GetName()][i->GetStopID()]++;
-        ntotalsteps += i->GetNumberOfSteps();
-      }
-    }
-
-    ++progress;
-  }
 }
 
 
@@ -188,48 +160,26 @@ int main(int argc, char **argv){
   cout << "\n";
   map<string, map<int, int> > ID_counter; // 2D map to store number of each ID for each particle type
 
-  // if (simtype == PARTICLE){ // if proton or neutron shall be simulated
-  //   cout << "Simulating " << simcount << " " << source->GetParticleName() << "s...\n";
-  //   progress_display progress(simcount);
-  //   TTracker t(configin);
-  //   for (int iMC = 1; iMC <= simcount; iMC++)
-  //     {
-  // 	if (quit.load())
-  // 	  break;
-
-  // 	unique_ptr<TParticle> p(source->CreateParticle(mc, geom, field));
-  // 	t.IntegrateParticle(p, SimTime, configin[p->GetName()], mc, geom, field); // integrate particle
-  // 	ID_counter[p->GetName()][p->GetStopID()]++; // increment counters
-  // 	ntotalsteps += p->GetNumberOfSteps();
-
-  // 	if (secondaries == 1){
-  // 	  for (auto& i: p->GetSecondaryParticles()){
-  // 	    if (quit.load())
-  // 	      break;
-
-  // 	    t.IntegrateParticle(i, SimTime, configin[i->GetName()], mc, geom, field); // integrate secondary particles
-  // 	    ID_counter[i->GetName()][i->GetStopID()]++;
-  // 	    ntotalsteps += i->GetNumberOfSteps();
-  // 	  }
-  // 	}
-
-  // 	++progress;
-  //     }
-  // }
-
-
   if (simtype == PARTICLE) { // if proton or neutron shall be simulated
     cout << "Simulating " << simcount << " " << source->GetParticleName() << "s...\n";
-    int num_threads = std::thread::hardware_concurrency() - 1; // get the number of available cores
-    cout << "Number of threads = " << num_threads << endl;
-    if (num_threads <= 0) num_threads = 1; // if the number of cores cannot be determined, use 1 thread
+    if (numthreads <= 0) numthreads = 1; // if the number of cores cannot be determined, use 1 thread
+    int maxnumthread = std::thread::hardware_concurrency();
+    if (numthreads > maxnumthread) numthreads = maxnumthread; // if number of core exceeds hardware
+    cout << "Number of threads = " << numthreads << endl;
     vector<thread> threads;
-    int chunk_size = simcount / num_threads; // divide the iterations into equal-sized chunks
+    int chunk_size = simcount / numthreads; // divide the iterations into equal-sized chunks
+    int chunk_rest = simcount % numthreads;
+    TTracker t(configin);
     progress_display progress(simcount);
-    for (int i = 0; i < num_threads; i++) {
-      int start = i * chunk_size + 1;
-      int end = (i == num_threads - 1) ? simcount : (i + 1) * chunk_size;
-      threads.emplace_back(SimulateParticles, start, end, simcount, source.get(), &mc, &geom, &field, &configin, std::ref(ID_counter), std::ref(ntotalsteps), std::ref(progress));
+    cout << '\n';
+    for (int i = 0; i < numthreads; i++) {
+      int nparticle = chunk_size;
+      if(chunk_rest != 0){
+	nparticle++;
+	chunk_rest--;
+      }
+      
+      threads.emplace_back(SimulateParticles, nparticle, source.get(), &mc, &geom, &field, &configin, &t, std::ref(ID_counter), std::ref(ntotalsteps), std::ref(progress));
     }
     quit.store(false); // set the quit flag to true to stop all threads
     for (auto& th: threads) {
@@ -281,6 +231,7 @@ TConfig ConfigInit(int argc, char **argv){
   seed = 0;
   simtype = PARTICLE;
   simcount = 1;
+  numthreads = 1;
   /*end default values*/
 
   if(argc>1) // if user supplied at least 1 arg (jobnumber)
@@ -294,6 +245,8 @@ TConfig ConfigInit(int argc, char **argv){
     outpath = boost::filesystem::absolute(argv[3]); // set the output path pointer
   if (argc>4) // if user supplied 4 or more args (jobnumber, configpath, outpath, seed)
     istringstream(argv[4]) >> seed;
+  if (argc>5) // if user supplied 4 or more args (jobnumber, configpath, outpath, seed)
+    istringstream(argv[5]) >> numthreads;
 	
   TConfig config(configpath.native());
   config.convert(configpath.native());
@@ -603,4 +556,42 @@ void PrintGeometry(const boost::filesystem::path &outfile, TGeometry &geom){
   // print some time statistics
   printf("Wrote %u points in %fms (%fms per point) into %s\n",count,colltimer/1e6,colltimer/count/1e6, outfile.c_str());
   f.close();	
+}
+
+
+/**
+ * Simulate particles
+ *
+ * Feed to a thread
+ *
+ * @param start particle number start number
+ * @param end particle number start number end
+ */
+void SimulateParticles(int nparticle, TParticleSource* source, TMCGenerator* mc, TGeometry* geom, TFieldManager* field, TConfig *configin, TTracker *t,  map<string, map<int, int>>& ID_counter, int& ntotalsteps, progress_display& progress) {
+
+  std::ostringstream oss;
+  oss << std::this_thread::get_id();
+  printf("Thread %s assigned to %i %s(s) \n", oss.str().c_str(), nparticle, source->GetParticleName().c_str());
+
+  for (int iMC = 0; iMC < nparticle; iMC++) {
+    if (quit.load())
+      break;
+    unique_ptr<TParticle> p(source->CreateParticle(*mc, *geom, *field));
+    (*t).IntegrateParticle(p, SimTime, (*configin)[p->GetName()], *mc, *geom, *field); // integrate particle
+    ID_counter[p->GetName()][p->GetStopID()]++; // increment counters
+    ntotalsteps += p->GetNumberOfSteps();
+
+    if (secondaries == 1) {
+      for (auto& i: p->GetSecondaryParticles()) {
+        if (quit.load())
+          break;
+
+        (*t).IntegrateParticle(i, SimTime, (*configin)[i->GetName()], *mc, *geom, *field); // integrate secondary particles
+        ID_counter[i->GetName()][i->GetStopID()]++;
+        ntotalsteps += i->GetNumberOfSteps();
+      }
+    }
+
+    ++progress;
+  }
 }
