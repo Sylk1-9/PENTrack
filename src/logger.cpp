@@ -1,10 +1,15 @@
 #include "logger.h"
 
+#include <atomic>
 #include <sstream>
 #include <algorithm>
 #include <iterator>
 
+#include <thread>
 #include <mutex>
+
+#include <vector>
+#include <memory>
 
 using namespace std;
 
@@ -309,8 +314,135 @@ void TLogger::Log(const std::string &particlename, const std::string &suffix, co
       vars.push_back(EvalFormula(config, *var, variables));
   }
 
+  // std::lock_guard<std::mutex> lock_log(log_mutex);
   DoLog(particlename, suffix, titles, vars);
 }
+
+
+// std::lock_guard<std::mutex> lock_copy(copy_mutex);
+
+
+void TTextLogger::DoLog(const std::string &particlename, const std::string &suffix, const std::vector<std::string> &titles, const std::vector<double> &vars){
+
+  // std::cout << "\nThread " << std::this_thread::get_id() <<  " Do loggings " << std::endl << std::flush;
+  std::ostringstream oss;
+  oss << std::this_thread::get_id();
+  printf("Thread %s Do log \n", oss.str().c_str());
+
+  // std::lock_guard<std::mutex> lock_log(mutexes[particlename + suffix]);
+  std::lock_guard<std::mutex> lock_open(logstreams_mutex);
+  std::ofstream &file = logstreams[particlename + suffix];
+
+  if (!file.is_open()){
+    std::ostringstream filename;
+    filename << std::setw(12) << std::setfill('0') << jobnumber << std::setw(0) << particlename << suffix << ".out";
+    boost::filesystem::path outfile = outpath / filename.str();
+      
+    std::cout << "Thread " << std::this_thread::get_id() <<  " creating " << outfile << std::endl <<  std::flush;
+      
+    file.open(outfile.c_str());
+    if(!file.is_open())
+      {
+	throw std::runtime_error("Could not open " + outfile.native());
+      }
+
+      
+    file << std::setprecision(std::numeric_limits<double>::digits10) << std::flush;
+    copy(titles.begin(), titles.end(), ostream_iterator<string>(file, " "));
+    file << '\n' << std::flush;
+    
+  }
+
+  copy(vars.begin(), vars.end(), ostream_iterator<double>(file, " "));
+  file << '\n' << std::flush;
+
+  printf("Thread %s End log \n", oss.str().c_str());
+
+    
+}
+
+
+
+TTextLogger::~TTextLogger(){
+  std::ostringstream oss;
+  oss << std::this_thread::get_id();
+  printf("Thread %s closing files \n", oss.str().c_str());
+
+  // std::lock_guard<std::mutex> lock_stream(logstreams_mutex);
+  // for (auto file : file_container) {
+  //   file.close();
+  // }
+  for (auto &s: logstreams){if (s.second.is_open()) {s.second.close();}}
+}
+
+
+
+
+// void TTextLogger::DoLog(const std::string &particlename, const std::string &suffix, const std::vector<std::string> &titles, const std::vector<double> &vars){
+
+//   // Lock the logstreams_mutex before accessing the logstreams map
+//   std::lock_guard<std::mutex> log_lock(logstreams_mutex);
+    
+//   // Get the ofstream object for this particular thread
+//   ofstream &file = logstreams[particlename + suffix];
+
+//   // Check if the file is already open
+//   if (!file.is_open()){
+//     // If not, create a new filename and open the file
+//     std::ostringstream filename;
+//     filename << std::setw(12) << std::setfill('0') << jobnumber << std::setw(0) << particlename << suffix << ".out";
+//     boost::filesystem::path outfile = outpath / filename.str();
+    
+//     file.open(outfile.c_str());
+//     if(!file.is_open()){
+//       throw std::runtime_error("Could not open " + outfile.native());
+//     }
+
+//     // Write the titles to the file if it is newly created
+//     file << std::setprecision(std::numeric_limits<double>::digits10);
+//     copy(titles.begin(), titles.end(), ostream_iterator<string>(file, " "));
+//     file << '\n';
+//   }
+  
+//   // Write the vars to the file
+//   copy(vars.begin(), vars.end(), ostream_iterator<double>(file, " "));
+//   file << '\n';
+// }
+
+
+
+
+
+// void TTextLogger::DoLog(const std::string &particlename, const std::string &suffix, const std::vector<std::string> &titles, const std::vector<double> &vars){
+
+//   // Lock the mutex before accessing the text file
+//   std::lock_guard<std::mutex> lock(text_mutex);
+    
+//   // Get the ofstream object for this particular thread
+//   ofstream &file = logstreams[particlename + suffix];
+
+//   // Check if the file is already open
+//   if (!file.is_open()){
+//     // If not, create a new filename and open the file
+//     std::ostringstream filename;
+//     filename << std::setw(12) << std::setfill('0') << jobnumber << std::setw(0) << particlename << suffix << ".out";
+//     boost::filesystem::path outfile = outpath / filename.str();
+    
+//     file.open(outfile.c_str());
+//     if(!file.is_open()){
+//       throw std::runtime_error("Could not open " + outfile.native());
+//     }
+
+//     // Write the titles to the file if it is newly created
+//     file << std::setprecision(std::numeric_limits<double>::digits10);
+//     copy(titles.begin(), titles.end(), ostream_iterator<string>(file, " "));
+//     file << '\n';
+//   }
+  
+//   // Write the vars to the file
+//   copy(vars.begin(), vars.end(), ostream_iterator<double>(file, " "));
+//   file << '\n';
+// }
 
 
 
@@ -342,35 +474,6 @@ void TLogger::Log(const std::string &particlename, const std::string &suffix, co
 //   file << '\n';
 // }
 
-void TTextLogger::DoLog(const std::string &particlename, const std::string &suffix, const std::vector<std::string> &titles, const std::vector<double> &vars){
-  // Lock the mutex before accessing the text file
-  std::lock_guard<std::mutex> lock(text_mutex);
-    
-  // Get the ofstream object for this particular thread
-  ofstream &file = logstreams[particlename + suffix];
-
-  // Check if the file is already open
-  if (!file.is_open()){
-    // If not, create a new filename and open the file
-    std::ostringstream filename;
-    filename << std::setw(12) << std::setfill('0') << jobnumber << std::setw(0) << particlename << suffix << ".out";
-    boost::filesystem::path outfile = outpath / filename.str();
-    file.open(outfile.c_str());
-    if(!file.is_open()){
-      throw std::runtime_error("Could not open " + outfile.native());
-    }
-
-    // Write the titles to the file if it is newly created
-    file << std::setprecision(std::numeric_limits<double>::digits10);
-    copy(titles.begin(), titles.end(), ostream_iterator<string>(file, " "));
-    file << '\n';
-  }
-
-  // Write the vars to the file
-  copy(vars.begin(), vars.end(), ostream_iterator<double>(file, " "));
-  file << '\n';
-}
-
 
 #ifdef USEROOT
 
@@ -397,28 +500,149 @@ TROOTLogger::TROOTLogger(TConfig& aconfig){
   ROOTfile->cd();
 }
 
-void TROOTLogger::DoLog(const std::string &particlename, const std::string &suffix, const std::vector<std::string> &titles, const std::vector<double> &vars){
 
-  // Lock the mutex before accessing the ROOT library
-  std::lock_guard<std::mutex> lock(root_mutex);
-    
-  string name = particlename + suffix;
+
+
+void TROOTLogger::DoLog(const std::string& particlename, const std::string& suffix, const std::vector<std::string>& titles, const std::vector<double>& vars) {
+  const std::string name = particlename + suffix;
+  
+  // Check if tree already exists
   TNtupleD* tree = static_cast<TNtupleD*>(ROOTfile->Get(name.c_str()));
-
-  if (not tree){
-    ostringstream varliststr;
-    copy(titles.begin(), titles.end(), ostream_iterator<string>(varliststr, ":"));
-    string varlist = varliststr.str();
-    varlist.pop_back();
-    tree = new TNtupleD(name.c_str(), name.c_str(), varlist.c_str());
+  
+  if (!tree) {
+    // Create new tree if it doesn't exist
+    std::lock_guard<std::mutex> lock(root_mutex);
+    tree = new TNtupleD(name.c_str(), name.c_str(), GetVarList(titles).c_str());
+    ROOTfile->Add(tree);
+    trees.push_back(std::unique_ptr<TNtupleD>(tree));
   }
+  
+  // Fill the tree with data
+  std::lock_guard<std::mutex> lock(tree_mutex);
   tree->Fill(&vars[0]);
 }
 
-TROOTLogger::~TROOTLogger(){
+TROOTLogger::~TROOTLogger() {
+  std::cout << "\nWriting root files & deleting them" <<std::flush;
   ROOTfile->Write();
-  delete ROOTfile;
+
+  // for (auto tree : trees) {
+  //   delete tree;
+  // }
+  // delete ROOTfile;
+
 }
+
+
+
+//////////////////
+
+
+// void TROOTLogger::DoLog(const std::string &particlename, const std::string &suffix, const std::vector<std::string> &titles, const std::vector<double> &vars){
+
+//   string name = particlename + suffix;
+
+//   // Lock the mutex before accessing the ROOT file
+//   std::lock_guard<std::mutex> lock_root(root_mutex);
+
+//   TNtupleD* tree = static_cast<TNtupleD*>(ROOTfile->Get(name.c_str()));
+
+//   if (not tree){
+//     std::cout << "\nThread " << std::this_thread::get_id() <<  " creating tree " << name.c_str() << std::endl << std::flush;
+
+//     ostringstream varliststr;
+//     copy(titles.begin(), titles.end(), ostream_iterator<string>(varliststr, ":"));
+//     string varlist = varliststr.str();
+//     varlist.pop_back();
+
+//     tree = new TNtupleD(name.c_str(), name.c_str(), varlist.c_str());
+
+//     // Add the tree to the container
+//     tree_container.push_back(tree);
+
+//     // Lock the mutex before adding a new TNtupleD object
+//     // std::lock_guard<std::mutex> lock_files(file_mutex);
+
+//     ROOTfile->Add(tree);
+//   }
+
+//   // Lock the mutex before filling the TNtupleD object
+//   // std::lock_guard<std::mutex> lock_tree(tree_mutex);
+
+//   tree->Fill(&vars[0]);
+// }
+
+
+// TROOTLogger::~TROOTLogger(){
+//   std::cout << "\nThread " << std::this_thread::get_id() <<  " writing root files & deleting it " << std::endl << std::flush;
+
+//   ROOTfile->Write();
+//   for (auto tree : tree_container) {
+//     delete tree;
+//   }
+//   delete ROOTfile;
+// }
+
+
+/////////////////////////////////////////////////////////
+
+
+
+
+// void TROOTLogger::DoLog(const std::string &particlename, const std::string &suffix, const std::vector<std::string> &titles, const std::vector<double> &vars){
+
+//   string name = particlename + suffix;
+
+//   // Lock the mutex before accessing the ROOT file
+//   std::lock_guard<std::mutex> lock_root(root_mutex);
+
+//   if (ROOTfile != nullptr) {
+//     TNtupleD* tree = static_cast<TNtupleD*>(ROOTfile->Get(name.c_str()));
+
+//     if (not tree){
+//       ostringstream varliststr;
+//       copy(titles.begin(), titles.end(), ostream_iterator<string>(varliststr, ":"));
+//       string varlist = varliststr.str();
+//       varlist.pop_back();
+
+//       tree = new TNtupleD(name.c_str(), name.c_str(), varlist.c_str());
+
+//       // Lock the mutex before adding a new TNtupleD object
+//       std::lock_guard<std::mutex> lock_files(file_mutex);
+
+//       ROOTfile->Add(tree);
+//     }
+
+//     // Lock the mutex before filling the TNtupleD object
+//     std::lock_guard<std::mutex> lock_tree(tree_mutex);
+
+//     tree->Fill(&vars[0]);
+//   }
+// }
+
+// void TROOTLogger::DoLog(const std::string &particlename, const std::string &suffix, const std::vector<std::string> &titles, const std::vector<double> &vars){
+
+//   // Lock the mutex before accessing the ROOT library
+//   // std::lock_guard<std::mutex> lock(root_mutex);
+    
+//   string name = particlename + suffix;
+//   TNtupleD* tree = static_cast<TNtupleD*>(ROOTfile->Get(name.c_str()));
+
+//   if (not tree){
+//     ostringstream varliststr;
+//     copy(titles.begin(), titles.end(), ostream_iterator<string>(varliststr, ":"));
+//     string varlist = varliststr.str();
+//     varlist.pop_back();
+//     tree = new TNtupleD(name.c_str(), name.c_str(), varlist.c_str());
+//   }
+//   tree->Fill(&vars[0]);
+// }
+
+
+
+
+
+
 
 #endif
 
@@ -485,6 +709,7 @@ void THDF5Logger::DoLog(const std::string &particlename, const std::string &suff
       field_names[i] = titles[i].c_str();
       field_types[i] = H5T_NATIVE_DOUBLE;
     }
+
     auto ret = H5TBmake_table(name.c_str(), HDF5file, name.c_str(), Nfields, 1, Nfields*sizeof(double), field_names, offsets, field_types, 10, nullptr, 1, vars.data());
     if (ret < 0) throw std::runtime_error("Could not create table " + name);
   }
@@ -495,7 +720,6 @@ void THDF5Logger::DoLog(const std::string &particlename, const std::string &suff
     if (ret < 0) throw std::runtime_error("Could not write data to table " + name);
   }
 
-  // The mutex will be automatically unlocked when the lock goes out of scope
 }
 
 

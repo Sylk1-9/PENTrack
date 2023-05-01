@@ -28,6 +28,7 @@
 class TLogger {
 protected:
   TConfig config; ///< configuration parameters read from config files
+  // std::mutex log_mutex;
 
   /**
    * Evaluates the logvars and corresponding filters and formulas set in the config file and calls DoLog
@@ -141,7 +142,12 @@ public:
 class TTextLogger: public TLogger {
 private:
   std::map<std::string, std::ofstream> logstreams; ///< List of file streams used for logging
-  std::mutex text_mutex;
+  std::mutex logstreams_mutex;
+  // std::mutex open_mutex;
+  // std::map<std::string, std::mutex> mutexes;
+  // std::mutex ofstream_mutex;
+  // std::mutex mutex;
+  // std::mutex copy_mutex;
 
 
   /**
@@ -164,7 +170,11 @@ public:
   /**
    * Destructor, closes all opened file streams
    */
-  ~TTextLogger() final { for (auto &s: logstreams){ s.second.close(); } };
+  ~TTextLogger() final;
+  // ~TTextLogger() final {
+  //   std::lock_guard<std::mutex> lock_stream(ofstream_mutex);
+  //   for (auto &s: logstreams){ s.second.close(); }
+  // }
 };
 
 #ifdef USEROOT
@@ -173,8 +183,26 @@ public:
  */
 class TROOTLogger: public TLogger {
 private:
-  TFile* ROOTfile; ///< ROOT file to print to
+  
+  // TFile* ROOTfile; ///< ROOT file to print to
+  // std::mutex root_mutex;
+  // // std::mutex file_mutex;
+  // // std::mutex tree_mutex;
+  // // Define a container to hold the TNtupleD objects
+  // std::vector<TNtupleD*> tree_container;
+  TFile* ROOTfile;
   std::mutex root_mutex;
+  std::mutex tree_mutex;
+  std::vector<std::unique_ptr<TNtupleD>> trees;
+
+  std::string GetVarList(const std::vector<std::string>& titles) const {
+    std::string varlist;
+    for (const auto& title : titles) {
+      varlist += title + ":";
+    }
+    varlist.pop_back();
+    return varlist;
+  }
 
 
   /**
@@ -186,6 +214,7 @@ private:
    * @param vars List of variables to be logged
    */
   void DoLog(const std::string &particlename, const std::string &suffix, const std::vector<std::string> &titles, const std::vector<double> &vars) override;
+  
 public:
   /**
    * Constructor, reads relevant configuration parameters from config and opens ROOT file
@@ -198,6 +227,7 @@ public:
    * Destructor, writes ROOT trees to file and closes it
    */
   ~TROOTLogger() final;
+
 };
 #endif
 
@@ -206,6 +236,7 @@ class THDF5Logger: public TLogger {
 private:
   hid_t HDF5file;
   std::mutex hdf5_mutex;
+  std::mutex hdf5w_mutex;
 
 
   /**

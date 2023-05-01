@@ -7,10 +7,10 @@
 simtype 1
 
 # number of primary particles to be simulated
-simcount 5
+simcount 10
 
 # max. simulation time [s]
-simtime 5
+simtime 10
 
 # path of file containing materials, paths are assumed to be relative to this config file's path
 materials_file materials.in
@@ -32,8 +32,9 @@ secondaries 1
 #MRThetaIEnergy 54 2.5E-9 20E-9 0 1.570796327 0 1000
 
 #Format used for logging output, can be "txt" for raw text, "ROOT" for ROOT trees and files, and "HDF5" for HDF5 files
-logtype txt 
-# logtype HDF5
+# logtype ROOT
+# logtype txt 
+logtype HDF5
 
 
 [GEOMETRY]
@@ -207,10 +208,10 @@ polarization 1	# initial polarization is randomly chosen, weighted by this varia
 # # 5 COMSOL	output.txt	1		    0		        0.001
 # 4 COMSOL	fields/octupole_field_xzswap.txt	1		    0		        1
 # 5 COMSOL	fields/long_field_storage_xzswap.txt	1		    0		        1
-# 4 COMSOL	fields/Bfield_octupole-monoseg_xmin0_xmax2000_hx10_yzmax60_hyz1.txt	1	0	1
-# 5 COMSOL	fields/Bfield_coil_xmin0_xmax2000_hx10_yzmax60_hyz1.txt			1	0	1
-4 COMSOL	fields/Bfield_octupole-monoseg_xmin0_xmax2000_hx100_yzmax60_hyz10.txt	1	0	1
-5 COMSOL	fields/Bfield_coil_xmin0_xmax2000_hx100_yzmax60_hyz10.txt		1	0	1
+4 COMSOL	fields/Bfield_octupole-monoseg_xmin0_xmax2000_hx10_yzmax60_hyz1.txt	1	0	1
+5 COMSOL	fields/Bfield_coil_xmin0_xmax2000_hx10_yzmax60_hyz1.txt			1	0	1
+# 4 COMSOL	fields/Bfield_octupole-monoseg_xmin0_xmax2000_hx100_yzmax60_hyz10.txt	1	0	1
+# 5 COMSOL	fields/Bfield_coil_xmin0_xmax2000_hx100_yzmax60_hyz10.txt		1	0	1
 
 
 ## Magpy calculates the three field components from magnet magpy object provided by a .py file section.
