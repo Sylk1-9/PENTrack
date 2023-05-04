@@ -21,6 +21,11 @@
 #include <boost/format.hpp>
 
 #include <thread>
+
+// #include <iostream>
+// #include <boost/asio.hpp>
+// #include <boost/thread.hpp>
+
 // #include <mutex>
 // #include <atomic>
 // #include <boost/progress.hpp>
@@ -34,6 +39,7 @@
 #include "source.h"
 #include "mc.h" 
 #include "microroughness.h"
+#include "threadpool.h"
 
 
 using namespace std;
@@ -190,34 +196,52 @@ int main(int argc, char **argv){
   //     }
   // }
 
-  
+
+
+  // if (simtype == PARTICLE) { // if proton or neutron shall be simulated
+  //   cout << "Simulating " << simcount << " " << source->GetParticleName() << "s...\n";
+  //   if (numthreads <= 0) numthreads = 1; // if the number of cores cannot be determined, use 1 thread
+  //   int maxnumthread = std::thread::hardware_concurrency();
+  //   if (numthreads > maxnumthread) numthreads = maxnumthread; // if number of core exceeds hardware
+  //   cout << "Number of threads = " << numthreads << endl;
+  //   vector<thread> threads;
+  //   int chunk_size = simcount / numthreads; // divide the iterations into equal-sized chunks
+  //   int chunk_rest = simcount % numthreads;
+  //   TTracker t(configin);
+  //   progress_display progress(simcount);
+  //   cout << '\n';
+  //   for (int i = 0; i < numthreads; i++) {
+  //     int nparticle = chunk_size;
+  //     if(chunk_rest != 0){
+  // 	nparticle++;
+  // 	chunk_rest--;
+  //     }
+      
+  //     threads.emplace_back(SimulateParticles, nparticle, source.get(), &mc, &geom, &field, &configin, &t, std::ref(ID_counter), std::ref(ntotalsteps), std::ref(progress));
+  //   }
+  //   quit.store(false); // set the quit flag to true to stop all threads
+  //   for (auto& th: threads) {
+  //     if (th.joinable())
+  // 	th.join();
+  //   }
+
+    ///////////////////////////
+
+  TTracker tracker(configin);
   if (simtype == PARTICLE) { // if proton or neutron shall be simulated
     cout << "Simulating " << simcount << " " << source->GetParticleName() << "s...\n";
-    if (numthreads <= 0) numthreads = 1; // if the number of cores cannot be determined, use 1 thread
-    int maxnumthread = std::thread::hardware_concurrency();
-    if (numthreads > maxnumthread) numthreads = maxnumthread; // if number of core exceeds hardware
-    cout << "Number of threads = " << numthreads << endl;
-    vector<thread> threads;
-    int chunk_size = simcount / numthreads; // divide the iterations into equal-sized chunks
-    int chunk_rest = simcount % numthreads;
-    TTracker t(configin);
+    ThreadPool thread_pool;
+    thread_pool.Start(numthreads);
     progress_display progress(simcount);
-    cout << '\n';
-    for (int i = 0; i < numthreads; i++) {
-      int nparticle = chunk_size;
-      if(chunk_rest != 0){
-	nparticle++;
-	chunk_rest--;
-      }
-      
-      threads.emplace_back(SimulateParticles, nparticle, source.get(), &mc, &geom, &field, &configin, &t, std::ref(ID_counter), std::ref(ntotalsteps), std::ref(progress));
+    for (int iMC = 0; iMC < simcount; ++iMC) {
+      thread_pool.QueueJob(std::bind(SimulateParticles, 1, source.get(), &mc, &geom, &field, &configin, &tracker, std::ref(ID_counter), std::ref(ntotalsteps), std::ref(progress)));
     }
-    quit.store(false); // set the quit flag to true to stop all threads
-    for (auto& th: threads) {
-      if (th.joinable())
-	th.join();
+
+    while (thread_pool.Busy()) {
+      std::this_thread::yield();
     }
-  }
+    thread_pool.Stop();   
+  }    
   else{
     printf("\nDon't know simtype %i! Exiting...\n",simtype);
     exit(-1);
@@ -600,9 +624,9 @@ void PrintGeometry(const boost::filesystem::path &outfile, TGeometry &geom){
  */
 void SimulateParticles(int nparticle, TParticleSource* source, TMCGenerator* mc, TGeometry* geom, TFieldManager* field, TConfig *configin, TTracker *t,  map<string, map<int, int>>& ID_counter, int& ntotalsteps, progress_display& progress) {
 
-  std::ostringstream oss;
-  oss << std::this_thread::get_id();
-  printf("Thread %s assigned to %i %s(s) \n", oss.str().c_str(), nparticle, source->GetParticleName().c_str());
+  // std::ostringstream oss;
+  // oss << std::this_thread::get_id();
+  // printf("Thread %s assigned to %i %s(s) \n", oss.str().c_str(), nparticle, source->GetParticleName().c_str());
 
   for (int iMC = 0; iMC < nparticle; iMC++) {
     if (quit.load())

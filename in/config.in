@@ -7,10 +7,10 @@
 simtype 1
 
 # number of primary particles to be simulated
-simcount 10
+simcount 100
 
 # max. simulation time [s]
-simtime 10
+simtime 5000
 
 # path of file containing materials, paths are assumed to be relative to this config file's path
 materials_file materials.in
@@ -58,30 +58,6 @@ logtype HDF5
 9	CAD/store/SF_quartztube_store.stl		UCNdet
 10	CAD/store/SF_quartztube1_store.stl		UCNdet
 11	CAD/store/SF_seperation_foil_store.stl		UCNdet
-
-#2	spinflip_volume.STL		SpinFlipper
-# 2	octupole.stl			UCNdet
-#3	detector_zclean.stl			UCNdet			200-10000
-#3	polarizer.STL			FePolarizerOnAl
-#4	storagevolume_60degfeeder_bellow.STL		PolishedSteel
-#5	guide_experiment.STL		PolishedSteel
-#6	guide_source.STL		PolishedSteel
-#7	guide_detector.STL		PolishedSteel
-#8	switch.STL			PolishedSteel
-#9	valve.STL			PolishedSteel		0-200 500-1000
-#10	switch_flap_source.STL	PolishedSteel		200-1000
-#11	switch_flap_middle.STL	PolishedSteel		0-200 500-1000
-#12	switch_flap_detector.STL	PolishedSteel		0-500
-#13	foil_detector.STL		Al
-#14	UCNdet.STL			UCNdet
-#15	protdet.STL			Al
-#16	absorber_up.STL		PE			500-560
-#17	absorber_middle.STL		PE			0-500 520-540 560-1000
-#18	absorber_down.STL		PE			0-520 540-1000
-#19	source.STL			UCNdet			200-1000
-#20	source.STL			PolishedSteel		0-200
-#21	PENtrack_Test.STL				PolishedSteel
-
 
 
 
@@ -193,25 +169,17 @@ polarization 1	# initial polarization is randomly chosen, weighted by this varia
 # Note that rapidly changing fields might be missed by the trajectory integrator making too large time steps
 ##################################################
 #2Dfield 	table-file	BFieldScale	EFieldScale	CoordinateScale
-#1 OPERA2D 	42_0063_PF80-24Coils-SameCoilDist-WP3fieldvalSI.tab.bz2	magnetRamp	1   1  ### this table file has SI units, the magnetic field is scaled with the 'magnetRamp' formula defined in the FORMULAS section below.
-#1 OPERA2D 	rad_field_tauspect_fine1.tab 1	1   0 
 
-#3Dfield 	table-file	BFieldScale	EFieldScale	BoundaryWidth	CoordinateScale
-#3 OPERA3D	3Dtable.tab	1		    1		    0		        1
 
 #3Dfield 	table-file	BFieldScale	BoundaryWidth	CoordinateScale
-# # 4 COMSOL	Test.txt	1		    0		        1
-# # 4 COMSOL	Octupole_3D_shifted.txt	1		    0		        1
-# 4 COMSOL	fields/octupole_field.txt	1		    0		        1
-# # 5 COMSOL	3D_lfield_test.txt	1		    0		        1
-# 5 COMSOL	fields/long_field_storage.txt	1		    0		        1
-# # 5 COMSOL	output.txt	1		    0		        0.001
 # 4 COMSOL	fields/octupole_field_xzswap.txt	1		    0		        1
 # 5 COMSOL	fields/long_field_storage_xzswap.txt	1		    0		        1
-4 COMSOL	fields/Bfield_octupole-monoseg_xmin0_xmax2000_hx10_yzmax60_hyz1.txt	1	0	1
-5 COMSOL	fields/Bfield_coil_xmin0_xmax2000_hx10_yzmax60_hyz1.txt			1	0	1
-# 4 COMSOL	fields/Bfield_octupole-monoseg_xmin0_xmax2000_hx100_yzmax60_hyz10.txt	1	0	1
-# 5 COMSOL	fields/Bfield_coil_xmin0_xmax2000_hx100_yzmax60_hyz10.txt		1	0	1
+# 4 COMSOL	fields/magpy/Bfield_octupole-monoseg-cyl_xmin-1200_xmax2800_hx50_yzmax60_hyz5.txt	1	0	1
+# 5 COMSOL	fields/magpy/Bfield_coil_xmin-1200_xmax2800_hx50_yzmax60_hyz5.txt			1	0	1
+# 4 COMSOL	fields/magpy/Bfield_octupole-monoseg-tra_xmin0_xmax2000_hx10_yzmax60_hyz1.txt	1	0	1
+# 5 COMSOL	fields/magpy/Bfield_coil_xmin0_xmax2000_hx10_yzmax60_hyz1.txt			1	0	1
+4 COMSOL	fields/magpy/Bfield_octupole-monoseg-tra_xmin0_xmax2000_hx100_yzmax60_hyz10.txt	1	0	1
+5 COMSOL	fields/magpy/Bfield_coil_xmin0_xmax2000_hx100_yzmax60_hyz10.txt			1	0	1
 
 
 ## Magpy calculates the three field components from magnet magpy object provided by a .py file section.

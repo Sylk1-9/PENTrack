@@ -319,45 +319,55 @@ void TLogger::Log(const std::string &particlename, const std::string &suffix, co
 }
 
 
-// std::lock_guard<std::mutex> lock_copy(copy_mutex);
-
 
 void TTextLogger::DoLog(const std::string &particlename, const std::string &suffix, const std::vector<std::string> &titles, const std::vector<double> &vars){
 
   // std::cout << "\nThread " << std::this_thread::get_id() <<  " Do loggings " << std::endl << std::flush;
-  std::ostringstream oss;
-  oss << std::this_thread::get_id();
-  printf("Thread %s Do log \n", oss.str().c_str());
+  // std::ostringstream oss;
+  // oss << std::this_thread::get_id();
+  // printf("Thread %s Do log \n", oss.str().c_str());
 
   // std::lock_guard<std::mutex> lock_log(mutexes[particlename + suffix]);
   std::lock_guard<std::mutex> lock_open(logstreams_mutex);
-  std::ofstream &file = logstreams[particlename + suffix];
 
-  if (!file.is_open()){
-    std::ostringstream filename;
-    filename << std::setw(12) << std::setfill('0') << jobnumber << std::setw(0) << particlename << suffix << ".out";
-    boost::filesystem::path outfile = outpath / filename.str();
+  try {
+    std::ofstream &file = logstreams[particlename + suffix];
+
+    if (!file.is_open()){
+      std::ostringstream filename;
+      filename << std::setw(12) << std::setfill('0') << jobnumber << std::setw(0) << particlename << suffix << ".out";
+      boost::filesystem::path outfile = outpath / filename.str();
       
-    std::cout << "Thread " << std::this_thread::get_id() <<  " creating " << outfile << std::endl <<  std::flush;
+      std::cout << "Thread " << std::this_thread::get_id() <<  " creating " << outfile << std::endl <<  std::flush;
       
-    file.open(outfile.c_str());
-    if(!file.is_open())
-      {
-	throw std::runtime_error("Could not open " + outfile.native());
+      file.open(outfile.c_str());
+      if(!file.is_open())
+	{
+	  throw std::runtime_error("Could not open " + outfile.native());
+	}
+
+      
+      file << std::setprecision(std::numeric_limits<double>::digits10) << std::flush;
+      // copy(titles.begin(), titles.end(), ostream_iterator<string>(file, " "));
+      for(const auto& title : titles){
+	file << title << " ";
       }
-
-      
-    file << std::setprecision(std::numeric_limits<double>::digits10) << std::flush;
-    copy(titles.begin(), titles.end(), ostream_iterator<string>(file, " "));
-    file << '\n' << std::flush;
+      file << '\n';
     
+    }
+
+    for(const auto& var : vars){
+      file << var << " ";
+    }
+    // copy(vars.begin(), vars.end(), ostream_iterator<double>(file, " "));
+    // file << '\n' << std::flush;
+    file << '\n';
+
+    // printf("Thread %s End log \n", oss.str().c_str());
   }
-
-  copy(vars.begin(), vars.end(), ostream_iterator<double>(file, " "));
-  file << '\n' << std::flush;
-
-  printf("Thread %s End log \n", oss.str().c_str());
-
+  catch (const std::length_error& le) {
+    std::cerr << "Length error: " << le.what() << '\n';
+  }
     
 }
 
@@ -374,75 +384,6 @@ TTextLogger::~TTextLogger(){
   // }
   for (auto &s: logstreams){if (s.second.is_open()) {s.second.close();}}
 }
-
-
-
-
-// void TTextLogger::DoLog(const std::string &particlename, const std::string &suffix, const std::vector<std::string> &titles, const std::vector<double> &vars){
-
-//   // Lock the logstreams_mutex before accessing the logstreams map
-//   std::lock_guard<std::mutex> log_lock(logstreams_mutex);
-    
-//   // Get the ofstream object for this particular thread
-//   ofstream &file = logstreams[particlename + suffix];
-
-//   // Check if the file is already open
-//   if (!file.is_open()){
-//     // If not, create a new filename and open the file
-//     std::ostringstream filename;
-//     filename << std::setw(12) << std::setfill('0') << jobnumber << std::setw(0) << particlename << suffix << ".out";
-//     boost::filesystem::path outfile = outpath / filename.str();
-    
-//     file.open(outfile.c_str());
-//     if(!file.is_open()){
-//       throw std::runtime_error("Could not open " + outfile.native());
-//     }
-
-//     // Write the titles to the file if it is newly created
-//     file << std::setprecision(std::numeric_limits<double>::digits10);
-//     copy(titles.begin(), titles.end(), ostream_iterator<string>(file, " "));
-//     file << '\n';
-//   }
-  
-//   // Write the vars to the file
-//   copy(vars.begin(), vars.end(), ostream_iterator<double>(file, " "));
-//   file << '\n';
-// }
-
-
-
-
-
-// void TTextLogger::DoLog(const std::string &particlename, const std::string &suffix, const std::vector<std::string> &titles, const std::vector<double> &vars){
-
-//   // Lock the mutex before accessing the text file
-//   std::lock_guard<std::mutex> lock(text_mutex);
-    
-//   // Get the ofstream object for this particular thread
-//   ofstream &file = logstreams[particlename + suffix];
-
-//   // Check if the file is already open
-//   if (!file.is_open()){
-//     // If not, create a new filename and open the file
-//     std::ostringstream filename;
-//     filename << std::setw(12) << std::setfill('0') << jobnumber << std::setw(0) << particlename << suffix << ".out";
-//     boost::filesystem::path outfile = outpath / filename.str();
-    
-//     file.open(outfile.c_str());
-//     if(!file.is_open()){
-//       throw std::runtime_error("Could not open " + outfile.native());
-//     }
-
-//     // Write the titles to the file if it is newly created
-//     file << std::setprecision(std::numeric_limits<double>::digits10);
-//     copy(titles.begin(), titles.end(), ostream_iterator<string>(file, " "));
-//     file << '\n';
-//   }
-  
-//   // Write the vars to the file
-//   copy(vars.begin(), vars.end(), ostream_iterator<double>(file, " "));
-//   file << '\n';
-// }
 
 
 

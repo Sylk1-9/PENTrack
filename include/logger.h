@@ -172,8 +172,7 @@ public:
    */
   ~TTextLogger() final;
   // ~TTextLogger() final {
-  //   std::lock_guard<std::mutex> lock_stream(ofstream_mutex);
-  //   for (auto &s: logstreams){ s.second.close(); }
+    // for (auto &s: logstreams){ s.second.close(); }
   // }
 };
 
