@@ -51,7 +51,7 @@ void PrintBField(const boost::filesystem::path &outfile, const TFieldManager &fi
 void PrintGeometry(const boost::filesystem::path &outfile, TGeometry &geom); // do many random collisionchecks and write all collisions to outfile
 void PrintMROutAngle(TConfig &config, const boost::filesystem::path &outpath); // produce a 3d table of the MR-DRP for each outgoing solid angle
 void PrintMRThetaIEnergy(TConfig &config, const boost::filesystem::path &outpath); // produce a 3d table of the total (integrated) MR-DRP for a given incident angle and energy
-void SimulateParticles(int nparticle, TParticleSource* source, TMCGenerator* mc, TGeometry* geom, TFieldManager* field, TConfig *configin, TTracker *t,  map<string, map<int, int>>& ID_counter, int& ntotalsteps, progress_display& progress); // compute particles simulation on one thread
+void SimulateParticles(int nparticle, TParticleSource* source, TMCGenerator* mc, TGeometry* geom, TFieldManager* field, TConfig *configin, TTracker *tracker,  map<string, map<int, int>>& ID_counter, int& ntotalsteps, progress_display& progress); // compute particles simulation on one thread
 
 double SimTime = 1500.; ///< max. simulation time
 int simcount = 1; ///< number of particles for MC simulation (read from config)
@@ -227,8 +227,8 @@ int main(int argc, char **argv){
 
     ///////////////////////////
 
-  TTracker tracker(configin);
   if (simtype == PARTICLE) { // if proton or neutron shall be simulated
+    TTracker tracker(configin);
     cout << "Simulating " << simcount << " " << source->GetParticleName() << "s...\n";
     ThreadPool thread_pool;
     thread_pool.Start(numthreads);
@@ -622,7 +622,7 @@ void PrintGeometry(const boost::filesystem::path &outfile, TGeometry &geom){
  * @param start particle number start number
  * @param end particle number start number end
  */
-void SimulateParticles(int nparticle, TParticleSource* source, TMCGenerator* mc, TGeometry* geom, TFieldManager* field, TConfig *configin, TTracker *t,  map<string, map<int, int>>& ID_counter, int& ntotalsteps, progress_display& progress) {
+void SimulateParticles(int nparticle, TParticleSource* source, TMCGenerator* mc, TGeometry* geom, TFieldManager* field, TConfig *configin, TTracker *tracker,  map<string, map<int, int>>& ID_counter, int& ntotalsteps, progress_display& progress) {
 
   // std::ostringstream oss;
   // oss << std::this_thread::get_id();
@@ -632,7 +632,7 @@ void SimulateParticles(int nparticle, TParticleSource* source, TMCGenerator* mc,
     if (quit.load())
       break;
     unique_ptr<TParticle> p(source->CreateParticle(*mc, *geom, *field));
-    (*t).IntegrateParticle(p, SimTime, (*configin)[p->GetName()], *mc, *geom, *field); // integrate particle
+    (*tracker).IntegrateParticle(p, SimTime, (*configin)[p->GetName()], *mc, *geom, *field); // integrate particle
     ID_counter[p->GetName()][p->GetStopID()]++; // increment counters
     ntotalsteps += p->GetNumberOfSteps();
 
@@ -641,7 +641,7 @@ void SimulateParticles(int nparticle, TParticleSource* source, TMCGenerator* mc,
         if (quit.load())
           break;
 
-        (*t).IntegrateParticle(i, SimTime, (*configin)[i->GetName()], *mc, *geom, *field); // integrate secondary particles
+        (*tracker).IntegrateParticle(i, SimTime, (*configin)[i->GetName()], *mc, *geom, *field); // integrate secondary particles
         ID_counter[i->GetName()][i->GetStopID()]++;
         ntotalsteps += i->GetNumberOfSteps();
       }

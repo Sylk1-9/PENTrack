@@ -91,8 +91,6 @@ TParticle::TParticle(const char *aname, const  double qq, const long double mm, 
 
 
 
-
-
 void TParticle::derivs(const state_type &y, state_type &dydx, const value_type x, const TFieldManager *field) const{
   double B[3], dBidxj[3][3], E[3], V; // magnetic/electric field and electric potential in lab frame
   if (q != 0 || (mu != 0 && y[7] != 0)) // if particle has charge or magnetic moment, calculate magnetic field
@@ -100,6 +98,28 @@ void TParticle::derivs(const state_type &y, state_type &dydx, const value_type x
   if (q != 0) // if particle has charge calculate electric field
     field->EField(y[0],y[1],y[2], x, V, E);
   EquationOfMotion(y, dydx, x, B, dBidxj, E);
+
+  // double trace = dBidxj[0][0] + dBidxj[1][1] + dBidxj[2][2];
+  // for(int i=0; i<3; ++i){
+  //   dBidxj[i][i] = dBidxj[i][i] - trace/3;
+  //     for(int j=i+1; j<3; ++j){
+  // 	dBidxj[i][j] = (dBidxj[i][j] + dBidxj[j][i])/2;
+  // 	dBidxj[j][i] = dBidxj[i][j];
+  //     }
+  // }
+  // std::cout << "dBidj" << std::endl;
+  // for(int i=0; i<3;++i){
+  //   for(int j=0; j<3; ++j){
+  //     std::cout << dBidxj[i][j] << ", ";
+  //   }
+  //   std::cout << std::endl;
+  // }
+
+  // std::cout << std::endl;
+  // std::cout << "Tr dBidj = " << dBidxj[0][0] + dBidxj[1][1] + dBidxj[2][2] << std::endl;
+  // std::cout << "Rot dBidj = " << (dBidxj[0][1] - dBidxj[1][0])/(dBidxj[0][1] + dBidxj[1][0])  << ";  " <<  (dBidxj[0][2] - dBidxj[2][0])/(dBidxj[0][2] + dBidxj[2][0]) << ";  " <<  (dBidxj[1][2] - dBidxj[2][1])/(dBidxj[1][2] - dBidxj[2][1]) << std::endl;
+
+
 }
 
 void TParticle::EquationOfMotion(const state_type &y, state_type &dydx, const value_type x, const double B[3], const double dBidxj[3][3], const double E[3]) const{

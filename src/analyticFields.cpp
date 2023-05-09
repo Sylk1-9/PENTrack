@@ -219,19 +219,19 @@ TMagpy::TMagpy(const std::string ft){
   // PyObject* magpymodule = PyImport_ImportModule("magpylib");
   // pBFieldFunc = PyObject_GetAttrString(magpymodule, "getB");
 
-  // std::cout << " mag pylib import" << std::endl;
+  std::cout << " mag pylib import" << std::endl;
 
   boost::python::object bmagpymodule = boost::python::import("magpylib");
   bpBFieldFunc = bmagpymodule.attr("getB");
   // boost::python::object bmagpymodule = boost::python::import("MagpyField");
   // bpBFieldFunc = bmagpymodule.attr("BField");
 
-  // std::cout << " magnet module import" << std::endl;
+  std::cout << " magnet module import" << std::endl;
   
   // char* ftc = const_cast<char*>(ft.c_str());
   boost::python::str bftc(ft);
   boost::python::object bmagnetmodule = boost::python::import(bftc);
-  boost::python::object buildmagnetFunc = bmagnetmodule.attr("BuildMagnet");
+  boost::python::object buildmagnetFunc = bmagnetmodule.attr("buildSource");
   bpMagnetObject = buildmagnetFunc();
   // bpMagnetObject = boost::python::call_method<boost::python::object>(, NULL);
   
@@ -259,9 +259,9 @@ void TMagpy::BField(const double x, const double y, const double z, const double
 
   for(int i=0; i<dimarg; ++i){
 
-    xyz[0] = x;
+    xyz[0] = z;  // swap x and y. Todo : sly
     xyz[1] = y;
-    xyz[2] = z;
+    xyz[2] = x;  // swap x and y. Todo : sly
     
     switch(i) {
     case 0:
@@ -303,17 +303,23 @@ void TMagpy::BField(const double x, const double y, const double z, const double
   // PyTuple_SetItem(pArgs, 1, pList);
 
   // std::cout << "calling getBs" << std::endl;
+
+  // PyGILState_STATE gstate = PyGILState_Ensure();
+  // PyThreadState* gstate = PyEval_SaveThread();
     
   double Bs[dimarg][3];
   // npArray = reinterpret_cast<PyArrayObject*>(PyObject_CallObject(pBFieldFunc, pArgs));
   boost::python::tuple args = boost::python::make_tuple(bpMagnetObject, bpList);
   boost::python::object bnpArray = bpBFieldFunc(bpMagnetObject, bpList);
+
+  // PyGILState_Release(gstate);
+  // PyEval_RestoreThread(gstate);
   
   // std::cout << "getting Bs" << std::endl;
 
   if (dBidxj != nullptr){
     for (int i=0; i<dimarg; ++i) {
-      for (int j=0; j<3; ++j) {
+      for (int j=0; j<3; ++j) { 
       // Bs[i][j] = 0.001 * (*reinterpret_cast<double*>(PyArray_GETPTR2(npArray, i, j)));
 	Bs[i][j] = 0.001 * boost::python::extract<double>(bnpArray[i][j]);
       }
@@ -321,7 +327,7 @@ void TMagpy::BField(const double x, const double y, const double z, const double
   }
   else{
     for (int j=0; j<3; ++j) {
-      Bs[0][j] = 0.001 * boost::python::extract<double>(bnpArray[j]);  
+      Bs[0][j] = 0.001 * boost::python::extract<double>(bnpArray[j]);
     }
   }
 
@@ -330,6 +336,7 @@ void TMagpy::BField(const double x, const double y, const double z, const double
     B[i] = Bs[0][i];
   }
 
+  
   // std::cout << "Bi = " << B[0] << ", " << B[1] << ", " << B[2] << std::endl;
 
   if (dBidxj != nullptr){
