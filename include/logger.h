@@ -235,7 +235,7 @@ class THDF5Logger: public TLogger {
 private:
   hid_t HDF5file;
   std::mutex hdf5_mutex;
-  std::mutex hdf5w_mutex;
+  // std::mutex hdf5w_mutex;
 
 
   /**

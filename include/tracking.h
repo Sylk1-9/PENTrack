@@ -15,9 +15,14 @@
  * Class used to interpolate particle trajectories and track their path through the experiment geometry.
  */
 class TTracker {
+// protected:
 private:
-    std::vector<std::pair<solid, bool> > currentsolids; ///< solids in which particle is currently inside
-    std::unique_ptr<TLogger> logger; ///< class to log particle states
+  std::vector<std::pair<solid, bool> > currentsolids; ///< solids in which particle is currently inside
+  // std::unique_ptr<TLogger> logger; ///< class to log particle states // sly ToDo
+  // TLogger logger; ///< class to log particle states // sly ToDo
+  // std::unique_ptr<TLogger>& logger;
+  TLogger* logger; ///< class to log particle states // sly ToDo
+
 public:
     /**
      * Constructor.
@@ -26,7 +31,7 @@ public:
      * 
      * @param config List of configuration parameters read from config files.
      */
-    TTracker(TConfig& config);
+  TTracker(TConfig& config, std::shared_ptr<TLogger>& alogger);
 
     /**
      * Integrate particle trajectory.

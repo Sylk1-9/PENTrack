@@ -10,9 +10,10 @@
 
 using namespace std;
 
-TTracker::TTracker(TConfig& config){
-  logger = CreateLogger(config);
-  // cout << "loger created" << endl;
+TTracker::TTracker(TConfig& config, std::shared_ptr<TLogger>& alogger){  
+  logger = alogger.get();
+  // logger = CreateLogger(config);
+  // cout << "got logger in tracking instance" << endl;
 }
 
 void TTracker::IntegrateParticle(std::unique_ptr<TParticle>& p, const double tmax, std::map<std::string, std::string> &particleconf, TMCGenerator &mc, const TGeometry &geom, const TFieldManager &field){
@@ -263,6 +264,7 @@ bool TTracker::DoStep(const std::unique_ptr<TParticle>& p, const value_type x1, 
   if (x2temp == x2 && y2temp == y2)
     return false;
   else{
+    std::cout << "Do particle " << p->GetParticleNumber() << " has altered path" << std::endl;
     return true;
   }
 }
@@ -466,6 +468,7 @@ void TTracker::IntegrateSpin(const std::unique_ptr<TParticle>& p, state_type &sp
 
 
   if (Babs2 > Bmax){ // if magnetic field grows above Bmax, collapse spin state to one of the two polarisation states
+  // if (true){ // if magnetic field grows above Bmax, collapse spin state to one of the two polarisation states
     p->DoPolarize(x2, y2, polarisation, flipspin, mc);
     spin[0] = B2[0]*y2[7]/Babs2;
     spin[1] = B2[1]*y2[7]/Babs2;

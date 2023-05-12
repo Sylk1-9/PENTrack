@@ -40,7 +40,8 @@
 #include "mc.h" 
 #include "microroughness.h"
 #include "threadpool.h"
-
+// #include "globals.h"
+#include "logger.h"
 
 using namespace std;
 
@@ -59,6 +60,9 @@ simType simtype = PARTICLE; ///< type of particle which shall be simulated (read
 int secondaries = 1; ///< should secondary particles be simulated? (read from config)
 uint64_t seed = 0; ///< random seed used for random-number generator (generated from high-resolution clock)
 int numthreads = 1; ///< number of threads for multithreading
+
+// extern std::unique_ptr<TLogger> logger; ///< class to log particle states
+
 
 /**
  * Catch signals.
@@ -196,51 +200,73 @@ int main(int argc, char **argv){
   //     }
   // }
 
+  std::shared_ptr<TLogger> logger = CreateLogger(configin);
+  TTracker tracker(configin, logger);
 
-
-  // if (simtype == PARTICLE) { // if proton or neutron shall be simulated
-  //   cout << "Simulating " << simcount << " " << source->GetParticleName() << "s...\n";
-  //   if (numthreads <= 0) numthreads = 1; // if the number of cores cannot be determined, use 1 thread
-  //   int maxnumthread = std::thread::hardware_concurrency();
-  //   if (numthreads > maxnumthread) numthreads = maxnumthread; // if number of core exceeds hardware
-  //   cout << "Number of threads = " << numthreads << endl;
-  //   vector<thread> threads;
-  //   int chunk_size = simcount / numthreads; // divide the iterations into equal-sized chunks
-  //   int chunk_rest = simcount % numthreads;
-  //   TTracker t(configin);
-  //   progress_display progress(simcount);
-  //   cout << '\n';
-  //   for (int i = 0; i < numthreads; i++) {
-  //     int nparticle = chunk_size;
-  //     if(chunk_rest != 0){
-  // 	nparticle++;
-  // 	chunk_rest--;
-  //     }
+  if (simtype == PARTICLE) { // if proton or neutron shall be simulated
+    cout << "Simulating " << simcount << " " << source->GetParticleName() << "s...\n";
+    if (numthreads <= 0) numthreads = 1; // if the number of cores cannot be determined, use 1 thread
+    int maxnumthread = std::thread::hardware_concurrency();
+    if (numthreads > maxnumthread) numthreads = maxnumthread; // if number of core exceeds hardware
+    cout << "Number of threads = " << numthreads << endl;
+    vector<thread> threads;
+    int chunk_size = simcount / numthreads; // divide the iterations into equal-sized chunks
+    int chunk_rest = simcount % numthreads;
+    // TTracker t(configin);
+    progress_display progress(simcount);
+    cout << '\n';
+    for (int i = 0; i < numthreads; i++) {
+      int nparticle = chunk_size;
+      if(chunk_rest != 0){
+	nparticle++;
+	chunk_rest--;
+      }
       
-  //     threads.emplace_back(SimulateParticles, nparticle, source.get(), &mc, &geom, &field, &configin, &t, std::ref(ID_counter), std::ref(ntotalsteps), std::ref(progress));
-  //   }
-  //   quit.store(false); // set the quit flag to true to stop all threads
-  //   for (auto& th: threads) {
-  //     if (th.joinable())
-  // 	th.join();
-  //   }
+      threads.emplace_back(SimulateParticles, nparticle, source.get(), &mc, &geom, &field, &configin, &tracker, std::ref(ID_counter), std::ref(ntotalsteps), std::ref(progress));
+    }
+    quit.store(false); // set the quit flag to true to stop all threads
+    for (auto& th: threads) {
+      if (th.joinable())
+	th.join();
+    }
 
     ///////////////////////////
 
-  if (simtype == PARTICLE) { // if proton or neutron shall be simulated
-    TTracker tracker(configin);
-    cout << "Simulating " << simcount << " " << source->GetParticleName() << "s...\n";
-    ThreadPool thread_pool;
-    thread_pool.Start(numthreads);
-    progress_display progress(simcount);
-    for (int iMC = 0; iMC < simcount; ++iMC) {
-      thread_pool.QueueJob(std::bind(SimulateParticles, 1, source.get(), &mc, &geom, &field, &configin, &tracker, std::ref(ID_counter), std::ref(ntotalsteps), std::ref(progress)));
-    }
+  
+  // if (simtype == PARTICLE) { // if proton or neutron shall be simulated
+  //   // TTracker tracker(configin);
+  //   // std::unique_ptr<TLogger> logger = CreateLogger(configin);
+  //   std::shared_ptr<TLogger> logger = CreateLogger(configin);
+  //   cout << "Simulating " << simcount << " " << source->GetParticleName() << "s...\n";
+  //   ThreadPool thread_pool;
+  //   thread_pool.Start(numthreads);
+  //   progress_display progress(simcount);
+  //   TTracker tracker(configin, logger);
 
-    while (thread_pool.Busy()) {
-      std::this_thread::yield();
-    }
-    thread_pool.Stop();   
+  //   // for (int iMC = 0; iMC < simcount; ++iMC) {
+  //   //   TTracker tracker(configin, logger);
+  //   //   thread_pool.QueueJob(SimulateParticles(1, source.get(), &mc, &geom, &field, &configin, &tracker, std::ref(ID_counter), std::ref(ntotalsteps), std::ref(progress))
+  //   //   );
+  //   // }
+  //   for (int iMC = 0; iMC < simcount; ++iMC) {
+  //     TTracker tracker(configin, logger);
+  //     thread_pool.QueueJob([&]() {
+  // 	SimulateParticles(1, source.get(), &mc, &geom, &field, &configin, &tracker, std::ref(ID_counter), std::ref(ntotalsteps), std::ref(progress));
+  //     });
+  //   }
+
+    
+  //   // for (int iMC = 0; iMC < simcount; ++iMC) {
+  //   //   TTracker tracker(configin, logger);
+  //   //   thread_pool.QueueJob(std::bind(SimulateParticles, 1, source.get(), &mc, &geom, &field, &configin, &tracker, std::ref(ID_counter), std::ref(ntotalsteps), std::ref(progress)));
+  //   // }
+
+    // while (thread_pool.Busy()) {
+    //   std::this_thread::yield();
+    // }
+    // thread_pool.Stop();
+
+    
   }    
   else{
     printf("\nDon't know simtype %i! Exiting...\n",simtype);
