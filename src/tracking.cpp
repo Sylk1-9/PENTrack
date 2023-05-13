@@ -211,7 +211,7 @@ bool TTracker::CheckHit(const std::unique_ptr<TParticle>& p, const value_type x1
 
   }
   else{ // if there was no collision: just check for absorption in solid with highest priority
-    return DoStep(p, x1, y1, x2, y2, stepper, currentsolid, mc, field);
+    return DoStep(p, x1, y1, x2, y2, stepper, currentsolid, mc, field); // sly currentsolid
   }
   return false;
 }

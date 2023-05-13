@@ -17,7 +17,7 @@
 class TTracker {
 // protected:
 private:
-  std::vector<std::pair<solid, bool> > currentsolids; ///< solids in which particle is currently inside
+  std::vector<std::pair<solid, bool> > currentsolids; ///< solids in which particle is currently inside Sly Todo
   // std::unique_ptr<TLogger> logger; ///< class to log particle states // sly ToDo
   // TLogger logger; ///< class to log particle states // sly ToDo
   // std::unique_ptr<TLogger>& logger;
