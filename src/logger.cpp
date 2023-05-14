@@ -639,36 +639,38 @@ THDF5Logger::THDF5Logger(TConfig& aconfig){
 //   size_t offsets[Nfields];
 //   for (size_t i = 0; i < Nfields; ++i) offsets[i] = i * sizeof(double);
 
-//   size_t bufferIndex = std::hash<std::thread::id>{}(std::this_thread::get_id()) % 7;
-//   std::lock_guard<std::mutex> lock(localBuffer[bufferIndex]);
+//   // Calculate the hash of the particlename to determine the lock index
+//   std::hash<std::string> hash_fn;
+//   size_t lockIndex = hash_fn(name) % hdf5_mutex_pool.size();
 
-//   // Write logs to the thread-local buffer independently
-//   localBuffer.insert(localBuffer.end(), vars.begin(), vars.end());
+//   // Lock the corresponding mutex
+//   std::lock_guard<std::mutex> lock(hdf5_mutex_pool[lockIndex]);
 
-//   // If the local buffer reaches a certain threshold or time-based interval, flush the logs to HDF5 file
-//   if (localBuffer.size() >= 100000) {
-//     // Lock the mutex before accessing the HDF5 library
-//     std::lock_guard<std::mutex> lock(hdf5_mutex);
+//   hid_t HDF5file = HDF5file_pool[lockIndex];
 
-//     if (H5Lexists(HDF5file, name.c_str(), H5P_DEFAULT) <= 0) {
-//       const char *field_names[Nfields];
-//       hid_t field_types[Nfields];
-//       for (size_t i = 0; i < Nfields; ++i) {
-//         field_names[i] = titles[i].c_str();
-//         field_types[i] = H5T_NATIVE_DOUBLE;
-//       }
+  
+//   // Lock the mutex before accessing the HDF5 library
+//   std::lock_guard<std::mutex> lock(hdf5_mutex);
+//   // size_t mutexIndex = std::hash<std::string>{}(particlename) % hdf5_mutex_pool.size();
+//   // std::lock_guard<std::mutex> lock(hdf5_mutex_pool[mutexIndex]);
 
-//       auto ret = H5TBmake_table(name.c_str(), HDF5file, name.c_str(), Nfields, 1, Nfields * sizeof(double), field_names, offsets, field_types, 10, nullptr, 1, localBuffer.data());
-//       if (ret < 0) throw std::runtime_error("Could not create table " + name);
-//     } else {
-//       size_t sizes[Nfields];
-//       for (size_t i = 0; i < Nfields; ++i) sizes[i] = sizeof(double);
-//       auto ret = H5TBappend_records(HDF5file, name.c_str(), 1, Nfields * sizeof(double), offsets, sizes, localBuffer.data());
-//       if (ret < 0) throw std::runtime_error("Could not write data to table " + name);
+  
+//   if (H5Lexists(HDF5file, name.c_str(), H5P_DEFAULT) <= 0){
+//     const char *field_names[Nfields];
+//     hid_t field_types[Nfields];
+//     for (size_t i = 0; i < Nfields; ++i){
+//       field_names[i] = titles[i].c_str();
+//       field_types[i] = H5T_NATIVE_DOUBLE;
 //     }
 
-//     // Clear the local buffer after flushing
-//     localBuffer.clear();
+//     auto ret = H5TBmake_table(name.c_str(), HDF5file, name.c_str(), Nfields, 1, Nfields*sizeof(double), field_names, offsets, field_types, 10, nullptr, 1, vars.data());
+//     if (ret < 0) throw std::runtime_error("Could not create table " + name);
+//   }
+//   else{
+//     size_t sizes[Nfields];
+//     for (size_t i = 0; i < Nfields; ++i) sizes[i] = sizeof(double);
+//     auto ret = H5TBappend_records(HDF5file, name.c_str(), 1, Nfields*sizeof(double), offsets, sizes, vars.data());
+//     if (ret < 0) throw std::runtime_error("Could not write data to table " + name);
 //   }
 // }
 
