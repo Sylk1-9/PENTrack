@@ -9,7 +9,7 @@
 
 // #define PY_SSIZE_T_CLEAN
 // #include <Python.h>
-#include <boost/python.hpp>
+// #include <boost/python.hpp>
 
 #include "field.h"
 
@@ -359,54 +359,54 @@ public:
 };
 
 
-/**
- * Class calculating magnetic field from magpylib
- * 
- * Field gradients are calculated numerically with a five-point stencil method
- */
-class TMagpy: public TField{
-private:
-  // PyObject *pMagnetObject;
-  // PyObject *pBFieldFunc;
-  boost::python::object bpBFieldFunc;
-  boost::python::object bpMagnetObject;
+// /**
+//  * Class calculating magnetic field from magpylib
+//  * 
+//  * Field gradients are calculated numerically with a five-point stencil method
+//  */
+// class TMagpy: public TField{
+// private:
+//   // PyObject *pMagnetObject;
+//   // PyObject *pBFieldFunc;
+//   boost::python::object bpBFieldFunc;
+//   boost::python::object bpMagnetObject;
 
-public:
-  /**
-   * Constructor
-   * 
-   * @ft string of the file name containing a function that returns a magnet magpy object.
-   */
-  TMagpy(const std::string ft);
+// public:
+//   /**
+//    * Constructor
+//    * 
+//    * @ft string of the file name containing a function that returns a magnet magpy object.
+//    */
+//   TMagpy(const std::string ft);
 
 
-  /**
-   * Calculates B field B[3] and the derivatives dBidxj[3][3] for a given point x,y,z and time t
-   * 
-   * Spatial derivatives are calculated numerically using a five-point stencil method
-   *
-   * @param x Cartesian x coordinate
-   * @param y Cartesian y coordinate
-   * @param z Cartesian z coordinate
-   * @param t the time
-   * @param B Returns magnetic-field components
-   * @param dBidxj Returns spatial derivatives of magnetic-field components (optional)
-   **/
-  void BField(const double x, const double y, const double z, const double t, double B[3], double dBidxj[3][3] = nullptr) const override;
+//   /**
+//    * Calculates B field B[3] and the derivatives dBidxj[3][3] for a given point x,y,z and time t
+//    * 
+//    * Spatial derivatives are calculated numerically using a five-point stencil method
+//    *
+//    * @param x Cartesian x coordinate
+//    * @param y Cartesian y coordinate
+//    * @param z Cartesian z coordinate
+//    * @param t the time
+//    * @param B Returns magnetic-field components
+//    * @param dBidxj Returns spatial derivatives of magnetic-field components (optional)
+//    **/
+//   void BField(const double x, const double y, const double z, const double t, double B[3], double dBidxj[3][3] = nullptr) const override;
 
-  /**
-   * Returns empty electric field.
-   * Required because we are inheriting from abstract class TField which has virtual void EField function.
-   *
-   * @param x Cartesian x coordinate
-   * @param y Cartesian y coordinate
-   * @param z Cartesian z coordinate
-   * @param t Time
-   * @param V Electric potential
-   * @param Ei Electric field components
-   **/
-  void EField(const double x, const double y, const double z, const double t, double &V, double Ei[3]) const override {};
-};
+//   /**
+//    * Returns empty electric field.
+//    * Required because we are inheriting from abstract class TField which has virtual void EField function.
+//    *
+//    * @param x Cartesian x coordinate
+//    * @param y Cartesian y coordinate
+//    * @param z Cartesian z coordinate
+//    * @param t Time
+//    * @param V Electric potential
+//    * @param Ei Electric field components
+//    **/
+//   void EField(const double x, const double y, const double z, const double t, double &V, double Ei[3]) const override {};
+// };
 
 
 #endif /*ANALYTICFIELDS_H_*/

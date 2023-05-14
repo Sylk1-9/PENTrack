@@ -4,13 +4,12 @@
  *
  */
 
-// #define PY_SSIZE_T_CLEAN
 // #include <Python.h>
 // #include <numpy/arrayobject.h>
 
-#include <boost/python.hpp>
-#include <boost/python/numpy.hpp>
-// #include <numpy/arrayobject.h>
+// #include <boost/python.hpp>
+// #include <boost/python/numpy.hpp>
+
 #include <vector>
 
 #include <iostream>
@@ -211,6 +210,8 @@ void TCustomBField::BField(const double x, const double y, const double z, const
 
 
 
+/*
+  
 TMagpy::TMagpy(const std::string ft){
   
   // PyRun_SimpleString("import sys"); 
@@ -259,9 +260,9 @@ void TMagpy::BField(const double x, const double y, const double z, const double
 
   for(int i=0; i<dimarg; ++i){
 
-    xyz[0] = z;  // swap x and y. Todo : sly
+    xyz[0] = x;  // swap x and y. Todo : sly
     xyz[1] = y;
-    xyz[2] = x;  // swap x and y. Todo : sly
+    xyz[2] = z;  // swap x and y. Todo : sly
     
     switch(i) {
     case 0:
@@ -320,7 +321,7 @@ void TMagpy::BField(const double x, const double y, const double z, const double
   if (dBidxj != nullptr){
     for (int i=0; i<dimarg; ++i) {
       for (int j=0; j<3; ++j) { 
-      // Bs[i][j] = 0.001 * (*reinterpret_cast<double*>(PyArray_GETPTR2(npArray, i, j)));
+	// Bs[i][j] = 0.001 * (*reinterpret_cast<double*>(PyArray_GETPTR2(npArray, i, j)));
 	Bs[i][j] = 0.001 * boost::python::extract<double>(bnpArray[i][j]);
       }
     }
@@ -377,3 +378,5 @@ void TMagpy::BField(const double x, const double y, const double z, const double
   // Py_DECREF(pArgs);
 
 }
+
+*/

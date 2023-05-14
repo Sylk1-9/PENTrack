@@ -15,6 +15,11 @@
 #include "harmonicfields.h"
 #include "analyticFields.h"
 
+#ifdef USEPYTHON
+#include "pythonFields.h"
+#endif
+
+
 
 TFieldManager::TFieldManager(TConfig &conf){
   for (const auto &i: conf["FIELDS"]){
@@ -107,11 +112,14 @@ TFieldManager::TFieldManager(TConfig &conf){
       Bscale = ResolveFormula(Bscale, conf["FORMULAS"]);
       fields.emplace_back(TFieldContainer(std::move(f), Bscale, "0", xma, xmi, yma, ymi, zma, zmi, bW));
     }
-    else if (type == "Magpy" and ss >> ft >> Bscale){
-      std::unique_ptr<TField> f(new TMagpy(ft));
+#ifdef USEPYTHON
+    else if (type == "PythonField" and ss >> ft >> Bscale){
+      std::cout << "USEPYTHON == 1, inside fields.cpp switch" << std::endl;
+      std::unique_ptr<TField> f(new TPythonField(ft));
       Bscale = ResolveFormula(Bscale, conf["FORMULAS"]);
       fields.emplace_back(TFieldContainer(std::move(f), Bscale, "0"));
     }
+#endif
     else{
       throw std::runtime_error("Could not load field """ + type + """! Check config file for invalid field type or parameters.");
     }

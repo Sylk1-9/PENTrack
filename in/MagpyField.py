@@ -1,8 +1,8 @@
-# import magpylib as magpy
-# import numpy as np
+import magpylib as magpy
+import numpy as np
 
-print("Script visited : -- -MagpyField in /in")
+print("Script visited : PythonField in /in")
 # take mm, output mT
-def BField(magnet, xyz):
+def BField(source, xyz):
     # print(xyz)
-    return magnet.getB(xyz)
+    return source.getB(xyz)

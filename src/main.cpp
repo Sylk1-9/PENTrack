@@ -5,8 +5,6 @@
  * Create particles to your liking...
  */
 
-#define PY_SSIZE_T_CLEAN
-#include <Python.h>
 
 #include <csignal>
 #include <iostream>
@@ -22,14 +20,9 @@
 
 #include <thread>
 
-// #include <iostream>
 // #include <boost/asio.hpp>
 // #include <boost/thread.hpp>
-
-// #include <mutex>
-// #include <atomic>
 // #include <boost/progress.hpp>
-
 
 #include "tracking.h"
 #include "particle.h"
@@ -40,8 +33,16 @@
 #include "mc.h" 
 #include "microroughness.h"
 #include "threadpool.h"
-// #include "globals.h"
 #include "logger.h"
+
+// #define USEPYTHON
+#ifdef USEPYTHON
+// #include "pythonFields.h"
+#define PY_SSIZE_T_CLEAN
+#include <Python.h>
+#endif
+
+
 
 using namespace std;
 
@@ -60,8 +61,6 @@ simType simtype = PARTICLE; ///< type of particle which shall be simulated (read
 int secondaries = 1; ///< should secondary particles be simulated? (read from config)
 uint64_t seed = 0; ///< random seed used for random-number generator (generated from high-resolution clock)
 int numthreads = 1; ///< number of threads for multithreading
-
-// extern std::unique_ptr<TLogger> logger; ///< class to log particle states
 
 
 /**
@@ -99,8 +98,6 @@ int main(int argc, char **argv){
     " ### a simulation tool for ultracold neutrons, protons and electrons ###\n"
     " #######################################################################\n";
 
-  Py_InitializeEx(0);
-
   //Initialize signal-analizing
   quit.store(false);
   signal (SIGINT, catch_alarm);
@@ -108,7 +105,9 @@ int main(int argc, char **argv){
   signal (SIGUSR1, catch_alarm);
   signal (SIGUSR2, catch_alarm);
   signal (SIGXCPU, catch_alarm);
-	
+
+
+  
   // read config
   TConfig configin = ConfigInit(argc, argv);
 
@@ -119,10 +118,32 @@ int main(int argc, char **argv){
   else if (simtype == MR_THETA_I_ENERGY){
     PrintMRThetaIEnergy(configin, outpath);
     return 0;
-  }
+  }  
 
+#ifdef USEPYTHON
+  cout << "USEPYTHON == 1 inside main" << endl;
+  Py_InitializeEx(0);
+  
+  boost::filesystem::path confpath = boost::filesystem::absolute("in/config.in");
+  if(argc>2){ // if user supplied 2 or more args (jobnumber, configpath)
+    confpath = boost::filesystem::absolute(argv[2]); // input path pointer set
+    if (boost::filesystem::is_directory(confpath))
+      confpath /= "config.in";
+  }
+  
+  boost::filesystem::path moduleDirectory = confpath.parent_path();
+  cout << "python module directory : " << moduleDirectory << endl;
+  
+  // Add the directory containing the Python modules to the Python module search path
+  // const char* moduleDirectory = "/path/to/python/modules";
+  PyObject* sysPath = PySys_GetObject("path");
+  PyObject* path = PyUnicode_DecodeFSDefault(moduleDirectory.c_str());
+  
+  PyList_Insert(sysPath, 0, path);
+#endif
 
   cout << "Loading fields...\n";
+  
   // load field configuration from config.in
   TFieldManager field(configin);
 
@@ -231,7 +252,6 @@ int main(int argc, char **argv){
   //   }
 
     ///////////////////////////
-
   
   if (simtype == PARTICLE) { // if proton or neutron shall be simulated
     // TTracker tracker(configin);
@@ -242,33 +262,33 @@ int main(int argc, char **argv){
     thread_pool.Start(numthreads);
     progress_display progress(simcount);
 
-    std::vector<TTracker> trackers;
-
-    // Create multiple instances of MyClass
-    for (int i = 0; i < simcount; ++i) {
-        trackers.emplace_back(configin, logger);
-    }
-
-    // Start a thread for each instance
-    for (auto& tracker : trackers) {
-      thread_pool.QueueJob([&]() {
-	SimulateParticles(1, source.get(), &mc, &geom, &field, &configin, &tracker, std::ref(ID_counter), std::ref(ntotalsteps), std::ref(progress));
-      });
-    }
-
-    // TTracker tracker(configin, logger);
-    // for (int iMC = 0; iMC < simcount; ++iMC) {
-    //   TTracker tracker(configin, logger);
-    //   thread_pool.QueueJob(SimulateParticles(1, source.get(), &mc, &geom, &field, &configin, &tracker, std::ref(ID_counter), std::ref(ntotalsteps), std::ref(progress))
-    //   );
+    // std::vector<TTracker> trackers;
+    // // Create multiple instances of MyClass
+    // for (int i = 0; i < simcount; ++i) {
+    //     trackers.emplace_back(configin, logger);
     // }
-    
-    // for (int iMC = 0; iMC < simcount; ++iMC) {
-    //   TTracker tracker(configin, logger);
+
+    // // Start a thread for each instance
+    // for (auto& tracker : trackers) {
     //   thread_pool.QueueJob([&]() {
     // 	SimulateParticles(1, source.get(), &mc, &geom, &field, &configin, &tracker, std::ref(ID_counter), std::ref(ntotalsteps), std::ref(progress));
     //   });
     // }
+
+    // TTracker tracker(configin, logger);
+    // for (int iMC = 0; iMC < simcount; ++iMC) {
+    //   // TTracker tracker(configin, logger);
+    //   thread_pool.QueueJob(SimulateParticles(1, source.get(), &mc, &geom, &field, &configin, &tracker, std::ref(ID_counter), std::ref(ntotalsteps), std::ref(progress))
+    //   );
+    // }
+    
+
+    TTracker tracker(configin, logger);
+    for (int iMC = 0; iMC < simcount; ++iMC) {
+      thread_pool.QueueJob([&]() {
+	SimulateParticles(1, source.get(), &mc, &geom, &field, &configin, &tracker, std::ref(ID_counter), std::ref(ntotalsteps), std::ref(progress));
+      });
+    }
 
     
     // for (int iMC = 0; iMC < simcount; ++iMC) {
@@ -304,10 +324,13 @@ int main(int argc, char **argv){
   else
     cout << "That's it... Have a nice day!\n";
 
+#ifdef USEPYTHON
+  Py_InitializeEx(0);
   if (Py_FinalizeEx() < 0) {
     return 120;
   }
-	
+#endif
+  
   return 0;
 }
 

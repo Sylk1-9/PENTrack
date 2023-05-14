@@ -39,7 +39,7 @@ TParticle::TParticle(const char *aname, const  double qq, const long double mm, 
   : name(aname), q(qq), m(mm), mu(mumu), gamma(agamma), particlenumber(number), ID(ID_UNKNOWN),
     tstart(t), tend(t), Hmax(0), Nhit(0), Nspinflip(0), noflipprob(1), Nstep(0){
 
-  std::cout << "TParticle" << std::endl;
+  // std::cout << "TParticle" << std::endl;
 
   // for small velocities Ekin/m is very small and the relativstic claculation beta^2 = 1 - 1/gamma^2 gives large round-off errors
   // the round-off error can be estimated as 2*epsilon

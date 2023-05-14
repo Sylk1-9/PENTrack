@@ -55,19 +55,24 @@ if (Boost_FOUND)
 endif()
 
 
-# find_package(Python3 REQUIRED Development)
+set(pentrack_SOURCES src/globals.cpp src/trianglemesh.cpp src/geometry.cpp src/mc.cpp src/field.cpp src/edmfields.cpp src/tracking.cpp src/logger.cpp src/field_2d.cpp src/field_3d.cpp src/fields.cpp src/harmonicfields.cpp src/conductor.cpp src/particle.cpp src/neutron.cpp src/microroughness.cpp src/electron.cpp src/proton.cpp src/mercury.cpp src/xenon.cpp src/source.cpp src/config.cpp src/analyticFields.cpp src/threadpool.cpp)
+
+
+# ind_package(Python3 REQUIRED Development)
 find_package (Python3 REQUIRED COMPONENTS Interpreter Development)
 if (Python3_FOUND)
   message (STATUS "Found Python3 " ${Python3_VERSION})
   message (STATUS "Found Python3 in " ${Python3_EXECUTABLE})
+  if (Python3_INCLUDE_DIRS)
+    message (STATUS "Found Python3 include directories: ")
+    include_directories(${Python3_INCLUDE_DIRS})
+    # add_library(pythonFields_src OBJECT src/pythonFields.cpp)
+    set(pentrack_SOURCES ${pentrack_SOURCES} src/pythonFields.cpp)
+  else()
+    message (STATUS "Couldn’t find Python3 include directories!")
+  endif()
 else()
   message (STATUS "Couldn’t find Python3!")
-endif()
-
-if (Python3_INCLUDE_DIRS)
-  message (STATUS "Found Python3 include directories: ")
-else()
-  message (STATUS "Couldn’t find Python3 include directories!")
 endif()
 
 if (Python3_Interpreter_FOUND)
@@ -82,21 +87,57 @@ else()
   message (STATUS "Couldn’t find Python3 Development!")
 endif()
 
-include_directories(${Python3_INCLUDE_DIRS})
 
+# add_library(PENTrack_src OBJECT src/globals.cpp src/trianglemesh.cpp src/geometry.cpp src/mc.cpp src/field.cpp src/edmfields.cpp src/tracking.cpp src/logger.cpp
+#   src/field_2d.cpp src/field_3d.cpp src/fields.cpp src/harmonicfields.cpp src/conductor.cpp src/particle.cpp src/neutron.cpp src/microroughness.cpp
+#   src/electron.cpp src/proton.cpp src/mercury.cpp src/xenon.cpp src/source.cpp src/config.cpp src/analyticFields.cpp src/threadpool.cpp)
 
-add_library(PENTrack_src OBJECT src/globals.cpp src/trianglemesh.cpp src/geometry.cpp src/mc.cpp src/field.cpp src/edmfields.cpp src/tracking.cpp src/logger.cpp
-  src/field_2d.cpp src/field_3d.cpp src/fields.cpp src/harmonicfields.cpp src/conductor.cpp src/particle.cpp src/neutron.cpp src/microroughness.cpp
-  src/electron.cpp src/proton.cpp src/mercury.cpp src/xenon.cpp src/source.cpp src/config.cpp src/analyticFields.cpp src/threadpool.cpp)
+add_library(PENTrack_src OBJECT ${pentrack_SOURCES})
+
+# if (Python3_FOUND)
+#   message (STATUS "Found Python3 " ${Python3_VERSION})
+#   message (STATUS "Found Python3 in " ${Python3_EXECUTABLE})
+#   if (Python3_INCLUDE_DIRS)
+#     message (STATUS "Found Python3 include directories: ")
+#     # include_directories(${Python3_INCLUDE_DIRS})
+#     target_compile_definitions(PENTrack_src PUBLIC USEPYTHON=1)
+#     # target_link_libraries (PENTrack Python3::Python)
+#   # set(HDF5_USE_FILE_LOCKING FALSE)  else()
+#     message (STATUS "Couldn’t find Python3 include directories!")
+#   endif()
+# else()
+#   message (STATUS "Couldn’t find Python3!")
+# endif()
+
 
 add_executable(PENTrack src/main.cpp $<TARGET_OBJECTS:PENTrack_src> $<TARGET_OBJECTS:alglib> $<TARGET_OBJECTS:libtricubic>)
 
 
-target_link_libraries (PENTrack ${Boost_LIBRARIES} ${CGAL_LIBRARIES} Python3::Python)
+# target_link_libraries (PENTrack ${Boost_LIBRARIES} ${CGAL_LIBRARIES} Python3::Python)
+target_link_libraries (PENTrack ${Boost_LIBRARIES} ${CGAL_LIBRARIES})
+
 
 # Copy the Python module to the build directory
 # configure_file(src/MagpyField.py MagpyField.py COPYONLY)
 # configure_file(in/magpytest.py magpytest.py COPYONLY)
+
+if (Python3_FOUND)
+  message (STATUS "Found Python3 " ${Python3_VERSION})
+  message (STATUS "Found Python3 in " ${Python3_EXECUTABLE})
+  if (Python3_INCLUDE_DIRS)
+    message (STATUS "Found Python3 include directories: ")
+    # include_directories(${Python3_INCLUDE_DIRS})
+    target_compile_definitions(PENTrack_src PUBLIC USEPYTHON=1)
+    target_compile_definitions(PENTrack PUBLIC USEPYTHON=1)
+    target_link_libraries (PENTrack_src Python3::Python)
+    target_link_libraries (PENTrack Python3::Python)
+  # set(HDF5_USE_FILE_LOCKING FALSE)  else()
+    message (STATUS "Couldn’t find Python3 include directories!")
+  endif()
+else()
+  message (STATUS "Couldn’t find Python3!")
+endif()
+
 
 
 find_package(ROOT)

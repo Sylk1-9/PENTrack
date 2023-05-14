@@ -12,11 +12,12 @@ using namespace std;
 
 TTracker::TTracker(TConfig& config, std::shared_ptr<TLogger>& alogger){  
   logger = alogger.get();
-  // logger = CreateLogger(config);
-  // cout << "got logger in tracking instance" << endl;
 }
 
 void TTracker::IntegrateParticle(std::unique_ptr<TParticle>& p, const double tmax, std::map<std::string, std::string> &particleconf, TMCGenerator &mc, const TGeometry &geom, const TFieldManager &field){
+
+  vector<std::pair<solid, bool> > currentsolids;
+  
   double tau = 0;
   istringstream(particleconf["tau"]) >> tau;
   if (tau > 0){
@@ -113,7 +114,7 @@ void TTracker::IntegrateParticle(std::unique_ptr<TParticle>& p, const double tma
       //			d2 = pow(y2[0] - y1[0], 2) + pow(y2[1] - y1[1], 2) + pow(y2[2] - y1[2], 2);
       //			cout << x2 - x1 << " " << sqrt(l2) << " " << sqrt(d2) << " " << 0.5*sqrt(l2 - d2) << "\n";
 
-      resetintegration = CheckHit(p, x1, y1, x2, y2, stepper, mc, geom, field); // check if particle hit a material boundary or was absorbed between y1 and y2
+      resetintegration = CheckHit(p, x1, y1, x2, y2, stepper, mc, geom, field, currentsolids); // check if particle hit a material boundary or was absorbed between y1 and y2
       if (resetintegration){
 	x = x2; // if particle path was changed: reset integration end point
 	y = y2;
@@ -128,7 +129,7 @@ void TTracker::IntegrateParticle(std::unique_ptr<TParticle>& p, const double tma
 
     IntegrateSpin(p, spin, stepper, x, y, SpinTimes, field, spininterpolatefields, SpinBmax, mc, flipspin); // calculate spin precession and spin-flip probability
 
-    logger->PrintTrack(p, stepper.previous_time(), stepper.previous_state(), x, y, spin, GetCurrentsolid(), field);
+    logger->PrintTrack(p, stepper.previous_time(), stepper.previous_state(), x, y, spin, GetCurrentsolid(currentsolids), field);
 
     //		progress += 100*max(y[6]/tau, max((x - tstart)/(tmax - tstart), y[8]/maxtraj)) - progress.count();
 
@@ -145,7 +146,7 @@ void TTracker::IntegrateParticle(std::unique_ptr<TParticle>& p, const double tma
     p->DoDecay(x, y, mc, geom, field);
   }
 
-  p->SetFinalState(x, y, spin, GetCurrentsolid());
+  p->SetFinalState(x, y, spin, GetCurrentsolid(currentsolids));
   logger->Print(p, x, y, spin, geom, field);
 
 
@@ -165,7 +166,7 @@ void TTracker::IntegrateParticle(std::unique_ptr<TParticle>& p, const double tma
 
 
 bool TTracker::CheckHit(const std::unique_ptr<TParticle>& p, const value_type x1, const state_type &y1, value_type &x2, state_type &y2,
-			const dense_stepper_type &stepper, TMCGenerator &mc, const TGeometry &geom, const TFieldManager &field){
+			const dense_stepper_type &stepper, TMCGenerator &mc, const TGeometry &geom, const TFieldManager &field, vector<std::pair<solid, bool> > &currentsolids){
   if (!geom.CheckSegment(&y1[0], &y2[0])){ // check if start point is inside bounding box of the simulation geometry
     //    printf("\nParticle has hit outer boundaries: Stopping it! t=%g x=%g y=%g z=%g\n",x2,y2[0],y2[1],y2[2]);
     p->SetStopID(ID_HIT_BOUNDARIES);
@@ -174,7 +175,7 @@ bool TTracker::CheckHit(const std::unique_ptr<TParticle>& p, const value_type x1
   if (x2 == x1)
     return false;
 
-  solid currentsolid = GetCurrentsolid();
+  solid currentsolid = GetCurrentsolid(currentsolids);
 
   multimap<TCollision, bool> colls;
   bool collfound = false;
@@ -198,13 +199,13 @@ bool TTracker::CheckHit(const std::unique_ptr<TParticle>& p, const value_type x1
 	return true;
       }
 
-      if (DoHit(p, xc1, yc1, xc2, yc2, stepper, mc, geom)){
+      if (DoHit(p, xc1, yc1, xc2, yc2, stepper, mc, geom, currentsolids)){
 	x2 = xc2;
 	y2 = yc2;
 	return true;
       }
 
-      if (CheckHit(p, xc2, yc2, x2, y2, stepper, mc, geom, field)){
+      if (CheckHit(p, xc2, yc2, x2, y2, stepper, mc, geom, field, currentsolids)){
 	return true;
       }
     }
@@ -264,13 +265,13 @@ bool TTracker::DoStep(const std::unique_ptr<TParticle>& p, const value_type x1, 
   if (x2temp == x2 && y2temp == y2)
     return false;
   else{
-    std::cout << "Do particle " << p->GetParticleNumber() << " has altered path" << std::endl;
+    // std::cout << "Do particle " << p->GetParticleNumber() << " has altered path" << std::endl;
     return true;
   }
 }
 
 bool TTracker::DoHit(const std::unique_ptr<TParticle>& p, const value_type x1, const state_type &y1, value_type &x2, state_type &y2,
-		     const dense_stepper_type &stepper, TMCGenerator &mc, const TGeometry &geom) {
+		     const dense_stepper_type &stepper, TMCGenerator &mc, const TGeometry &geom, vector<pair<solid, bool> > &currentsolids) {
   bool trajectoryaltered = false, traversed = true;
 
   multimap<TCollision, bool> colls;
@@ -312,7 +313,7 @@ bool TTracker::DoHit(const std::unique_ptr<TParticle>& p, const value_type x1, c
     }
   }
 
-  solid leaving = GetCurrentsolid(); // particle can only leave highest-priority solid
+  solid leaving = GetCurrentsolid(currentsolids); // particle can only leave highest-priority solid
   solid entering = geom.defaultsolid;
   for (auto sld: newsolids){
     if (!sld.second && sld.first.ID > entering.ID)
@@ -356,10 +357,16 @@ bool TTracker::DoHit(const std::unique_ptr<TParticle>& p, const value_type x1, c
   return false;
 }
 
-const solid& TTracker::GetCurrentsolid() const{
+const solid& TTracker::GetCurrentsolid(vector<pair<solid, bool> > currentsolids) const{
   auto sld = max_element(currentsolids.begin(), currentsolids.end(), [](const pair<solid, bool> &s1, const pair<solid, bool> &s2){ return s1.second || (!s2.second && s1.first.ID < s2.first.ID); });
   return sld->first;
 }
+
+
+// const solid& TTracker::GetCurrentsolid() const{
+//   auto sld = max_element(currentsolids.begin(), currentsolids.end(), [](const pair<solid, bool> &s1, const pair<solid, bool> &s2){ return s1.second || (!s2.second && s1.first.ID < s2.first.ID); });
+//   return sld->first;
+// }
 
 
 void TTracker::IntegrateSpin(const std::unique_ptr<TParticle>& p, state_type &spin, const dense_stepper_type &stepper,
@@ -467,8 +474,9 @@ void TTracker::IntegrateSpin(const std::unique_ptr<TParticle>& p, state_type &sp
   }
 
 
-  // if (Babs2 > Bmax){ // if magnetic field grows above Bmax, collapse spin state to one of the two polarisation states
-  if (true){ // if magnetic field grows above Bmax, collapse spin state to one of the two polarisation states
+  if (Babs2 > Bmax){ // if magnetic field grows above Bmax, collapse spin state to one of the two polarisation states
+  // if (Babs2 < Bmax){ // sly Todo: if magnetic field grows under Bmax, collapse spin state to one of the two polarisation states
+  // if (true){ // if magnetic field grows above Bmax, collapse spin state to one of the two polarisation states
     p->DoPolarize(x2, y2, polarisation, flipspin, mc);
     spin[0] = B2[0]*y2[7]/Babs2;
     spin[1] = B2[1]*y2[7]/Babs2;
