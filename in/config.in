@@ -180,8 +180,8 @@ polarization 1	# initial polarization is randomly chosen, weighted by this varia
 # 5 COMSOL	fields/magpy/Bfield_coil_xmin-1200_xmax2800_hx50_yzmax60_hyz5.txt			1	0	1
 # 4 COMSOL	fields/magpy/Bfield_octupole-monoseg-tra_xmin0_xmax2000_hx10_yzmax60_hyz1.txt	1	0	1
 # 5 COMSOL	fields/magpy/Bfield_coil_xmin0_xmax2000_hx10_yzmax60_hyz1.txt			1	0	1
-# 4 COMSOL	fields/magpy/Bfield_octupole-monoseg-tra_xmin0_xmax2000_hx50_yzmax60_hyz5.txt	1	0	1
-# 5 COMSOL	fields/magpy/Bfield_coil_xmin0_xmax2000_hx50_yzmax60_hyz5.txt			1	0	1
+4 COMSOL	fields/magpy/Bfield_octupole-monoseg-tra_xmin0_xmax2000_hx50_yzmax60_hyz5.txt	1	0	1
+5 COMSOL	fields/magpy/Bfield_coil_xmin0_xmax2000_hx50_yzmax60_hyz5.txt			1	0	1
 
 
 ## Magpy calculates the three field components from magnet magpy object provided by a .py file section.
@@ -191,8 +191,8 @@ polarization 1	# initial polarization is randomly chosen, weighted by this varia
 #file-type 	magpy-file	BFieldScale
 # 16 PythonField 	magpytest	1	 
 # 16 PythonField 	magpytest	1	 
-17 PythonField	octupole	1
-18 PythonField	coil		1
+# 17 PythonField	octupole	1
+# 18 PythonField	coil		1
 # 18 PythonField 	coil-copy	0.001
 
 

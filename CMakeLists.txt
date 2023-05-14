@@ -56,7 +56,7 @@ endif()
 
 
 set(pentrack_SOURCES src/globals.cpp src/trianglemesh.cpp src/geometry.cpp src/mc.cpp src/field.cpp src/edmfields.cpp src/tracking.cpp src/logger.cpp src/field_2d.cpp src/field_3d.cpp src/fields.cpp src/harmonicfields.cpp src/conductor.cpp src/particle.cpp src/neutron.cpp src/microroughness.cpp src/electron.cpp src/proton.cpp src/mercury.cpp src/xenon.cpp src/source.cpp src/config.cpp src/analyticFields.cpp src/threadpool.cpp)
-
+ 
 
 # ind_package(Python3 REQUIRED Development)
 find_package (Python3 REQUIRED COMPONENTS Interpreter Development)
@@ -94,22 +94,6 @@ endif()
 
 add_library(PENTrack_src OBJECT ${pentrack_SOURCES})
 
-# if (Python3_FOUND)
-#   message (STATUS "Found Python3 " ${Python3_VERSION})
-#   message (STATUS "Found Python3 in " ${Python3_EXECUTABLE})
-#   if (Python3_INCLUDE_DIRS)
-#     message (STATUS "Found Python3 include directories: ")
-#     # include_directories(${Python3_INCLUDE_DIRS})
-#     target_compile_definitions(PENTrack_src PUBLIC USEPYTHON=1)
-#     # target_link_libraries (PENTrack Python3::Python)
-#   # set(HDF5_USE_FILE_LOCKING FALSE)  else()
-#     message (STATUS "Couldn’t find Python3 include directories!")
-#   endif()
-# else()
-#   message (STATUS "Couldn’t find Python3!")
-# endif()
-
-
 add_executable(PENTrack src/main.cpp $<TARGET_OBJECTS:PENTrack_src> $<TARGET_OBJECTS:alglib> $<TARGET_OBJECTS:libtricubic>)
 
 
@@ -131,7 +115,6 @@ if (Python3_FOUND)
     target_compile_definitions(PENTrack PUBLIC USEPYTHON=1)
     target_link_libraries (PENTrack_src Python3::Python)
     target_link_libraries (PENTrack Python3::Python)
-  # set(HDF5_USE_FILE_LOCKING FALSE)  else()
     message (STATUS "Couldn’t find Python3 include directories!")
   endif()
 else()
@@ -173,6 +156,7 @@ if (BUILD_TESTS)
   endif()
   if (HDF5_FOUND)
     target_link_libraries(runTests ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+    set(HDF5_USE_FILE_LOCKING FALSE)
   endif()
   target_compile_definitions(runTests PRIVATE "BOOST_TEST_DYN_LINK=1")
   add_test(COMMAND runTests)

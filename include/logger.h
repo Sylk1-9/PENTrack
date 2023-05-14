@@ -6,6 +6,13 @@
 #include <fstream>
 
 #include <mutex>
+#include <thread>
+
+#include <vector>           // for std::vector
+#include <string>           // for std::string
+// #include <mutex>            // for std::mutex and std::lock_guard
+#include <stdexcept>        // for std::runtime_error
+
 
 #include "particle.h"
 #include "geometry.h"
@@ -235,6 +242,11 @@ class THDF5Logger: public TLogger {
 private:
   hid_t HDF5file;
   std::mutex hdf5_mutex;
+  // std::vector<std::mutex> hdf5_mutex_pool;
+  // std::vector<double> localBuffer;
+  // static thread_local std::vector<double> localBuffer; // thread_local std::vector<double> THDF5Logger::localBuffer;
+
+  
   // std::mutex hdf5w_mutex;
 
 

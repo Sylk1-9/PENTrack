@@ -632,17 +632,61 @@ THDF5Logger::THDF5Logger(TConfig& aconfig){
 }
 
 
+// In construciton : localBuffer for threads
+// void THDF5Logger::DoLog(const std::string &particlename, const std::string &suffix, const std::vector<std::string> &titles, const std::vector<double> &vars) {
+//   string name = particlename + suffix;
+//   size_t Nfields = titles.size();
+//   size_t offsets[Nfields];
+//   for (size_t i = 0; i < Nfields; ++i) offsets[i] = i * sizeof(double);
+
+//   size_t bufferIndex = std::hash<std::thread::id>{}(std::this_thread::get_id()) % 7;
+//   std::lock_guard<std::mutex> lock(localBuffer[bufferIndex]);
+
+//   // Write logs to the thread-local buffer independently
+//   localBuffer.insert(localBuffer.end(), vars.begin(), vars.end());
+
+//   // If the local buffer reaches a certain threshold or time-based interval, flush the logs to HDF5 file
+//   if (localBuffer.size() >= 100000) {
+//     // Lock the mutex before accessing the HDF5 library
+//     std::lock_guard<std::mutex> lock(hdf5_mutex);
+
+//     if (H5Lexists(HDF5file, name.c_str(), H5P_DEFAULT) <= 0) {
+//       const char *field_names[Nfields];
+//       hid_t field_types[Nfields];
+//       for (size_t i = 0; i < Nfields; ++i) {
+//         field_names[i] = titles[i].c_str();
+//         field_types[i] = H5T_NATIVE_DOUBLE;
+//       }
+
+//       auto ret = H5TBmake_table(name.c_str(), HDF5file, name.c_str(), Nfields, 1, Nfields * sizeof(double), field_names, offsets, field_types, 10, nullptr, 1, localBuffer.data());
+//       if (ret < 0) throw std::runtime_error("Could not create table " + name);
+//     } else {
+//       size_t sizes[Nfields];
+//       for (size_t i = 0; i < Nfields; ++i) sizes[i] = sizeof(double);
+//       auto ret = H5TBappend_records(HDF5file, name.c_str(), 1, Nfields * sizeof(double), offsets, sizes, localBuffer.data());
+//       if (ret < 0) throw std::runtime_error("Could not write data to table " + name);
+//     }
+
+//     // Clear the local buffer after flushing
+//     localBuffer.clear();
+//   }
+// }
 
 
+// Working, but slow : 
 void THDF5Logger::DoLog(const std::string &particlename, const std::string &suffix, const std::vector<std::string> &titles, const std::vector<double> &vars) {
   string name = particlename + suffix;
   size_t Nfields = titles.size();
   size_t offsets[Nfields];
   for (size_t i = 0; i < Nfields; ++i) offsets[i] = i * sizeof(double);
 
+  
   // Lock the mutex before accessing the HDF5 library
   std::lock_guard<std::mutex> lock(hdf5_mutex);
+  // size_t mutexIndex = std::hash<std::string>{}(particlename) % hdf5_mutex_pool.size();
+  // std::lock_guard<std::mutex> lock(hdf5_mutex_pool[mutexIndex]);
 
+  
   if (H5Lexists(HDF5file, name.c_str(), H5P_DEFAULT) <= 0){
     const char *field_names[Nfields];
     hid_t field_types[Nfields];
@@ -660,7 +704,6 @@ void THDF5Logger::DoLog(const std::string &particlename, const std::string &suff
     auto ret = H5TBappend_records(HDF5file, name.c_str(), 1, Nfields*sizeof(double), offsets, sizes, vars.data());
     if (ret < 0) throw std::runtime_error("Could not write data to table " + name);
   }
-
 }
 
 
