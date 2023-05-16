@@ -200,6 +200,7 @@ void TParticle::SpinPrecessionAxis(const double t, const double B[3], const doub
 void TParticle::SpinDerivs(const state_type &y, state_type &dydx, const value_type x, const dense_stepper_type &stepper, const TFieldManager *field, const std::vector<alglib::spline1dinterpolant> &omega) const{
   double omegax, omegay, omegaz;
   if (omega.size() == 3){ // if interpolator exists, use it
+    std::cout << "inside Spinderivs interpolator !" << std::endl;
     omegax = alglib::spline1dcalc(omega[0], x);
     omegay = alglib::spline1dcalc(omega[1], x);
     omegaz = alglib::spline1dcalc(omega[2], x);

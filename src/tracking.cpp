@@ -431,7 +431,9 @@ void TTracker::IntegrateSpin(const std::unique_ptr<TParticle>& p, state_type &sp
 
 
     dense_stepper_type spinstepper = boost::numeric::odeint::make_dense_output(1e-12, 1e-12, stepper_type());
-    spinstepper.initialize(spin, x1, std::abs(pi/p->GetGyromagneticRatio()/Babs1)); // initialize integrator with step size = half rotation
+    // dense_stepper_type spinstepper = boost::numeric::odeint::make_dense_output(1e-16, 1e-16, stepper_type()); // ToDo Sly
+    // spinstepper.initialize(spin, x1, std::abs(pi/p->GetGyromagneticRatio()/Babs1)); // initialize integrator with step size = half rotation
+    spinstepper.initialize(spin, x1, std::abs(pi/p->GetGyromagneticRatio()/Babs1)); // initialize integrator with step size = half rotation ToDo sly
     logger->PrintSpin(p, x1, spinstepper, stepper, field);
     unsigned int steps = 0;
     while (true){
@@ -453,10 +455,14 @@ void TTracker::IntegrateSpin(const std::unique_ptr<TParticle>& p, state_type &sp
 
       if (t >= x2)
 	break;
+
+      // std::cout << "time t = " << t << " Polarisation proj = " << polarisation << " Sx = " << spin[0] << " Sy = " << spin[1] << " Sz = " << spin[2] << std::endl;
     }
 
     // calculate new spin projection
     polarisation = (spin[0]*B2[0] + spin[1]*B2[1] + spin[2]*B2[2])/Babs2/sqrt(spin[0]*spin[0] + spin[1]*spin[1] + spin[2]*spin[2]);
+
+
   }
   else if ((Babs1 < Bmax || Babs2 < Bmax)){ // if time outside selected ranges, parallel-transport spin along magnetic field
     if (polarisation*polarisation >= 1){ // catch rounding errors
@@ -475,8 +481,7 @@ void TTracker::IntegrateSpin(const std::unique_ptr<TParticle>& p, state_type &sp
 
 
   if (Babs2 > Bmax){ // if magnetic field grows above Bmax, collapse spin state to one of the two polarisation states
-  // if (Babs2 < Bmax){ // sly Todo: if magnetic field grows under Bmax, collapse spin state to one of the two polarisation states
-  // if (true){ // if magnetic field grows above Bmax, collapse spin state to one of the two polarisation states
+  // if (Babs2 < Bmax){ // sly Todo
     p->DoPolarize(x2, y2, polarisation, flipspin, mc);
     spin[0] = B2[0]*y2[7]/Babs2;
     spin[1] = B2[1]*y2[7]/Babs2;

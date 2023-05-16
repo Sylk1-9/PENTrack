@@ -682,7 +682,7 @@ void THDF5Logger::DoLog(const std::string &particlename, const std::string &suff
   size_t offsets[Nfields];
   for (size_t i = 0; i < Nfields; ++i) offsets[i] = i * sizeof(double);
 
-  
+  // std::cout << "\nsaving HDF5 table for thread " << std::this_thread::get_id() << name << std::endl;
   // Lock the mutex before accessing the HDF5 library
   std::lock_guard<std::mutex> lock(hdf5_mutex);
   // size_t mutexIndex = std::hash<std::string>{}(particlename) % hdf5_mutex_pool.size();

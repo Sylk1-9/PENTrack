@@ -688,9 +688,9 @@ void PrintGeometry(const boost::filesystem::path &outfile, TGeometry &geom){
  */
 void SimulateParticles(int nparticle, TParticleSource* source, TMCGenerator* mc, TGeometry* geom, TFieldManager* field, TConfig *configin, TTracker *tracker,  map<string, map<int, int>>& ID_counter, int& ntotalsteps, progress_display& progress) {
 
-  // std::ostringstream oss;
-  // oss << std::this_thread::get_id();
-  // printf("Thread %s assigned to %i %s(s) \n", oss.str().c_str(), nparticle, source->GetParticleName().c_str());
+  std::ostringstream oss;
+  oss << std::this_thread::get_id();
+  printf("Thread %s assigned to %i %s(s) \n", oss.str().c_str(), nparticle, source->GetParticleName().c_str());
 
   for (int iMC = 0; iMC < nparticle; iMC++) {
     if (quit.load())
