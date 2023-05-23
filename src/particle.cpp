@@ -99,7 +99,6 @@ void TParticle::derivs(const state_type &y, state_type &dydx, const value_type x
     field->BField(y[0],y[1],y[2], x, B, dBidxj);
   if (q != 0) // if particle has charge calculate electric field
     field->EField(y[0],y[1],y[2], x, V, E);
-  EquationOfMotion(y, dydx, x, B, dBidxj, E);
 
   // double trace = dBidxj[0][0] + dBidxj[1][1] + dBidxj[2][2];
   // for(int i=0; i<3; ++i){
@@ -109,7 +108,8 @@ void TParticle::derivs(const state_type &y, state_type &dydx, const value_type x
   // 	dBidxj[j][i] = dBidxj[i][j];
   //     }
   // }
-  // std::cout << "dBidj" << std::endl;
+  
+  // std::cout << " \ndBidj" << std::endl;
   // for(int i=0; i<3;++i){
   //   for(int j=0; j<3; ++j){
   //     std::cout << dBidxj[i][j] << ", ";
@@ -118,9 +118,12 @@ void TParticle::derivs(const state_type &y, state_type &dydx, const value_type x
   // }
 
   // std::cout << std::endl;
-  // std::cout << "Tr dBidj = " << dBidxj[0][0] + dBidxj[1][1] + dBidxj[2][2] << std::endl;
-  // std::cout << "Rot dBidj = " << (dBidxj[0][1] - dBidxj[1][0])/(dBidxj[0][1] + dBidxj[1][0])  << ";  " <<  (dBidxj[0][2] - dBidxj[2][0])/(dBidxj[0][2] + dBidxj[2][0]) << ";  " <<  (dBidxj[1][2] - dBidxj[2][1])/(dBidxj[1][2] - dBidxj[2][1]) << std::endl;
-
+  // // std::cout << "dBxdx" << dBidxj[0][0] << "dBydy" << dBidxj[1][1] << "dBzdz" << dBidxj[2][2] << std::endl;
+  // std::cout << "Tr dBidj error = " << (dBidxj[0][0] + dBidxj[1][1] + dBidxj[2][2])/sqrt(dBidxj[0][0]*dBidxj[0][0] + dBidxj[1][1]*dBidxj[1][1] + dBidxj[2][2]*dBidxj[2][2]) << std::endl;
+  //   // std::cout << "dBxdy" << dBidxj[0][1] << "dBydy" << dBidxj[0][2] << "dBzdz" << dBidxj[1][2] << std::endl;
+  // std::cout << "Rot dBidj error = " << (dBidxj[0][1] - dBidxj[1][0])/(dBidxj[0][1] + dBidxj[1][0])  << ";  " <<  (dBidxj[0][2] - dBidxj[2][0])/(dBidxj[0][2] + dBidxj[2][0]) << ";  " <<  (dBidxj[1][2] - dBidxj[2][1])/(dBidxj[1][2] + dBidxj[2][1]) << std::endl;
+  
+  EquationOfMotion(y, dydx, x, B, dBidxj, E);
 
 }
 
