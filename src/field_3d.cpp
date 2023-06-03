@@ -84,10 +84,10 @@ inline double tricubic_eval_fast(double a[64], double x, double y, double z, int
   // For instance, d2/dx2 x^3 = 6 x, so fact[3][2] = 6.
   static double fact[4][4] {
     { 1.0, 0.0, 0.0, 0.0 },
-      { 1.0, 1.0, 0.0, 0.0 },
-	{ 1.0, 2.0, 2.0, 0.0 },
-	  { 1.0, 3.0, 6.0, 6.0 },
-      };
+    { 1.0, 1.0, 0.0, 0.0 },
+    { 1.0, 2.0, 2.0, 0.0 },
+    { 1.0, 3.0, 6.0, 6.0 },
+  };
   /*
     double result = 0.0;
     for (int i = derx; i <= 3; ++i) {
@@ -380,6 +380,20 @@ void TabField3::PreInterpol(const array3D &Tab, field_type &coeff) const{
   CalcDerivs(dFdy, 2, dFdydz); // d2F/dydz
   CalcDerivs(dFdxdy, 2, dFdxdydz); // d3F/dxdydz
 
+  std::array<unsigned long, 3> myindices;
+  double mycellx = xyz[0][1+1] - xyz[0][1];
+  double mycelly = xyz[1][20+1] - xyz[1][20];
+  double mycellz = xyz[2][25+1] - xyz[2][25];
+
+  // myindices = {1, 1, 1}; // collect indices of corners of each grid cell
+  // std::cout << "dFdxdy=" <<  dFdxdy(myindices)*mycellx*mycelly << std::endl;
+  // std::cout << "dFdxdz=" <<  dFdxdy(myindices)*mycellx*mycellz << std::endl;
+  // std::cout << "dFdydz=" <<  dFdxdz(myindices)*mycelly*mycellz << std::endl;
+  myindices = {1, 20, 25}; // collect indices of corners of each grid cell
+  std::cout << "\ndFdx=" <<  dFdx(myindices)*mycellx << " x= " << xyz[0][1] << std::endl;
+  std::cout << "dFdy="   <<  dFdy(myindices)*mycelly << " y= " << xyz[1][20] << std::endl;
+  std::cout << "dFdz="   <<  dFdz(myindices)*mycellz << " z= " << xyz[2][25] << std::endl;
+ 
   for (unsigned long ix = 0; ix < len[0]; ++ix){
     for (unsigned long iy = 0; iy < len[1]; ++iy){
       for (unsigned long iz = 0; iz < len[2]; ++iz){
@@ -448,8 +462,11 @@ TabField3::TabField3(const std::array<std::vector<double>, 3> &xyzTab, const std
     for (unsigned j = 0; j < 3; ++j){
       if (not BTab[j].empty()){
 	B[j](index) = BTab[j][i];
+	// std::cout << "xyzTab[" << j << "][" << i << "]=" << xyzTab[j][i] << " and " << "BTab[" << j<< "][" << i << "]=" << BTab[j][i] <<  std::endl;
       }
     }
+    // std::cout << "xyzTab[" << 0 << "][" << i << "]=" << xyzTab[0][i] << " and " << "BTab[" << 0 << "][" << i << "]=" << BTab[0][i] <<  std::endl;
+
     if (not VTab.empty())
       V(index) = VTab[i];
   }
