@@ -42,6 +42,9 @@ TFieldManager::TFieldManager(TConfig &conf){
     else if (type == "COMSOL"){
       fields.emplace_back(ReadComsolField(i.second, conf["FORMULAS"]));
     }
+    else if (type == "TRICUBIC"){
+      fields.emplace_back(ReadTricubicField(i.second, conf["FORMULAS"]));
+    }
     else if ((type == "Conductor") && (ss >> Ibar >> p1 >> p2 >> p3 >> p4 >> p5 >> p6 >> Bscale)){
       std::unique_ptr<TField> f(new TConductorField(p1, p2, p3, p4, p5, p6, Ibar));
       Bscale = ResolveFormula(Bscale, conf["FORMULAS"]);

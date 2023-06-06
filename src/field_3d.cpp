@@ -179,7 +179,7 @@ TFieldContainer ReadComsolField(const std::string &params, const std::map<std::s
   auto xminmax = std::minmax_element(x.begin(), x.end());
   auto yminmax = std::minmax_element(y.begin(), y.end());
   auto zminmax = std::minmax_element(z.begin(), z.end());
-  return TFieldContainer(std::unique_ptr<TabField3>(new TabField3({x,y,z}, {bx,by,bz}, std::vector<double>())), Bscale, "0", *xminmax.second, *xminmax.first, *yminmax.second, *yminmax.first, *zminmax.second, *zminmax.first, BoundaryWidth);
+  return TFieldContainer(std::unique_ptr<TabField3>(new TabField3({x,y,z}, {bx,by,bz}, std::vector<double>(), std::array<std::array<std::vector<double>, 7>, 3>())), Bscale, "0", *xminmax.second, *xminmax.first, *yminmax.second, *yminmax.first, *zminmax.second, *zminmax.first, BoundaryWidth);
 }
 
 TFieldContainer ReadOperaField3(const std::string &params, const std::map<std::string, std::string> &formulas){
@@ -306,8 +306,106 @@ TFieldContainer ReadOperaField3(const std::string &params, const std::map<std::s
   auto xminmax = std::minmax_element(xyzTab[0].begin(), xyzTab[0].end());
   auto yminmax = std::minmax_element(xyzTab[1].begin(), xyzTab[1].end());
   auto zminmax = std::minmax_element(xyzTab[2].begin(), xyzTab[2].end());
-  return TFieldContainer(std::unique_ptr<TabField3>(new TabField3(xyzTab, BTab, VTab)), Bscale, Escale, *xminmax.second, *xminmax.first, *yminmax.second, *yminmax.first, *zminmax.second, *zminmax.first, BoundaryWidth);
+  return TFieldContainer(std::unique_ptr<TabField3>(new TabField3(xyzTab, BTab, VTab, std::array<std::array<std::vector<double>, 7>, 3>())), Bscale, Escale, *xminmax.second, *xminmax.first, *yminmax.second, *yminmax.first, *zminmax.second, *zminmax.first, BoundaryWidth);
 }
+
+
+
+TFieldContainer ReadTricubicField(const std::string &params, const std::map<std::string, std::string> &formulas){
+  std::istringstream ss(params);
+  boost::filesystem::path ft;
+  std::string fieldtype, Bscale;
+  double BoundaryWidth, lengthconv;
+  ss >> fieldtype >> ft >> Bscale >> BoundaryWidth >> lengthconv; // read fieldtype, tablefilename, and rest of parameters
+  Bscale = ResolveFormula(Bscale, formulas);
+  if (!ss){
+    throw std::runtime_error((boost::format("Could not read all required parameters for field %1%!") % fieldtype).str());
+  }
+  ft = boost::filesystem::absolute(ft, configpath.parent_path());
+
+  std::string line;
+  std::vector<std::string> line_parts;
+  std::vector<double> x, y, z;
+  std::vector<double> bx, by, bz;
+  std::vector<double> dBx_dx, dBx_dy, dBx_dz, dBx_dxdy, dBx_dxdz, dBx_dydz, dBx_dxdydz;
+  std::vector<double> dBy_dx, dBy_dy, dBy_dz, dBy_dxdy, dBy_dxdz, dBy_dydz, dBy_dxdydz;
+  std::vector<double> dBz_dx, dBz_dy, dBz_dz, dBz_dxdy, dBz_dxdz, dBz_dydz, dBz_dxdydz;
+  
+  std::ifstream FINstream(ft.string(), std::ifstream::in);
+  boost::iostreams::filtering_istream FIN;
+  if (boost::filesystem::extension(ft) == ".bz2"){
+    FIN.push(boost::iostreams::bzip2_decompressor());
+  }
+  else if (boost::filesystem::extension(ft) == ".gz"){
+    FIN.push(boost::iostreams::gzip_decompressor());
+  }
+  FIN.push(FINstream);
+  if (!FINstream.is_open() or !FIN.is_complete()){
+    throw std::runtime_error("Could not open " + ft.string());
+  }
+  std::cout << "\nReading " << ft << "\n";
+
+  // Read in file data
+  int lineNum = 0;
+
+  while (getline(FIN,line)){
+    lineNum++;
+    if (line.substr(0,1) == "%" || line.substr(0,1) == "#") continue;     // Skip commented lines
+    boost::split(line_parts, line, boost::is_any_of("\t, "), boost::token_compress_on); //Delineate tab, space, commas
+
+    if (line_parts.size() != 21){
+      throw std::runtime_error((boost::format("Error reading line %1% of file %2%") % lineNum % ft.string()).str());
+    }
+
+    x.push_back( std::stod(line_parts[0], nullptr) * lengthconv);
+    y.push_back( std::stod(line_parts[1], nullptr) * lengthconv);
+    z.push_back( std::stod(line_parts[2], nullptr) * lengthconv);
+
+    bx.push_back( std::stod(line_parts[3], nullptr));
+    by.push_back( std::stod(line_parts[4], nullptr));
+    bz.push_back( std::stod(line_parts[5], nullptr));
+
+    dBx_dx.push_back( std::stod(line_parts[6], nullptr));
+    dBx_dy.push_back( std::stod(line_parts[7], nullptr));
+    dBx_dz.push_back( std::stod(line_parts[8], nullptr));
+    dBx_dxdy.push_back( std::stod(line_parts[9], nullptr));
+    dBx_dxdz.push_back( std::stod(line_parts[10], nullptr));
+    dBx_dydz.push_back( std::stod(line_parts[11], nullptr));
+    dBx_dxdydz.push_back( std::stod(line_parts[12], nullptr));
+    
+    dBy_dx.push_back( std::stod(line_parts[7], nullptr)); // = dBx_dy
+    dBy_dy.push_back( std::stod(line_parts[13], nullptr));
+    dBy_dz.push_back( std::stod(line_parts[14], nullptr));
+    dBy_dxdy.push_back( std::stod(line_parts[15], nullptr));
+    dBy_dxdz.push_back( std::stod(line_parts[11], nullptr)); // = dBx_dydz
+    dBy_dydz.push_back( std::stod(line_parts[16], nullptr));
+    dBy_dxdydz.push_back( std::stod(line_parts[17], nullptr));
+    
+    dBz_dx.push_back( std::stod(line_parts[8], nullptr)); // = dBx_dz
+    dBz_dy.push_back( std::stod(line_parts[14], nullptr)); // = dBy_dz
+    dBz_dz.push_back( 1 - std::stod(line_parts[6], nullptr) - std::stod(line_parts[13], nullptr)); // = 1 - dBx_dx - dBy_dy
+    dBz_dxdy.push_back( std::stod(line_parts[11], nullptr)); // = dBx_dydz
+    dBz_dxdz.push_back( std::stod(line_parts[18], nullptr));
+    dBz_dydz.push_back( std::stod(line_parts[19], nullptr));
+    dBz_dxdydz.push_back( std::stod(line_parts[20], nullptr));
+    
+  }
+  
+  if (x.empty() || y.empty() || z.empty() || bx.empty() || by.empty()|| bz.empty() ) {
+    throw std::runtime_error("No data read from " + ft.string());
+  }
+  
+  const std::array<std::vector<double>, 7> dBxTab={dBx_dx, dBx_dy, dBx_dz, dBx_dxdy, dBx_dxdz, dBx_dydz, dBx_dxdydz};
+  const std::array<std::vector<double>, 7> dByTab={dBy_dx, dBy_dy, dBy_dz, dBy_dxdy, dBy_dxdz, dBy_dydz, dBy_dxdydz};
+  const std::array<std::vector<double>, 7> dBzTab={dBz_dx, dBz_dy, dBz_dz, dBz_dxdy, dBz_dxdz, dBz_dydz, dBz_dxdydz};
+    
+  auto xminmax = std::minmax_element(x.begin(), x.end());
+  auto yminmax = std::minmax_element(y.begin(), y.end());
+  auto zminmax = std::minmax_element(z.begin(), z.end());
+  return TFieldContainer(std::unique_ptr<TabField3>(new TabField3({x,y,z}, {bx,by,bz}, std::vector<double>(), {dBxTab, dByTab, dBzTab})), Bscale, "0", *xminmax.second, *xminmax.first, *yminmax.second, *yminmax.first, *zminmax.second, *zminmax.first, BoundaryWidth);
+}
+
+
 
 
 void TabField3::CheckTab(const std::array<std::vector<double>, 3> &B, const std::vector<double> &V){
@@ -338,6 +436,9 @@ void TabField3::CalcDerivs(const array3D &Tab, const unsigned long diff_dim, arr
   alglib::real_1d_array x, y, diff;
   std::array<unsigned long, 3> index;
   DiffTab.resize(boost::extents[Tab.shape()[0]][Tab.shape()[1]][Tab.shape()[2]]);
+
+  // std::cout << Tab.shape()[0] << ", " << Tab.shape()[1] << ", " << Tab.shape()[2] << std::endl;
+  
   unsigned long len = xyz[diff_dim].size();
   x.setcontent(len, &xyz[diff_dim][0]);
   y.setlength(len);
@@ -364,7 +465,7 @@ void TabField3::CalcDerivs(const array3D &Tab, const unsigned long diff_dim, arr
 }
 
 
-void TabField3::PreInterpol(const array3D &Tab, field_type &coeff) const{
+void TabField3::PreInterpol(const array3D &Tab, const std::array<array3D, 7> &dTab, field_type &coeff) const{
   std::array<unsigned long, 3> len;
   for (unsigned long i = 0; i < 3; ++i){
     len[i] = xyz[i].size() - 1;
@@ -372,28 +473,45 @@ void TabField3::PreInterpol(const array3D &Tab, field_type &coeff) const{
   coeff.resize(len);
 
   array3D dFdx, dFdy, dFdz, dFdxdy, dFdxdz, dFdydz, dFdxdydz; // derivatives with respect to x, y, z, xy, xz, yz, xyz
-  CalcDerivs(Tab, 0, dFdx); // dF/dx
-  CalcDerivs(Tab, 1, dFdy); // dF/dy
-  CalcDerivs(Tab, 2, dFdz); // dF/dz
-  CalcDerivs(dFdx, 1, dFdxdy); // d2F/dxdy
-  CalcDerivs(dFdx, 2, dFdxdz); // d2F/dxdz
-  CalcDerivs(dFdy, 2, dFdydz); // d2F/dydz
-  CalcDerivs(dFdxdy, 2, dFdxdydz); // d3F/dxdydz
 
+  if (dTab[0].empty()){    	  	
+    CalcDerivs(Tab, 0, dFdx); // dF/dx
+    CalcDerivs(Tab, 1, dFdy); // dF/dy
+    CalcDerivs(Tab, 2, dFdz); // dF/dz
+    CalcDerivs(dFdx, 1, dFdxdy); // d2F/dxdy
+    CalcDerivs(dFdx, 2, dFdxdz); // d2F/dxdz
+    CalcDerivs(dFdy, 2, dFdydz); // d2F/dydz
+    CalcDerivs(dFdxdy, 2, dFdxdydz); // d3F/dxdydz
+  }
+  else {
+    dFdx = dTab[0];
+    dFdy = dTab[1];
+    dFdz = dTab[2];
+    dFdxdy = dTab[3];
+    dFdxdz = dTab[4];
+    dFdydz = dTab[5];
+    dFdxdydz = dTab[6];
+  }
+
+  // // print partial derivatives infos (sly)
   std::array<unsigned long, 3> myindices;
-  double mycellx = xyz[0][1+1] - xyz[0][1];
+  myindices = {100, 20, 25}; // collect indices of corners of each grid cell
+
+  double mycellx = xyz[0][100+1] - xyz[0][100];
   double mycelly = xyz[1][20+1] - xyz[1][20];
   double mycellz = xyz[2][25+1] - xyz[2][25];
 
-  // myindices = {1, 1, 1}; // collect indices of corners of each grid cell
-  // std::cout << "dFdxdy=" <<  dFdxdy(myindices)*mycellx*mycelly << std::endl;
-  // std::cout << "dFdxdz=" <<  dFdxdy(myindices)*mycellx*mycellz << std::endl;
-  // std::cout << "dFdydz=" <<  dFdxdz(myindices)*mycelly*mycellz << std::endl;
-  myindices = {1, 20, 25}; // collect indices of corners of each grid cell
-  std::cout << "\ndFdx=" <<  dFdx(myindices)*mycellx << " x= " << xyz[0][1] << std::endl;
-  std::cout << "dFdy="   <<  dFdy(myindices)*mycelly << " y= " << xyz[1][20] << std::endl;
-  std::cout << "dFdz="   <<  dFdz(myindices)*mycellz << " z= " << xyz[2][25] << std::endl;
- 
+  std::cout << "\nx= " <<  xyz[0][100] <<" y= " << xyz[1][20] << " z= " << xyz[2][25] << std::endl;
+  std::cout << "dFdx=" <<  dFdx(myindices)*mycellx << std::endl;
+  std::cout << "dFdy="   <<  dFdy(myindices)*mycelly << std::endl;
+  std::cout << "dFdz="   <<  dFdz(myindices)*mycellz <<  std::endl;
+  std::cout << "dFdxdy=" <<  dFdxdy(myindices)*mycellx*mycelly << std::endl;
+  std::cout << "dFdxdz=" <<  dFdxdz(myindices)*mycellx*mycellz << std::endl;
+  std::cout << "dFdydz=" <<  dFdydz(myindices)*mycelly*mycellz << std::endl;
+  std::cout << "dFdxdydz=" <<  dFdxdydz(myindices)*mycellx*mycelly*mycellz << std::endl;
+
+  
+  // // Pre interpol
   for (unsigned long ix = 0; ix < len[0]; ++ix){
     for (unsigned long iy = 0; iy < len[1]; ++iy){
       for (unsigned long iz = 0; iz < len[2]; ++iz){
@@ -407,11 +525,26 @@ void TabField3::PreInterpol(const array3D &Tab, field_type &coeff) const{
 	indices[6] = {ix  ,iy+1,iz+1};
 	indices[7] = {ix+1,iy+1,iz+1};
 
-	double cellx = xyz[0][ix+1] - xyz[0][ix];
-	double celly = xyz[1][iy+1] - xyz[1][iy];
-	double cellz = xyz[2][iz+1] - xyz[2][iz];
+	double cellz;
+	double cellx;
+	double celly;	
+	
+	if (dTab[0].empty()){    	  	
+	 cellz = xyz[0][ix+1] - xyz[0][ix];
+	 cellx = xyz[1][iy+1] - xyz[1][iy];
+	 celly = xyz[2][iz+1] - xyz[2][iz];
+	}
+	else {
+	  cellx = 1;
+	  celly = 1;
+	  cellz = 1;
+	}
+
+	std::cout << "yyy, ix = " << ix << " iy=" << iy << "iz=" << iz <<  std::endl;
+
 	std::array<std::array<double, 8>, 8> yyy;
 	for (unsigned i = 0; i < 8; ++i){
+
 	  yyy[0][i] = Tab(indices[i]); // get values and derivatives at each corner of grid cell
 	  yyy[1][i] = dFdx(indices[i])*cellx;
 	  yyy[2][i] = dFdy(indices[i])*celly;
@@ -421,6 +554,10 @@ void TabField3::PreInterpol(const array3D &Tab, field_type &coeff) const{
 	  yyy[6][i] = dFdydz(indices[i])*celly*cellz;
 	  yyy[7][i] = dFdxdydz(indices[i])*cellx*celly*cellz;
 	}
+
+	std::cout << "tricubic gete " << std::endl;
+
+		
 	tricubic_get_coeff(&coeff(indices[0])[0], &yyy[0][0], &yyy[1][0], &yyy[2][0], &yyy[3][0], &yyy[4][0], &yyy[5][0], &yyy[6][0], &yyy[7][0]); // calculate tricubic interpolation coefficients and store in coeff
       }
     }
@@ -428,8 +565,21 @@ void TabField3::PreInterpol(const array3D &Tab, field_type &coeff) const{
 }
 
 
-TabField3::TabField3(const std::array<std::vector<double>, 3> &xyzTab, const std::array<std::vector<double>, 3> &BTab, const std::vector<double> &VTab){
+TabField3::TabField3(const std::array<std::vector<double>, 3> &xyzTab, const std::array<std::vector<double>, 3> &BTab, const std::vector<double> &VTab, const std::array<std::array<std::vector<double>, 7>, 3> &dBTab){
 
+  // bool dBTabisEmpty = true;
+  // for (const auto& outerArray : dBTab) {
+  //   for (const auto& innerArray : outerArray) {
+  //     if (!innerArray.empty()) {
+  // 	dBTabisEmpty = false;
+  // 	break;
+  //     }
+  //   }
+  //   if (!dBTabisEmpty) {
+  //     break;
+  //   }
+  // }
+    
   for (unsigned i = 0; i < 3; ++i){
     std::unique_copy(xyzTab[i].begin(), xyzTab[i].end(), std::back_inserter(xyz[i])); // get list of unique x, y, and z coordinates
     std::sort(xyz[i].begin(), xyz[i].end());
@@ -440,17 +590,30 @@ TabField3::TabField3(const std::array<std::vector<double>, 3> &xyzTab, const std
 
 
   std::array<array3D, 3> B;
+  std::array<std::array<array3D, 7>, 3> dB;
   array3D V;
-  for (unsigned i = 0; i < 3; ++i){
-    if (not BTab[i].empty()){
-      B[i].resize(boost::extents[xyz[0].size()][xyz[1].size()][xyz[2].size()]);
-      std::fill_n(B[i].data(), B[i].num_elements(), 0.);
+
+  std::cout << " Initializing BTab  " << std::endl;
+
+  for (unsigned j = 0; j < 3; ++j){
+    if (not BTab[j].empty()){
+      B[j].resize(boost::extents[xyz[0].size()][xyz[1].size()][xyz[2].size()]);
+      std::fill_n(B[j].data(), B[j].num_elements(), 0.);
+      for (unsigned k = 0; k < 7; ++k){
+	if (not dBTab[0][0].empty()){
+	  dB[j][k].resize(boost::extents[xyz[0].size()][xyz[1].size()][xyz[2].size()]);
+	  std::cout << " dBTab not empty  " << std::endl;
+	  std::fill_n(dB[j][k].data(), dB[j][k].num_elements(), 0.);
+	}
+      }
     }
   }
   if (not VTab.empty()){
     V.resize(boost::extents[xyz[0].size()][xyz[1].size()][xyz[2].size()]);
     std::fill_n(V.data(), V.num_elements(), 0.);
   }
+
+  std::cout << " Indexing BTab  " << std::endl;
 
   for (unsigned long i = 0; i < xyzTab[0].size(); ++i){
     std::array<long, 3> index;
@@ -462,6 +625,12 @@ TabField3::TabField3(const std::array<std::vector<double>, 3> &xyzTab, const std
     for (unsigned j = 0; j < 3; ++j){
       if (not BTab[j].empty()){
 	B[j](index) = BTab[j][i];
+	if (not dBTab[0][0].empty()){
+	  std::cout << " dBTab not empty  " << std::endl;
+	  for (unsigned k = 0; k < 7; ++k){
+	    dB[j][k](index) = dBTab[j][k][i]; // dB
+	  }
+	}
 	// std::cout << "xyzTab[" << j << "][" << i << "]=" << xyzTab[j][i] << " and " << "BTab[" << j<< "][" << i << "]=" << BTab[j][i] <<  std::endl;
       }
     }
@@ -476,25 +645,25 @@ TabField3::TabField3(const std::array<std::vector<double>, 3> &xyzTab, const std
   if (not BTab[0].empty()){
     std::cout << "Bx ... ";
     std::cout.flush();
-    PreInterpol(B[0], Bc[0]); // precalculate interpolation coefficients for B field
+    PreInterpol(B[0], dB[0], Bc[0]); // precalculate interpolation coefficients for B field
     size += float(Bc[0].num_elements()*64*sizeof(double)/1024/1024);
   }
   if (not BTab[1].empty()){
     std::cout << "By ... ";
     std::cout.flush();
-    PreInterpol(B[1], Bc[1]);
+    PreInterpol(B[1], dB[1], Bc[1]);
     size += float(Bc[1].num_elements()*64*sizeof(double)/1024/1024);
   }
   if (not BTab[2].empty()){
     std::cout << "Bz ... ";
     std::cout.flush();
-    PreInterpol(B[2], Bc[2]);
+    PreInterpol(B[2], dB[2], Bc[2]);
     size += float(Bc[2].num_elements()*64*sizeof(double)/1024/1024);
   }
   if (not VTab.empty()){
     std::cout << "V ... ";
     std::cout.flush();
-    PreInterpol(V, Vc);
+    PreInterpol(V, std::array<array3D, 7>(), Vc);
     size += float(Vc.num_elements()*64*sizeof(double)/1024/1024);
   }
   std::cout << "Done (" << size << " MB)\n";
