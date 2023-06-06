@@ -102,14 +102,14 @@ void TParticle::derivs(const state_type &y, state_type &dydx, const value_type x
 
   // double trace = dBidxj[0][0] + dBidxj[1][1] + dBidxj[2][2];
   // for(int i=0; i<3; ++i){
-  //   dBidxj[i][i] = dBidxj[i][i] - trace/3;
+  //   // dBidxj[i][i] = dBidxj[i][i] - trace/3;
   //     for(int j=i+1; j<3; ++j){
   // 	dBidxj[i][j] = (dBidxj[i][j] + dBidxj[j][i])/2;
   // 	dBidxj[j][i] = dBidxj[i][j];
   //     }
   // }
   
-  // std::cout << " \ndBidj" << std::endl;
+  // std::cout << " \ndBidxj" << std::endl;
   // for(int i=0; i<3;++i){
   //   for(int j=0; j<3; ++j){
   //     std::cout << dBidxj[i][j] << ", ";
@@ -117,7 +117,7 @@ void TParticle::derivs(const state_type &y, state_type &dydx, const value_type x
   //   std::cout << std::endl;
   // }
 
-  // std::cout << std::endl;
+  // // std::cout << std::endl;
   // // std::cout << "dBxdx" << dBidxj[0][0] << "dBydy" << dBidxj[1][1] << "dBzdz" << dBidxj[2][2] << std::endl;
   // std::cout << "Tr dBidj error = " << (dBidxj[0][0] + dBidxj[1][1] + dBidxj[2][2])/sqrt(dBidxj[0][0]*dBidxj[0][0] + dBidxj[1][1]*dBidxj[1][1] + dBidxj[2][2]*dBidxj[2][2]) << std::endl;
   //   // std::cout << "dBxdy" << dBidxj[0][1] << "dBydy" << dBidxj[0][2] << "dBzdz" << dBidxj[1][2] << std::endl;

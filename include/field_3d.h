@@ -55,7 +55,7 @@ private:
    * @param Tab 3D array of field components on grid
    * @param coeff Returns 3D array of tricubic interpolation coefficients for each grid cell
    */
-  void PreInterpol(const array3D &Tab, field_type &coeff) const;
+  void PreInterpol(const array3D &Tab, const std::array<array3D, 7> &dTab, field_type &coeff) const;
 
 
   /**
@@ -81,8 +81,9 @@ public:
    * @param xyzTab Lists of x, y, and z coordinates of grid points
    * @param BTab Lists of Bx, By, and Bz magnetic field components on grid points
    * @param VTab List of electric potentials on grid points
+   * @param dBTab List of dBx, dBy, and dBz magnetic field components on grid points
    */
-  TabField3(const std::array<std::vector<double>, 3> &xyzTab, const std::array<std::vector<double>, 3> &BTab, const std::vector<double> &VTab);
+  TabField3(const std::array<std::vector<double>, 3> &xyzTab, const std::array<std::vector<double>, 3> &BTab, const std::vector<double> &VTab, const std::array<std::array<std::vector<double>, 7>, 3> &dBTab);
 
 
   /**
@@ -131,5 +132,13 @@ TFieldContainer ReadOperaField3(const std::string &params, const std::map<std::s
  * @return Pointer to created class, derived from TField
  */
 TFieldContainer ReadComsolField(const std::string &params, const std::map<std::string, std::string> &formulas);
+
+/**
+ * Read generic file containing table of magnetic field and corresponding partial derivatives (for Tricubic interpolation) mapped on list of points,
+ * @param params String containing parameters defined in config.in. Should contain field type "TRICUBIC", file name, magnetic field scaling formula, and boundary width
+ * @return Pointer to created class, derived from TField
+ */
+TFieldContainer ReadTricubicField(const std::string &params, const std::map<std::string, std::string> &formulas);
+
 
 #endif // FIELD_3D_H_

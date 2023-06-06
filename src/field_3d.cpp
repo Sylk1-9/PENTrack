@@ -383,7 +383,7 @@ TFieldContainer ReadTricubicField(const std::string &params, const std::map<std:
     
     dBz_dx.push_back( std::stod(line_parts[8], nullptr)); // = dBx_dz
     dBz_dy.push_back( std::stod(line_parts[14], nullptr)); // = dBy_dz
-    dBz_dz.push_back( 1 - std::stod(line_parts[6], nullptr) - std::stod(line_parts[13], nullptr)); // = 1 - dBx_dx - dBy_dy
+    dBz_dz.push_back( -std::stod(line_parts[6], nullptr) -std::stod(line_parts[13], nullptr)); // = - dBx_dx - dBy_dy
     dBz_dxdy.push_back( std::stod(line_parts[11], nullptr)); // = dBx_dydz
     dBz_dxdz.push_back( std::stod(line_parts[18], nullptr));
     dBz_dydz.push_back( std::stod(line_parts[19], nullptr));
@@ -474,43 +474,44 @@ void TabField3::PreInterpol(const array3D &Tab, const std::array<array3D, 7> &dT
 
   array3D dFdx, dFdy, dFdz, dFdxdy, dFdxdz, dFdydz, dFdxdydz; // derivatives with respect to x, y, z, xy, xz, yz, xyz
 
-  if (dTab[0].empty()){    	  	
-    CalcDerivs(Tab, 0, dFdx); // dF/dx
-    CalcDerivs(Tab, 1, dFdy); // dF/dy
-    CalcDerivs(Tab, 2, dFdz); // dF/dz
-    CalcDerivs(dFdx, 1, dFdxdy); // d2F/dxdy
-    CalcDerivs(dFdx, 2, dFdxdz); // d2F/dxdz
-    CalcDerivs(dFdy, 2, dFdydz); // d2F/dydz
-    CalcDerivs(dFdxdy, 2, dFdxdydz); // d3F/dxdydz
-  }
-  else {
-    dFdx = dTab[0];
-    dFdy = dTab[1];
-    dFdz = dTab[2];
-    dFdxdy = dTab[3];
-    dFdxdz = dTab[4];
-    dFdydz = dTab[5];
-    dFdxdydz = dTab[6];
-  }
+  // if (dTab[0].empty()){    	  	
+  CalcDerivs(Tab, 0, dFdx); // dF/dx
+  CalcDerivs(Tab, 1, dFdy); // dF/dy
+  CalcDerivs(Tab, 2, dFdz); // dF/dz
+  CalcDerivs(dFdx, 1, dFdxdy); // d2F/dxdy
+  CalcDerivs(dFdx, 2, dFdxdz); // d2F/dxdz
+  CalcDerivs(dFdy, 2, dFdydz); // d2F/dydz
+  CalcDerivs(dFdxdy, 2, dFdxdydz); // d3F/dxdydz
+  // }
+  // else {
+  //   dFdx = dTab[0];
+  //   dFdy = dTab[1];
+  //   dFdz = dTab[2];
+  //   dFdxdy = dTab[3];
+  //   dFdxdz = dTab[4];
+  //   dFdydz = dTab[5];
+  //   dFdxdydz = dTab[6];
+  // }
 
   // // print partial derivatives infos (sly)
-  std::array<unsigned long, 3> myindices;
-  myindices = {100, 20, 25}; // collect indices of corners of each grid cell
+  // long unsigned int ixx=100, iyy=20, izz=25;
+  long unsigned int ixx=20, iyy=2, izz=5;
+  std::array<unsigned long, 3> myindices = {ixx, iyy, izz}; // collect indices of corners of each grid cell
 
-  double mycellx = xyz[0][100+1] - xyz[0][100];
-  double mycelly = xyz[1][20+1] - xyz[1][20];
-  double mycellz = xyz[2][25+1] - xyz[2][25];
+  double mycellx = xyz[0][ixx+1] - xyz[0][ixx];
+  double mycelly = xyz[1][iyy+1] - xyz[1][iyy];
+  double mycellz = xyz[2][izz+1] - xyz[2][izz];
 
-  std::cout << "\nx= " <<  xyz[0][100] <<" y= " << xyz[1][20] << " z= " << xyz[2][25] << std::endl;
-  std::cout << "dFdx=" <<  dFdx(myindices)*mycellx << std::endl;
-  std::cout << "dFdy="   <<  dFdy(myindices)*mycelly << std::endl;
-  std::cout << "dFdz="   <<  dFdz(myindices)*mycellz <<  std::endl;
-  std::cout << "dFdxdy=" <<  dFdxdy(myindices)*mycellx*mycelly << std::endl;
-  std::cout << "dFdxdz=" <<  dFdxdz(myindices)*mycellx*mycellz << std::endl;
-  std::cout << "dFdydz=" <<  dFdydz(myindices)*mycelly*mycellz << std::endl;
-  std::cout << "dFdxdydz=" <<  dFdxdydz(myindices)*mycellx*mycelly*mycellz << std::endl;
+  std::cout << "\nx = " <<  xyz[0][ixx] <<" y = " << xyz[1][iyy] << " z = " << xyz[2][izz] << std::endl;
+  std::cout << "Tab = " <<  Tab(myindices) << std::endl;
+  std::cout << "dFdx = " <<  dFdx(myindices)*mycellx << " | dTab = "<< dTab[0](myindices) << std::endl;
+  std::cout << "dFdy = "   <<  dFdy(myindices)*mycelly << " | dTab = "<< dTab[1](myindices) << std::endl;
+  std::cout << "dFdz = "   <<  dFdz(myindices)*mycellz <<  " | dTab = "<< dTab[2](myindices) << std::endl;
+  std::cout << "dFdxdy = " <<  dFdxdy(myindices)*mycellx*mycelly << " | dTab = "<< dTab[3](myindices) << std::endl;
+  std::cout << "dFdxdz = " <<  dFdxdz(myindices)*mycellx*mycellz << " | dTab = "<< dTab[4](myindices) << std::endl;
+  std::cout << "dFdydz = " <<  dFdydz(myindices)*mycelly*mycellz << " | dTab = "<< dTab[5](myindices) << std::endl;
+  std::cout << "dFdxdydz = " <<  dFdxdydz(myindices)*mycellx*mycelly*mycellz << " | dTab = "<< dTab[6](myindices) << std::endl;
 
-  
   // // Pre interpol
   for (unsigned long ix = 0; ix < len[0]; ++ix){
     for (unsigned long iy = 0; iy < len[1]; ++iy){
@@ -525,61 +526,48 @@ void TabField3::PreInterpol(const array3D &Tab, const std::array<array3D, 7> &dT
 	indices[6] = {ix  ,iy+1,iz+1};
 	indices[7] = {ix+1,iy+1,iz+1};
 
-	double cellz;
-	double cellx;
-	double celly;	
+	double cellx = xyz[0][ix+1] - xyz[0][ix];
+	double celly = xyz[1][iy+1] - xyz[1][iy];
+	double cellz = xyz[2][iz+1] - xyz[2][iz];
 	
-	if (dTab[0].empty()){    	  	
-	 cellz = xyz[0][ix+1] - xyz[0][ix];
-	 cellx = xyz[1][iy+1] - xyz[1][iy];
-	 celly = xyz[2][iz+1] - xyz[2][iz];
-	}
-	else {
-	  cellx = 1;
-	  celly = 1;
-	  cellz = 1;
-	}
-
-	std::cout << "yyy, ix = " << ix << " iy=" << iy << "iz=" << iz <<  std::endl;
-
 	std::array<std::array<double, 8>, 8> yyy;
 	for (unsigned i = 0; i < 8; ++i){
 
-	  yyy[0][i] = Tab(indices[i]); // get values and derivatives at each corner of grid cell
-	  yyy[1][i] = dFdx(indices[i])*cellx;
-	  yyy[2][i] = dFdy(indices[i])*celly;
-	  yyy[3][i] = dFdz(indices[i])*cellz;
-	  yyy[4][i] = dFdxdy(indices[i])*cellx*celly;
-	  yyy[5][i] = dFdxdz(indices[i])*cellx*cellz;
-	  yyy[6][i] = dFdydz(indices[i])*celly*cellz;
-	  yyy[7][i] = dFdxdydz(indices[i])*cellx*celly*cellz;
-	}
-
-	std::cout << "tricubic gete " << std::endl;
-
-		
+	  if (dTab[0].empty()){
+	    // std::cout << "dTab empty" << std::endl;
+	    yyy[0][i] = Tab(indices[i]); // get values and derivatives at each corner of grid cell
+	    yyy[1][i] = dFdx(indices[i])*cellx;
+	    yyy[2][i] = dFdy(indices[i])*celly;
+	    yyy[3][i] = dFdz(indices[i])*cellz;
+	    yyy[4][i] = dFdxdy(indices[i])*cellx*celly;
+	    yyy[5][i] = dFdxdz(indices[i])*cellx*cellz;
+	    yyy[6][i] = dFdydz(indices[i])*celly*cellz;
+	    yyy[7][i] = dFdxdydz(indices[i])*cellx*celly*cellz;
+	  }
+	  else{
+	    yyy[0][i] = Tab(indices[i]); // get values and derivatives at each corner of grid cell
+	    yyy[1][i] = dTab[0](indices[i]);
+	    yyy[2][i] = dTab[1](indices[i]);
+	    yyy[3][i] = dTab[2](indices[i]);
+	    yyy[4][i] = dTab[3](indices[i]);
+	    yyy[5][i] = dTab[4](indices[i]);
+	    yyy[6][i] = dTab[5](indices[i]);
+	    yyy[7][i] = dTab[6](indices[i]);
+	  }
+	  // std::cout << "\ndFdydz -> " << dFdxdy(indices[i])*celly*cellz << " dTab[3] -> " << dTab[3](indices[i]) << std::endl; 
+	  // std::cout << "dFdz -> " << dFdz(indices[i])*cellz << " dTab[2] -> " <<  dTab[2](indices[i]) <<  std::endl; 
+	}		
 	tricubic_get_coeff(&coeff(indices[0])[0], &yyy[0][0], &yyy[1][0], &yyy[2][0], &yyy[3][0], &yyy[4][0], &yyy[5][0], &yyy[6][0], &yyy[7][0]); // calculate tricubic interpolation coefficients and store in coeff
       }
     }
   }
+
 }
 
 
 TabField3::TabField3(const std::array<std::vector<double>, 3> &xyzTab, const std::array<std::vector<double>, 3> &BTab, const std::vector<double> &VTab, const std::array<std::array<std::vector<double>, 7>, 3> &dBTab){
 
-  // bool dBTabisEmpty = true;
-  // for (const auto& outerArray : dBTab) {
-  //   for (const auto& innerArray : outerArray) {
-  //     if (!innerArray.empty()) {
-  // 	dBTabisEmpty = false;
-  // 	break;
-  //     }
-  //   }
-  //   if (!dBTabisEmpty) {
-  //     break;
-  //   }
-  // }
-    
+
   for (unsigned i = 0; i < 3; ++i){
     std::unique_copy(xyzTab[i].begin(), xyzTab[i].end(), std::back_inserter(xyz[i])); // get list of unique x, y, and z coordinates
     std::sort(xyz[i].begin(), xyz[i].end());
@@ -600,9 +588,9 @@ TabField3::TabField3(const std::array<std::vector<double>, 3> &xyzTab, const std
       B[j].resize(boost::extents[xyz[0].size()][xyz[1].size()][xyz[2].size()]);
       std::fill_n(B[j].data(), B[j].num_elements(), 0.);
       for (unsigned k = 0; k < 7; ++k){
-	if (not dBTab[0][0].empty()){
+	if (not dBTab[j][k].empty()){
 	  dB[j][k].resize(boost::extents[xyz[0].size()][xyz[1].size()][xyz[2].size()]);
-	  std::cout << " dBTab not empty  " << std::endl;
+	  // std::cout << " dBTab not empty  " << std::endl;
 	  std::fill_n(dB[j][k].data(), dB[j][k].num_elements(), 0.);
 	}
       }
@@ -616,7 +604,7 @@ TabField3::TabField3(const std::array<std::vector<double>, 3> &xyzTab, const std
   std::cout << " Indexing BTab  " << std::endl;
 
   for (unsigned long i = 0; i < xyzTab[0].size(); ++i){
-    std::array<long, 3> index;
+    std::array<unsigned long, 3> index;
     for (unsigned j = 0; j < 3; ++j){
       auto found = std::lower_bound(xyz[j].begin(), xyz[j].end(), xyzTab[j][i]);
       assert(found != xyz[j].end());
@@ -625,10 +613,11 @@ TabField3::TabField3(const std::array<std::vector<double>, 3> &xyzTab, const std
     for (unsigned j = 0; j < 3; ++j){
       if (not BTab[j].empty()){
 	B[j](index) = BTab[j][i];
-	if (not dBTab[0][0].empty()){
-	  std::cout << " dBTab not empty  " << std::endl;
-	  for (unsigned k = 0; k < 7; ++k){
+	for (unsigned k = 0; k < 7; ++k){
+	  if (not dBTab[j][k].empty()){
 	    dB[j][k](index) = dBTab[j][k][i]; // dB
+	    // std::cout << " dB[j][k](index)  " << dB[j][k](index) << std::endl;
+	    // std::cout << "x = " << xyz[0][index[0]] << ", y = " << xyz[1][index[1]] << ", z = " << xyz[2][index[2]] << " dB[j][k](index)  " << dB[j][k](index) << std::endl;
 	  }
 	}
 	// std::cout << "xyzTab[" << j << "][" << i << "]=" << xyzTab[j][i] << " and " << "BTab[" << j<< "][" << i << "]=" << BTab[j][i] <<  std::endl;
@@ -640,6 +629,31 @@ TabField3::TabField3(const std::array<std::vector<double>, 3> &xyzTab, const std
       V(index) = VTab[i];
   }
 
+  // print some info on dB table
+  // long unsigned int ixx=10, iyy=2, izz=5;
+  // std::array<unsigned long, 3> myindices = {ixx, iyy, izz}; // collect indices of corners of each grid cell
+
+  // std::cout<<"x= "<<xyz[0][ixx]<<", y = "<<xyz[1][iyy]<<", z = "<<xyz[2][izz]<<" dB[j][k](index)="<<dB[0][0](myindices)<<std::endl;
+
+  // ixx=0, iyy=0, izz=0;
+  // myindices = {ixx, iyy, izz}; // collect indices of corners of each grid cell
+
+  // std::cout<<"x= "<<xyz[0][ixx]<<", y = "<<xyz[1][iyy]<<", z = "<<xyz[2][izz]<<" dB[j][k](index)="<<dB[0][0](myindices)<<std::endl;
+
+
+  // for(unsigned j = 0; j < 3; ++j){
+  //   std::cout << "\nx = " <<  xyz[0][ixx] <<" y = " << xyz[1][iyy] << " z = " << xyz[2][izz] << std::endl;
+  //   std::cout << "Tab = " <<  B[j](myindices) << std::endl;
+  //   std::cout << "dB[j][0] = "<< dB[j][0](myindices) << std::endl;
+  //   std::cout << "dB[j][1] = "<< dB[j][1](myindices) << std::endl;
+  //   std::cout << "dB[j][2] = "<< dB[j][2](myindices) << std::endl;
+  //   std::cout << "dB[j][3] = "<< dB[j][3](myindices) << std::endl;
+  //   std::cout << "dB[j][4] = "<< dB[j][4](myindices) << std::endl;
+  //   std::cout << "dB[j][5] = "<< dB[j][5](myindices) << std::endl;
+  //   std::cout << "dB[j][6] = "<< dB[j][6](myindices) << std::endl;
+  // }
+  
+  
   std::cout << "Starting Preinterpolation ... ";
   float size = 0;
   if (not BTab[0].empty()){

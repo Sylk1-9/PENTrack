@@ -7,10 +7,10 @@
 simtype 1
 
 # number of primary particles to be simulated
-simcount 1
+simcount 10
 
 # max. simulation time [s]
-simtime 10
+simtime 100
 
 # path of file containing materials, paths are assumed to be relative to this config file's path
 materials_file materials.in
@@ -183,9 +183,20 @@ polarization 1	# initial polarization is randomly chosen, weighted by this varia
 # 4 COMSOL	fields/magpy/Bfield_octupole-monoseg-tra_xmin0_xmax2000_hx50_yzmax60_hyz5.txt	1	0	1
 # 5 COMSOL	fields/magpy/Bfield_coil_xmin0_xmax2000_hx50_yzmax60_hyz5.txt			1	0	1
 
-# 5 COMSOL	fields/magpy/Bfield_octupole-monoseg-tra_xmin1000_xmax1200_hx100_yzmax60_hyz60.txt			1	0	1
-# 5 COMSOL	fields/magpy/Bfield_octupole-monoseg-tra_xmin1000_xmax1020_hx10_yzmax60_hyz1.txt			1	0	1
-5 COMSOL	fields/magpy/Bfield_coil_xmin1000_xmax1020_hx10_yzmax60_hyz1.txt			1	0	1
+# 5 COMSOL	fields/magpy/Bfield_octupole-monoseg-tra_xmin1000_xmax1200_hx100_yzmax60_hyz60.txt	1	0	1
+# 5 COMSOL	fields/magpy/Bfield_octupole-monoseg-tra_xmin1000_xmax1020_hx10_yzmax60_hyz1.txt	1	0	1
+# 5 COMSOL	fields/magpy/Bfield_coil_xmin1000_xmax1020_hx10_yzmax60_hyz1.txt			1	0	1
+
+
+# 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx100_yzmax54_hyz9.txt	1	0	1
+# 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx100_yzmax54_hyz9.txt			1	0	1
+# 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx50_yzmax54_hyz6.txt	1	0	1
+# 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx50_yzmax54_hyz6.txt			1	0	1
+4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt	1	0	1
+5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt			1	0	1
+
+# 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin1000_xmax1020_hx10_yzmax54_hyz27.txt	1	0	1
+
 
 
 ## Magpy calculates the three field components from magnet magpy object provided by a .py file section.
