@@ -160,7 +160,7 @@ TFieldContainer ReadComsolField(const std::string &params, const std::map<std::s
     if (line.substr(0,1) == "%" || line.substr(0,1) == "#") continue;     // Skip commented lines
     boost::split(line_parts, line, boost::is_any_of("\t, "), boost::token_compress_on); //Delineate tab, space, commas
 
-    if (line_parts.size() != 6){
+    if (line_parts.size() < 6){
       throw std::runtime_error((boost::format("Error reading line %1% of file %2%") % lineNum % ft.string()).str());
     }
 
@@ -493,25 +493,27 @@ void TabField3::PreInterpol(const array3D &Tab, const std::array<array3D, 7> &dT
   //   dFdxdydz = dTab[6];
   // }
 
-  // // print partial derivatives infos (sly)
-  // long unsigned int ixx=100, iyy=20, izz=25;
-  long unsigned int ixx=20, iyy=2, izz=5;
-  std::array<unsigned long, 3> myindices = {ixx, iyy, izz}; // collect indices of corners of each grid cell
+  if (!dTab[0].empty()){
+    // // print partial derivatives infos (sly)
+    // long unsigned int ixx=100, iyy=20, izz=25;
+    long unsigned int ixx=30, iyy=18, izz=18;
+    std::array<unsigned long, 3> myindices = {ixx, iyy, izz}; // collect indices of corners of each grid cell
 
-  double mycellx = xyz[0][ixx+1] - xyz[0][ixx];
-  double mycelly = xyz[1][iyy+1] - xyz[1][iyy];
-  double mycellz = xyz[2][izz+1] - xyz[2][izz];
+    double mycellx = xyz[0][ixx+1] - xyz[0][ixx];
+    double mycelly = xyz[1][iyy+1] - xyz[1][iyy];
+    double mycellz = xyz[2][izz+1] - xyz[2][izz];
 
-  std::cout << "\nx = " <<  xyz[0][ixx] <<" y = " << xyz[1][iyy] << " z = " << xyz[2][izz] << std::endl;
-  std::cout << "Tab = " <<  Tab(myindices) << std::endl;
-  std::cout << "dFdx = " <<  dFdx(myindices)*mycellx << " | dTab = "<< dTab[0](myindices) << std::endl;
-  std::cout << "dFdy = "   <<  dFdy(myindices)*mycelly << " | dTab = "<< dTab[1](myindices) << std::endl;
-  std::cout << "dFdz = "   <<  dFdz(myindices)*mycellz <<  " | dTab = "<< dTab[2](myindices) << std::endl;
-  std::cout << "dFdxdy = " <<  dFdxdy(myindices)*mycellx*mycelly << " | dTab = "<< dTab[3](myindices) << std::endl;
-  std::cout << "dFdxdz = " <<  dFdxdz(myindices)*mycellx*mycellz << " | dTab = "<< dTab[4](myindices) << std::endl;
-  std::cout << "dFdydz = " <<  dFdydz(myindices)*mycelly*mycellz << " | dTab = "<< dTab[5](myindices) << std::endl;
-  std::cout << "dFdxdydz = " <<  dFdxdydz(myindices)*mycellx*mycelly*mycellz << " | dTab = "<< dTab[6](myindices) << std::endl;
-
+    std::cout << "\nx = " <<  xyz[0][ixx] <<" y = " << xyz[1][iyy] << " z = " << xyz[2][izz] << std::endl;
+    std::cout << "Tab = " <<  Tab(myindices) << std::endl;
+    std::cout << "dFdx = " <<  dFdx(myindices)*mycellx << " | dTab = "<< dTab[0](myindices)*mycellx << std::endl;
+    std::cout << "dFdy = "   <<  dFdy(myindices)*mycelly << " | dTab = "<< dTab[1](myindices)*mycelly << std::endl;
+    std::cout << "dFdz = "   <<  dFdz(myindices)*mycellz <<  " | dTab = "<< dTab[2](myindices)*mycellz << std::endl;
+    std::cout << "dFdxdy = " <<  dFdxdy(myindices)*mycellx*mycelly << " | dTab = "<< dTab[3](myindices)*mycellx*mycelly << std::endl;
+    std::cout << "dFdxdz = " <<  dFdxdz(myindices)*mycellx*mycellz << " | dTab = "<< dTab[4](myindices)*mycellx*mycellz << std::endl;
+    std::cout << "dFdydz = " <<  dFdydz(myindices)*mycelly*mycellz << " | dTab = "<< dTab[5](myindices)*mycelly*mycellz << std::endl;
+    std::cout << "dFdxdydz = " <<  dFdxdydz(myindices)*mycellx*mycelly*mycellz << " | dTab = "<< dTab[6](myindices)*mycellx*mycelly*mycellz << std::endl;
+  }
+  
   // // Pre interpol
   for (unsigned long ix = 0; ix < len[0]; ++ix){
     for (unsigned long iy = 0; iy < len[1]; ++iy){
@@ -545,14 +547,14 @@ void TabField3::PreInterpol(const array3D &Tab, const std::array<array3D, 7> &dT
 	    yyy[7][i] = dFdxdydz(indices[i])*cellx*celly*cellz;
 	  }
 	  else{
-	    yyy[0][i] = Tab(indices[i]); // get values and derivatives at each corner of grid cell
-	    yyy[1][i] = dTab[0](indices[i]);
-	    yyy[2][i] = dTab[1](indices[i]);
-	    yyy[3][i] = dTab[2](indices[i]);
-	    yyy[4][i] = dTab[3](indices[i]);
-	    yyy[5][i] = dTab[4](indices[i]);
-	    yyy[6][i] = dTab[5](indices[i]);
-	    yyy[7][i] = dTab[6](indices[i]);
+	    yyy[0][i] = Tab(indices[i]); // get values and derivatives at each corner of grid cel
+	    yyy[1][i] = dTab[0](indices[i])*cellx;
+	    yyy[2][i] = dTab[1](indices[i])*celly;
+	    yyy[3][i] = dTab[2](indices[i])*cellz;
+	    yyy[4][i] = dTab[3](indices[i])*cellx*celly;
+	    yyy[5][i] = dTab[4](indices[i])*cellx*cellz;
+	    yyy[6][i] = dTab[5](indices[i])*celly*cellz;
+	    yyy[7][i] = dTab[6](indices[i])*cellx*celly*cellz;
 	  }
 	  // std::cout << "\ndFdydz -> " << dFdxdy(indices[i])*celly*cellz << " dTab[3] -> " << dTab[3](indices[i]) << std::endl; 
 	  // std::cout << "dFdz -> " << dFdz(indices[i])*cellz << " dTab[2] -> " <<  dTab[2](indices[i]) <<  std::endl; 
@@ -717,6 +719,17 @@ void TabField3::BField(const double x, const double y, const double z, const dou
   for (unsigned i = 0; i < 3; ++i){
     Interpolate(x, y, z, Bc[i], B[i], dBidxj == nullptr ? nullptr : dBidxj[i]);
   }
+
+  // if(dBidxj != nullptr){
+  //   std::cout << " \ndBidxj" << std::endl;
+  //   for(int i=0; i<3;++i){
+  //     for(int j=0; j<3; ++j){
+  // 	std::cout << dBidxj[i][j] << ", ";
+  //     }
+  //     std::cout << std::endl;
+  //   }  
+  // }
+  
 }
 
 void TabField3::EField(const double x, const double y, const double z, const double t,

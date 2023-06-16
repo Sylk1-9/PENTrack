@@ -31,6 +31,7 @@ print("Script visited : octupole.py in in/")
 #     return octupole
 
 def buildTrapez(magnetization=(1, 0, 0), dimension=(1, 3, 3, 4), position=(0, 0, 0), color="blue"):
+
     (a, b, h, l) = dimension
     v = []
     for z in [-l/2, l/2]:
@@ -71,7 +72,7 @@ def buildTrapez(magnetization=(1, 0, 0), dimension=(1, 3, 3, 4), position=(0, 0,
 
 
 
-def buildSource(nseg=24, stype="cub", delta=0, nring=24):
+def buildSource(t=0, nseg=24, stype="cub", delta=0, nring=24):
     # nseg = number of segement along x.
     # nring = number of ring along x for the octupole (24 by default)
     # nseg=1 + nring=1  will display only 1 ring.

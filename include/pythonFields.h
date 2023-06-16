@@ -25,7 +25,8 @@ private:
   // PyObject *pMagnetObject;
   // PyObject *pBFieldFunc;
   boost::python::object bpBFieldFunc;
-  boost::python::object bpSourceObject;
+  // boost::python::object bpSourceObject;
+  boost::python::object buildSourceFunc;
 
 public:
   /**

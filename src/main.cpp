@@ -325,7 +325,7 @@ int main(int argc, char **argv){
     cout << "That's it... Have a nice day!\n";
 
 #ifdef USEPYTHON
-  Py_InitializeEx(0);
+  // Py_InitializeEx(0);
   if (Py_FinalizeEx() < 0) {
     return 120;
   }
@@ -554,7 +554,7 @@ void PrintBFieldCut(TConfig &config, const boost::filesystem::path &outfile, con
     exit(-1);
   }
   // print file header
-  cutfile << "x y z Bx dBxdx dBxdy dBxdz By dBydx dBydy dBydz Bz dBzdx dBzdy dBzdz Ex Ey Ez V\n";
+  cutfile << "# x y z Bx dBxdx dBxdy dBxdz By dBydx dBydy dBydz Bz dBzdx dBzdy dBzdz Ex Ey Ez V\n";
 	
   double Pp[3];
   double B[3], dBidxj[3][3],Ei[3],V;
@@ -563,7 +563,7 @@ void PrintBFieldCut(TConfig &config, const boost::filesystem::path &outfile, con
   for (int i = 0; i < BCutPlaneSampleCount1; i++) {
     for (int j = 0; j < BCutPlaneSampleCount2; j++){
       for (int k = 0; k < 3; k++)
-	Pp[k] = BCutPlanePoint[k] + i*u[k]/BCutPlaneSampleCount1 + j*v[k]/BCutPlaneSampleCount2;
+	Pp[k] = BCutPlanePoint[k] + i*u[k]/(BCutPlaneSampleCount1-1) + j*v[k]/(BCutPlaneSampleCount2-1);
       // print B-/E-Field to file
       cutfile << Pp[0] << " " << Pp[1] << " " << Pp[2] << " ";
 			

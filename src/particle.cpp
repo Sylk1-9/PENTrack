@@ -100,28 +100,37 @@ void TParticle::derivs(const state_type &y, state_type &dydx, const value_type x
   if (q != 0) // if particle has charge calculate electric field
     field->EField(y[0],y[1],y[2], x, V, E);
 
-  // double trace = dBidxj[0][0] + dBidxj[1][1] + dBidxj[2][2];
+
+  double reltrace = (dBidxj[0][0] + dBidxj[1][1] + dBidxj[2][2])/sqrt(dBidxj[0][0]*dBidxj[0][0] + dBidxj[1][1]*dBidxj[1][1] + dBidxj[2][2]*dBidxj[2][2]);
+  double relrotxy = (dBidxj[0][1] - dBidxj[1][0])/(dBidxj[0][1] + dBidxj[1][0]);
+  double relrotxz = (dBidxj[0][2] - dBidxj[2][0])/(dBidxj[0][2] + dBidxj[2][0]);
+  double relrotyz = (dBidxj[1][2] - dBidxj[2][1])/(dBidxj[1][2] + dBidxj[2][1]);
+
+  double trace = dBidxj[0][0] + dBidxj[1][1] + dBidxj[2][2];
+  double rotxy = dBidxj[0][1] - dBidxj[1][0];
+  double rotxz = dBidxj[0][2] - dBidxj[2][0];
+  double rotyz = dBidxj[1][2] - dBidxj[2][1];
+
+  // // if(reltrace > 0.01 || relrotxy > 0.01 || relrotxz > 0.01 || relrotyz > 0.01){
+  if(abs(trace) > 1){ // || abs(rotxy) > 0.01 || abs(rotxz) > 0.01 || abs(rotyz) > 0.01){
+    std::cout << " \ndBidxj, x=" << y[0] << ", r=" << sqrt(y[1]*y[1] + y[2]*y[2]) << ", y=" << y[1] << ", z=" << y[2] << std::endl;
+    for(int i=0; i<3;++i){
+      for(int j=0; j<3; ++j){
+	std::cout << dBidxj[i][j] << ", ";
+      }
+      std::cout << std::endl;
+    }
+    std::cout << " reltrace = " << reltrace << ", relrotxy = " << relrotxy << ", relrotxz = " << relrotxz << ", relrotyz" << relrotyz << std::endl;
+    std::cout << " trace = " << trace << ", rotxy = " << rotxy << ", rotxz = " << rotxz << ", rotyz" << rotyz << std::endl;
+  }
+
   // for(int i=0; i<3; ++i){
-  //   // dBidxj[i][i] = dBidxj[i][i] - trace/3;
+  //   dBidxj[i][i] = dBidxj[i][i] - trace/3;
   //     for(int j=i+1; j<3; ++j){
   // 	dBidxj[i][j] = (dBidxj[i][j] + dBidxj[j][i])/2;
   // 	dBidxj[j][i] = dBidxj[i][j];
   //     }
   // }
-  
-  // std::cout << " \ndBidxj" << std::endl;
-  // for(int i=0; i<3;++i){
-  //   for(int j=0; j<3; ++j){
-  //     std::cout << dBidxj[i][j] << ", ";
-  //   }
-  //   std::cout << std::endl;
-  // }
-
-  // // std::cout << std::endl;
-  // // std::cout << "dBxdx" << dBidxj[0][0] << "dBydy" << dBidxj[1][1] << "dBzdz" << dBidxj[2][2] << std::endl;
-  // std::cout << "Tr dBidj error = " << (dBidxj[0][0] + dBidxj[1][1] + dBidxj[2][2])/sqrt(dBidxj[0][0]*dBidxj[0][0] + dBidxj[1][1]*dBidxj[1][1] + dBidxj[2][2]*dBidxj[2][2]) << std::endl;
-  //   // std::cout << "dBxdy" << dBidxj[0][1] << "dBydy" << dBidxj[0][2] << "dBzdz" << dBidxj[1][2] << std::endl;
-  // std::cout << "Rot dBidj error = " << (dBidxj[0][1] - dBidxj[1][0])/(dBidxj[0][1] + dBidxj[1][0])  << ";  " <<  (dBidxj[0][2] - dBidxj[2][0])/(dBidxj[0][2] + dBidxj[2][0]) << ";  " <<  (dBidxj[1][2] - dBidxj[2][1])/(dBidxj[1][2] + dBidxj[2][1]) << std::endl;
   
   EquationOfMotion(y, dydx, x, B, dBidxj, E);
 

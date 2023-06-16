@@ -37,7 +37,7 @@ print("Script visited : coil.py in in/")
 #     return coil
 
 
-def buildSource(winding=100):
+def buildSource(t=0, winding=100):
     '''
     The axis is NOT defined as for PENTrack. The x direction is upward, the the coil planes are perpendicular to z.
     The z axies is the symetry one for tSPECT cylinder. x and z coordinate are swaped below, in exportMesh function.

@@ -32,8 +32,12 @@ TPythonField::TPythonField(const std::string ft){
   // char* ftc = const_cast<char*>(ft.c_str());
   boost::python::str bftc(ft);
   boost::python::object bmagnetmodule = boost::python::import(bftc);
-  boost::python::object buildSourceFunc = bmagnetmodule.attr("buildSource");
-  bpSourceObject = buildSourceFunc();
+  // boost::python::object buildSourceFunc = bmagnetmodule.attr("buildSource");
+  buildSourceFunc = bmagnetmodule.attr("buildSource");
+
+  // bpSourceObject = buildSourceFunc();
+
+  
   // bpSourceObject = boost::python::call_method<boost::python::object>(, NULL);
   
   // PyObject* magnetmodule = PyImport_ImportModule(ftc);
@@ -60,9 +64,9 @@ void TPythonField::BField(const double x, const double y, const double z, const 
 
   for(int i=0; i<dimarg; ++i){
 
-    xyz[0] = x;  // swap x and y. Todo : sly
+    xyz[0] = z;  // swap x and z. Todo : sly
     xyz[1] = y;
-    xyz[2] = z;  // swap x and y. Todo : sly
+    xyz[2] = x;  // swap x and z. Todo : sly
     
     switch(i) {
     case 0:
@@ -111,12 +115,18 @@ void TPythonField::BField(const double x, const double y, const double z, const 
   
     
   double Bs[dimarg][3];
-  boost::python::tuple args;
+  // boost::python::tuple argt=t;
+  // boost::python::tuple args;
   boost::python::object bnpArray;
   // npArray = reinterpret_cast<PyArrayObject*>(PyObject_CallObject(pBFieldFunc, pArgs));
+
+  boost::python::object bpSourceObject;
+    
   try
     {
-      args = boost::python::make_tuple(bpSourceObject, bpList);
+      // bpSourceObject = buildSourceFunc();
+      bpSourceObject = buildSourceFunc(t);
+      // args = boost::python::make_tuple(bpSourceObject, bpList, 1);
       bnpArray = bpBFieldFunc(bpSourceObject, bpList);
     }
   catch (const std::exception& e)
@@ -151,7 +161,7 @@ void TPythonField::BField(const double x, const double y, const double z, const 
       // Print the Python exception information
       std::cout << "Caught Python exception:" << std::endl;
       std::cout << "Type: " << pTypeCStr << std::endl;
-      std::cout << "Value: " << pValueCStr << std::endl;
+      std::cout << "Value: " << pValueStr << std::endl;
       std::cout << "Traceback: " << pTracebackCStr << std::endl;
       
       // Clean up the Python objects
@@ -161,6 +171,9 @@ void TPythonField::BField(const double x, const double y, const double z, const 
       Py_XDECREF(pTypeStr);
       Py_XDECREF(pValueStr);
       Py_XDECREF(pTracebackStr);
+      PyErr_Print();
+      PyErr_Clear();
+      
     }
   
   
@@ -183,7 +196,6 @@ void TPythonField::BField(const double x, const double y, const double z, const 
     }
   }
 
-
   for (int i=0; i<3; ++i) {
     B[i] = Bs[0][i];
   }
@@ -203,7 +215,7 @@ void TPythonField::BField(const double x, const double y, const double z, const 
       
     }
     
-    trace_3 = (dBi_dxj[0][0] + dBi_dxj[1][1] + dBi_dxj[2][2])/3;
+    trace_3 = 0; //(dBi_dxj[0][0] + dBi_dxj[1][1] + dBi_dxj[2][2])/3;
     // std::cout << trace_3 << std::endl;
 
     

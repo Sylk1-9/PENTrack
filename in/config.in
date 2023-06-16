@@ -7,10 +7,10 @@
 simtype 1
 
 # number of primary particles to be simulated
-simcount 10
+simcount 5
 
 # max. simulation time [s]
-simtime 100
+simtime 5
 
 # path of file containing materials, paths are assumed to be relative to this config file's path
 materials_file materials.in
@@ -18,9 +18,25 @@ materials_file materials.in
 # secondaries: set to 1 to also simulate secondary particles (e.g. decay protons/electrons) [0/1]
 secondaries 1
 
+
+
 #cut through B-field at time t (simtype == 4) (x1 y1 z1  x2 y2 z2  x3 y3 z3 num1 num2 t)
 #define cut plane by three points and number of sample points in direction 1->2/1->3
-#BCutPlane	0.161 0 0.015	0.501 0 0.015	0.161 0 0.85	340	835  500
+
+#	    x1 	  y1 	z1     	      	  x2  y2     z2  	  x3   y3    z3 	 num1   num2	   t
+
+# For octupole cut
+# BCutPlane   1.0  -0.054 -0.054    	  1.0   -0.054  0.05508        1.0   0.05508  -0.054      101    101	   1
+BCutPlane   1.0  -0.054 -0.054    	  1.0   0.054  -0.054        1.0   -0.054  0.054      200    200	   1
+
+# For coil cut
+# BCutPlane   0.0   0.000  0.000    	  2.0   0.000  0.000        0.0   0.054  0.000      2000    10	   0
+
+# For octupole + coil cut
+# BCutPlane   0.0   0.000  0.000    	  2.0   0.030  0.040        2.0   0.000  0.000      2000    1	   0
+
+
+
 
 #parameters to be used for generating a 2d histogram for the mr diffuse reflection probability into a solid angle
 #Param order: Fermi pot. [neV], Neut energy [neV], RMS roughness [nm], correlation length [nm], theta_i [0..pi/2]
@@ -172,31 +188,33 @@ polarization 1	# initial polarization is randomly chosen, weighted by this varia
 
 
 #3Dfield 	table-file	BFieldScale	BoundaryWidth	CoordinateScale
-# 4 COMSOL	fields/octupole_field_xzswap.txt	1		    0		        1
-# 5 COMSOL	fields/long_field_storage_xzswap.txt	1		    0		        1
-# 4 COMSOL	fields/magpy/Bfield_octupole-monoseg-tra_xmin0_xmax2000_hx100_yzmax60_hyz10.txt	1	0	1
-# 5 COMSOL	fields/magpy/Bfield_coil_xmin0_xmax2000_hx100_yzmax60_hyz10.txt			1	0	1
-# 4 COMSOL	fields/magpy/Bfield_octupole-monoseg-cyl_xmin-1200_xmax2800_hx50_yzmax60_hyz5.txt	1	0	1
-# 5 COMSOL	fields/magpy/Bfield_coil_xmin-1200_xmax2800_hx50_yzmax60_hyz5.txt			1	0	1
-# 4 COMSOL	fields/magpy/Bfield_octupole-monoseg-tra_xmin0_xmax2000_hx10_yzmax60_hyz1.txt	1	0	1
-# 5 COMSOL	fields/magpy/Bfield_coil_xmin0_xmax2000_hx10_yzmax60_hyz1.txt			1	0	1
-# 4 COMSOL	fields/magpy/Bfield_octupole-monoseg-tra_xmin0_xmax2000_hx50_yzmax60_hyz5.txt	1	0	1
-# 5 COMSOL	fields/magpy/Bfield_coil_xmin0_xmax2000_hx50_yzmax60_hyz5.txt			1	0	1
+# 4 COMSOL	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx100_yzmax54_hyz9.txt	1	0	1
+# 5 COMSOL	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx100_yzmax54_hyz9.txt			1	0	1
+# 4 COMSOL	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx50_yzmax54_hyz6.txt	1	0	1
+# 5 COMSOL	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx50_yzmax54_hyz6.txt			1	0	1
+# 4 COMSOL	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt	1	0	1
+# 5 COMSOL	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt			1	0	1
+# 4 COMSOL	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt	1	0	1
+# 5 COMSOL	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt			1	0	1
+# 5 COMSOL	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
 
-# 5 COMSOL	fields/magpy/Bfield_octupole-monoseg-tra_xmin1000_xmax1200_hx100_yzmax60_hyz60.txt	1	0	1
-# 5 COMSOL	fields/magpy/Bfield_octupole-monoseg-tra_xmin1000_xmax1020_hx10_yzmax60_hyz1.txt	1	0	1
-# 5 COMSOL	fields/magpy/Bfield_coil_xmin1000_xmax1020_hx10_yzmax60_hyz1.txt			1	0	1
+# 5 COMSOL	fields/magpy/Bfield_octupole-monoseg-tra-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
+# 5 COMSOL	fields/magpy/Bfield_octupole-monoseg-cyl-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
 
 
 # 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx100_yzmax54_hyz9.txt	1	0	1
 # 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx100_yzmax54_hyz9.txt			1	0	1
 # 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx50_yzmax54_hyz6.txt	1	0	1
 # 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx50_yzmax54_hyz6.txt			1	0	1
-4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt	1	0	1
-5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt			1	0	1
+# 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt	1	0	1
+# 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt			1	0	1
+# 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt	1	0	1
+# 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt			1	0	1
+# 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
+# 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
 
-# 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin1000_xmax1020_hx10_yzmax54_hyz27.txt	1	0	1
-
+# 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-tra-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
+# 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
 
 
 ## Magpy calculates the three field components from magnet magpy object provided by a .py file section.
@@ -206,9 +224,10 @@ polarization 1	# initial polarization is randomly chosen, weighted by this varia
 #file-type 	magpy-file	BFieldScale
 # 16 PythonField 	magpytest	1	 
 # 16 PythonField 	magpytest	1	 
-# 17 PythonField	octupole	1
-# 18 PythonField	coil		1
+17 PythonField	octupole	1
+18 PythonField	coil		1
 # 18 PythonField 	coil-copy	0.001
+
 
 
 
