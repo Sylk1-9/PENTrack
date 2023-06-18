@@ -7,10 +7,10 @@
 simtype 1
 
 # number of primary particles to be simulated
-simcount 5
+simcount 10
 
 # max. simulation time [s]
-simtime 5
+simtime 100
 
 # path of file containing materials, paths are assumed to be relative to this config file's path
 materials_file materials.in
@@ -207,27 +207,35 @@ polarization 1	# initial polarization is randomly chosen, weighted by this varia
 # 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx50_yzmax54_hyz6.txt	1	0	1
 # 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx50_yzmax54_hyz6.txt			1	0	1
 # 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt	1	0	1
-# 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt			1	0	1
+# 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt	1	0	1
 # 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt	1	0	1
 # 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt			1	0	1
 # 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
-# 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
+5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
+
 
 # 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-tra-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
 # 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
 
+## delta = 1 octupole
+# 4 TRICUBIC	fields/magpy/Bfield_octupole-tra-tric_delta1_xmin0_xmax2000_hx25_yzmax54_hyz3.txt	1	0	1
+
+
+
 
 ## Magpy calculates the three field components from magnet magpy object provided by a .py file section.
 # Each component can depend on the spatial coordinates x, y, z and a time variable t. Field derivatives are approximated numerically using a five-point stencil method.
+# Magpy source can be static (Temporal = 0) or time-depend (Temporal=1). 
 # The field is only evaluated within x/y/z min/max boundaries. If a BoundaryWidth is defined, the field will be brought smoothly to zero at these boundaries.
 
-#file-type 	magpy-file	BFieldScale
-# 16 PythonField 	magpytest	1	 
-# 16 PythonField 	magpytest	1	 
-17 PythonField	octupole	1
-18 PythonField	coil		1
-# 18 PythonField 	coil-copy	0.001
+#file-type 	magpy-file	BFieldScale	   Temporal
+# 16 PythonField 	magpytest	1	 0
+# 16 PythonField 	magpytest	1	 0
+17 PythonField	octupole		1	 0
+# 18 PythonField	coil			1	0
+# 18 PythonField 	coil-copy	1	0
 
+# 18 PythonField		SF2		1	1
 
 
 

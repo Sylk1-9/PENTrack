@@ -65,7 +65,11 @@ def buildSource(t=0, winding=100):
             for k in np.arange(r[i], r[i] + width[i], winding):
                 current = J[i]*width[i]*height[i]/(1000**2*winding)
                 orientation = None# R.from_rotvec((0,90,0), degrees=True)
+                # orientation = R.from_rotvec((0,90,0), degrees=True)
                 # coil.add(magpy.current.Loop(current=current, diameter=k*2, position=(j,0,0), orientation=orientation))
                 coil.add(magpy.current.Loop(current=current, diameter=k*2, position=(0,0,j), orientation=orientation,style={'color':color}))
+                # rotate to get octupole along x axis.
+                coil.rotate_from_angax(angle=90, anchor=(0,0,0), axis='y')
+    
 
     return coil

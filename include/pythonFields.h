@@ -25,16 +25,16 @@ private:
   // PyObject *pMagnetObject;
   // PyObject *pBFieldFunc;
   boost::python::object bpBFieldFunc;
-  // boost::python::object bpSourceObject;
   boost::python::object buildSourceFunc;
-
+  boost::python::object bpSourceObject;
+  bool temporal;
 public:
   /**
    * Constructor
    * 
    * @ft string of the file name containing a function that returns a magnet magpy object.
    */
-  TPythonField(const std::string ft);
+  TPythonField(const std::string ft, const bool tp);
 
 
   /**

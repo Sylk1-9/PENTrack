@@ -25,6 +25,7 @@ TFieldManager::TFieldManager(TConfig &conf){
   for (const auto &i: conf["FIELDS"]){
     std::string type;
     std::string ft;
+    bool temporal; // if field source is time depend or not
     double Ibar, p1, p2, p3, p4, p5, p6, p7;
     double bW, xma, xmi, yma, ymi, zma, zmi;
     double axis_x, axis_y, axis_z, angle, G0, G1, G2, G3, G4, G5, G6, G7, G8, G9, G10, G11, G12, G13, G14, G15, G16, G17, G18, G19, G20, G21, G22, G23;
@@ -116,9 +117,9 @@ TFieldManager::TFieldManager(TConfig &conf){
       fields.emplace_back(TFieldContainer(std::move(f), Bscale, "0", xma, xmi, yma, ymi, zma, zmi, bW));
     }
 #ifdef USEPYTHON
-    else if (type == "PythonField" and ss >> ft >> Bscale){
+    else if (type == "PythonField" and ss >> ft >> Bscale >> temporal){
       std::cout << "USEPYTHON == 1, inside fields.cpp switch" << std::endl;
-      std::unique_ptr<TField> f(new TPythonField(ft));
+      std::unique_ptr<TField> f(new TPythonField(ft, temporal));
       Bscale = ResolveFormula(Bscale, conf["FORMULAS"]);
       fields.emplace_back(TFieldContainer(std::move(f), Bscale, "0"));
     }

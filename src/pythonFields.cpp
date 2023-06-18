@@ -12,8 +12,10 @@
 
 
 
-TPythonField::TPythonField(const std::string ft){
-  
+TPythonField::TPythonField(const std::string ft, const bool tp){
+
+  temporal = tp;
+  std::cout << "temporal = " << temporal << std::endl;
   // PyRun_SimpleString("import sys"); 
   // PyRun_SimpleString("sys.path.append(\".\")");
 
@@ -35,8 +37,21 @@ TPythonField::TPythonField(const std::string ft){
   // boost::python::object buildSourceFunc = bmagnetmodule.attr("buildSource");
   buildSourceFunc = bmagnetmodule.attr("buildSource");
 
-  // bpSourceObject = buildSourceFunc();
-
+  try
+    {
+      bpSourceObject = buildSourceFunc(0);
+    }
+  catch (const std::exception& e)
+    {
+      // Catch and handle C++ exceptions
+      std::cout << "Caught C++ exception: " << e.what() << std::endl;
+    }
+  catch (...)
+    {
+      // Catch and handle any other C++ exceptions
+      std::cout << "Caught unknown C++ exception" << std::endl;
+    }
+  
   
   // bpSourceObject = boost::python::call_method<boost::python::object>(, NULL);
   
@@ -48,9 +63,9 @@ TPythonField::TPythonField(const std::string ft){
       
 }
 
-void TPythonField::BField(const double x, const double y, const double z, const double t, double B[3], double dBidxj[3][3]) const{
+void TPythonField::BField(const double x, const double y, const double z, const double t, double B[3], double dBidxj[3][3]) const {
 
-  const double h = 1e-6;
+  const double h = 1e-8;
   int dimarg = (dBidxj != nullptr) ? 7 : 1;
   // PyObject *pArgs = PyTuple_New(2);
   // PyObject *pList = PyList_New(dimarg);
@@ -58,15 +73,14 @@ void TPythonField::BField(const double x, const double y, const double z, const 
   // PyArrayObject* npArray;
   double xyz[3];
 
-  boost::python::list bpList;    
-
-  // std::cout << " building list args" << std::endl;
-
+  
+  boost::python::list bpList;
+  
   for(int i=0; i<dimarg; ++i){
 
-    xyz[0] = z;  // swap x and z. Todo : sly
+    xyz[0] = x;
     xyz[1] = y;
-    xyz[2] = x;  // swap x and z. Todo : sly
+    xyz[2] = z;
     
     switch(i) {
     case 0:
@@ -120,63 +134,17 @@ void TPythonField::BField(const double x, const double y, const double z, const 
   boost::python::object bnpArray;
   // npArray = reinterpret_cast<PyArrayObject*>(PyObject_CallObject(pBFieldFunc, pArgs));
 
-  boost::python::object bpSourceObject;
-    
-  try
-    {
-      // bpSourceObject = buildSourceFunc();
-      bpSourceObject = buildSourceFunc(t);
-      // args = boost::python::make_tuple(bpSourceObject, bpList, 1);
-      bnpArray = bpBFieldFunc(bpSourceObject, bpList);
-    }
-  catch (const std::exception& e)
-    {
-        // Catch and handle C++ exceptions
-      std::cout << "Caught C++ exception: " << e.what() << std::endl;
-    }
-  catch (...)
-    {
-      // Catch and handle any other C++ exceptions
-      std::cout << "Caught unknown C++ exception" << std::endl;
-    }
+  boost::python::object bpSourceObjectlocal;
+
+  if (temporal)
+    bpSourceObjectlocal = buildSourceFunc(t);
+  else
+    bpSourceObjectlocal = bpSourceObject;
+
+  // args = boost::python::make_tuple(bpSourceObject, bpList, 1);
+  bnpArray = bpBFieldFunc(bpSourceObjectlocal, bpList);
 
 
-  // Check if a Python exception occurred
-  if (PyErr_Occurred())
-    {
-      // Fetch the Python exception type, value, and traceback
-      PyObject* pType, * pValue, * pTraceback;
-      PyErr_Fetch(&pType, &pValue, &pTraceback);
-      
-      // Convert the Python objects to strings
-      PyObject* pTypeStr = PyObject_Str(pType);
-      PyObject* pValueStr = PyObject_Str(pValue);
-      PyObject* pTracebackStr = PyObject_Str(pTraceback);
-      
-        // Get the C-style string representation of the Python objects
-      const char* pTypeCStr = PyUnicode_AsUTF8(pTypeStr);
-      const char* pValueCStr = PyUnicode_AsUTF8(pValueStr);
-      const char* pTracebackCStr = PyUnicode_AsUTF8(pTracebackStr);
-      
-      // Print the Python exception information
-      std::cout << "Caught Python exception:" << std::endl;
-      std::cout << "Type: " << pTypeCStr << std::endl;
-      std::cout << "Value: " << pValueStr << std::endl;
-      std::cout << "Traceback: " << pTracebackCStr << std::endl;
-      
-      // Clean up the Python objects
-      Py_XDECREF(pType);
-      Py_XDECREF(pValue);
-      Py_XDECREF(pTraceback);
-      Py_XDECREF(pTypeStr);
-      Py_XDECREF(pValueStr);
-      Py_XDECREF(pTracebackStr);
-      PyErr_Print();
-      PyErr_Clear();
-      
-    }
-  
-  
   // PyGILState_Release(gstate);
   // PyEval_RestoreThread(gstate);
   
@@ -201,43 +169,65 @@ void TPythonField::BField(const double x, const double y, const double z, const 
   }
 
   
-  // std::cout << "Bi = " << B[0] << ", " << B[1] << ", " << B[2] << std::endl;
-
   if (dBidxj != nullptr){
 
     double trace_3;
     double dBi_dxj[3][3];
 
     for(int i=0; i<3; ++i){
-      dBi_dxj[i][0] = Bs[2][i]/(2*h) - Bs[1][i]/(2*h);
-      dBi_dxj[i][1] = Bs[4][i]/(2*h) - Bs[3][i]/(2*h);
-      dBi_dxj[i][2] = Bs[6][i]/(2*h) - Bs[5][i]/(2*h);
+      dBi_dxj[i][0] = (Bs[2][i] - Bs[1][i])/(2*h);
+      dBi_dxj[i][1] = (Bs[4][i] - Bs[3][i])/(2*h);
+      dBi_dxj[i][2] = (Bs[6][i] - Bs[5][i])/(2*h);
       
     }
     
     trace_3 = 0; //(dBi_dxj[0][0] + dBi_dxj[1][1] + dBi_dxj[2][2])/3;
     // std::cout << trace_3 << std::endl;
-
     
     dBidxj[0][0] = dBi_dxj[0][0] - trace_3;
     dBidxj[1][1] = dBi_dxj[1][1] - trace_3;
     dBidxj[2][2] = dBi_dxj[2][2] - trace_3;
 
-    dBidxj[0][1] = dBidxj[1][0] = (dBi_dxj[0][1] + dBi_dxj[1][0])/2;
-    dBidxj[0][2] = dBidxj[2][0] = (dBi_dxj[0][2] + dBi_dxj[2][0])/2;
-    dBidxj[1][2] = dBidxj[2][1] = (dBi_dxj[1][2] + dBi_dxj[2][1])/2;
+    dBidxj[1][0] = (dBi_dxj[0][1] + dBi_dxj[1][0])/2;
+    dBidxj[2][0] = (dBi_dxj[0][2] + dBi_dxj[2][0])/2;
+    dBidxj[2][1] = (dBi_dxj[1][2] + dBi_dxj[2][1])/2;
 
-    // std::cout << "dBi_dxj = \n " << std::endl;
-    // std::cout << dBidxj[0][0] << ", " << dBidxj[0][1] << ", " << dBidxj[0][2] << std::endl;
-    // std::cout << dBidxj[1][0] << ", " << dBidxj[1][1] << ", " << dBidxj[1][2] << std::endl;
-    // std::cout << dBidxj[2][0] << ", " << dBidxj[2][1] << ", " << dBidxj[2][2] << "\n" << std::endl;
+    dBidxj[0][1] = dBidxj[1][0];
+    dBidxj[1][2] = dBidxj[2][1];
+    dBidxj[0][2] = dBidxj[2][0];
+    
 
-  }
+  //   double reltrace = (dBidxj[0][0] + dBidxj[1][1] + dBidxj[2][2])/sqrt(dBidxj[0][0]*dBidxj[0][0] + dBidxj[1][1]*dBidxj[1][1] + dBidxj[2][2]*dBidxj[2][2]);
+  //   double relrotxy = (dBidxj[0][1] - dBidxj[1][0])/(dBidxj[0][1] + dBidxj[1][0]);
+  //   double relrotxz = (dBidxj[0][2] - dBidxj[2][0])/(dBidxj[0][2] + dBidxj[2][0]);
+  //   double relrotyz = (dBidxj[1][2] - dBidxj[2][1])/(dBidxj[1][2] + dBidxj[2][1]);
+    
+  //   double trace = dBidxj[0][0] + dBidxj[1][1] + dBidxj[2][2];
+  //   double rotxy = dBidxj[0][1] - dBidxj[1][0];
+  //   double rotxz = dBidxj[0][2] - dBidxj[2][0];
+  //   double rotyz = dBidxj[1][2] - dBidxj[2][1];
 
+  //   if(abs(reltrace) > 0.01){ //} || abs(relrotxy > 0.01 || relrotxz > 0.01 || relrotyz > 0.01){
+  //     // if(abs(trace) > 1){ // || abs(rotxy) > 0.01 || abs(rotxz) > 0.01 || abs(rotyz) > 0.01){
+  //     std::cout << " \ndBidxj, x=" <<x << ", r=" << sqrt(y*y + z*z) << ", y=" << y << ", z=" << z << std::endl;
+  //     for(int i=0; i<3;++i){
+  // 	for(int j=0; j<3; ++j){
+  // 	  std::cout << dBidxj[i][j] << ", ";
+  // 	}
+  // 	std::cout << std::endl;
+  //     }
+  //     std::cout << " reltrace = " << reltrace << ", relrotxy = " << relrotxy << ", relrotxz = " << relrotxz << ", relrotyz" << relrotyz << std::endl;
+  //     std::cout << " trace = " << trace << ", rotxy = " << rotxy << ", rotxz = " << rotxz << ", rotyz" << rotyz << std::endl;
+  //   }
+    
+  // }
+
+
+  
   // Py_DECREF(npArray);
   // Py_DECREF(pList);
   // PyTuple_SET_ITEM(pArgs, 0, pxyzList);
   // Py_DECREF(pxyzList);
   // Py_DECREF(pArgs);
-
+  
 }

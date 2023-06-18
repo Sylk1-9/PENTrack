@@ -72,7 +72,113 @@ def buildTrapez(magnetization=(1, 0, 0), dimension=(1, 3, 3, 4), position=(0, 0,
 
 
 
-def buildSource(t=0, nseg=24, stype="cub", delta=0, nring=24):
+def buildTrapez(magnetization=(1, 0, 0), dimension=(1, 3, 3, 4), position=(0, 0, 0), color="blue"):
+    (a, b, h, l) = dimension
+    v = []
+    for z in [-l/2, l/2]:
+        for x in [0, h]:
+            ys = [-a/2, a/2] if (x==0) else [-b/2, b/2]
+            for y in ys:
+                v.append([x, y, z])
+
+    v = np.array(v)
+
+    vs = list(np.zeros((12, 3, 3)))
+    vs[0]  = (v[3], v[0], v[1])
+    vs[1]  = (v[2], v[0], v[3])
+    vs[2]  = (v[1], v[0], v[4])
+    vs[3]  = (v[4], v[0], v[2])
+    vs[4]  = (v[2], v[6], v[4])
+    vs[5]  = (v[3], v[6], v[2])
+    vs[6]  = (v[7], v[6], v[3])
+    vs[7]  = (v[4], v[6], v[7])
+    vs[8]  = (v[7], v[5], v[4])
+    vs[9]  = (v[4], v[5], v[1])
+    vs[10] = (v[3], v[5], v[7])
+    vs[11] = (v[1], v[5], v[3])
+
+    trapez = magpy.Collection(style_label="Trapezoid")
+
+    for ind, vert in enumerate(vs):
+        trapez.add(
+            magpy.misc.Triangle(
+                magnetization=magnetization,
+                vertices=vert,
+                style_label=f"Triangle_{ind+1:02d}",
+                style={'color':color} # 'rgb(%i, %i, %i)' % tuple(np.random.randint(0, 255, 3))}
+            )
+        )
+
+    return trapez.move(position)
+
+
+
+# def buildSource(nseg=1, stype="cub", delta=0, nring=24, compensate=False):
+#     # nseg = number of segement along z.
+#     # nring = number of ring along z for the octupole (24 by default)
+#     # nseg=1 + nring=1  will display only 1 ring (for fast build verification and visualisation)
+#     # nseg=1 + nring=24 will display one long ring, the length of the octupole (equivalent to 24 longitudinal join segments)
+#     # nseg=24 + nring=24 will display 24 rings.
+#     zstart = 905 if compensate else 570 # z coordinate of segment's start
+#     z = 30*(nring/nseg) if compensate else 57.5*(nring/nseg)  # heigh of segment
+#     r1 = 41.2 if compensate else 54 # inner radius
+#     r2 = 47 if compensate else 84.1 # outer radius
+#     N = 32 # number of circulately distributied segments (around z axis)
+#     area = np.pi*(r2*r2 - r1*r1)/N # area of segment in x-y plane cut
+#     M = 1100 # segment magnetization
+#     phi = 360/N # angle between segments
+    
+#     octupole = magpy.Collection()
+#     for i in np.arange(0, nseg):
+#         for deg in np.arange(0, 360, phi):
+#             rad = np.deg2rad(deg)
+#             magnetization = (M*np.cos(4*rad), M*np.sin(4*rad), 0)
+#             orientation = None # R.from_rotvec((0, 90, 0), degrees=True) #
+#             color = 'rgb(%i, %i, %i)' % tuple(np.random.randint(0, 255, 3))
+
+#             if(stype == "cub"):
+#                 y = 2*r1*np.sin(np.deg2rad(phi)/2)
+#                 x = area/y #84.1 - 54
+#                 position = (r1 + x/2, 0, zstart + z/2 + i*z)
+#                 dimension = (x, y, z)
+#                 # print("cube area ", x*y)
+#                 segment = magpy.magnet.Cuboid(magnetization, dimension, position, orientation, {'color':color})
+#                 segment.rotate_from_angax(deg, axis='z', anchor=0)
+#             elif(stype == "cyl"):
+#                 position = (0, 0, zstart + z/2 + i*z)
+#                 # dimension = (r1, r2, z, deg-phi/2, deg+phi/2)
+#                 dimension = (r1, r2, z, -phi/2, phi/2)
+#                 # print("cylinder area", np.pi*(r2*r2 - r1*r1)/N)
+#                 segment = magpy.magnet.CylinderSegment(magnetization, dimension, position, orientation,{'color':color})
+#                 segment.rotate_from_angax(deg, axis='z', anchor=0)
+                
+#             elif(stype == "tra"):
+#                 position = (r1, 0, zstart + z/2 + i*z)
+#                 a = 2*r1*np.sin(np.deg2rad(phi)/2) # base down
+#                 aa = -1
+#                 bb = -2*r1
+#                 cc = area/a*r1*2
+#                 k = np.sin(np.deg2rad(phi)/2) # cst
+#                 h = (-bb - (bb*bb - 4*aa*cc)**.5)/(2*aa) # height
+#                 b = 2*(r1+h)*np.sin(np.deg2rad(phi)/2) # base up
+#                 l = z
+#                 # print("trapez area", (a+b)/2 * h)
+#                 dimension = (a, b, h, l)
+#                 segment = buildTrapez(magnetization, dimension, position, color=color)
+#                 segment.rotate_from_angax(deg, axis='z', anchor=0)
+#                 # posxy = np.array(segment.position[:2])
+#                 # print(np.sum(posxy**2))
+#             else:
+#                 return
+
+#             if delta: 
+#                 segment.rotate_from_angax(np.random.rand()*delta, np.random.rand(3)*2-1, anchor=None)
+            
+#             octupole.add(segment)
+            
+#     return octupole
+
+def buildSource(t=0, nseg=1, stype="cub", delta=0, nring=24):
     # nseg = number of segement along x.
     # nring = number of ring along x for the octupole (24 by default)
     # nseg=1 + nring=1  will display only 1 ring.
@@ -87,10 +193,11 @@ def buildSource(t=0, nseg=24, stype="cub", delta=0, nring=24):
     
     octupole = magpy.Collection()
     for i in np.arange(0, nseg):
-        for deg in np.arange(0, 360, phi):
+        for deg in np.arange(0+180, 360+180, phi):
             rad = np.deg2rad(deg)
             magnetization = (M*np.cos(4*rad), M*np.sin(4*rad), 0)
-            orientation = None # R.from_rotvec((0, 90, 0), degrees=True)
+            orientation = None #
+            # orientation = R.from_rotvec((0, 90, 0), degrees=True)
             color = 'rgb(%i, %i, %i)' % tuple(np.random.randint(0, 255, 3))
 
             if(stype == "cub"):
@@ -119,8 +226,8 @@ def buildSource(t=0, nseg=24, stype="cub", delta=0, nring=24):
                 h = (-bb - (bb*bb - 4*aa*cc)**.5)/(2*aa) # height
                 b = 2*(r1+h)*np.sin(np.deg2rad(phi)/2) # base up
                 l = z
-                # print("trapez area", (a+b)/2 * h)
                 dimension = (a, b, h, l)
+                print("trapez area", (a+b)/2 * h, dimension, position)
                 segment = buildTrapez(magnetization, dimension, position, color=color)
                 segment.rotate_from_angax(deg, axis='z', anchor=0)
                 # posxy = np.array(segment.position[:2])
@@ -130,5 +237,10 @@ def buildSource(t=0, nseg=24, stype="cub", delta=0, nring=24):
 
             segment.rotate_from_angax(np.random.rand()*delta, np.random.rand(3)*2-1, anchor=None)
             octupole.add(segment)
+
+
+    # rotate to get octupole along x axis.
+    octupole.rotate_from_angax(angle=90, anchor=(0,0,0), axis='y')
+    
     return octupole
 
