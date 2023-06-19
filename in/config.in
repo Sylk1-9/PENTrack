@@ -4,13 +4,13 @@
 [GLOBAL]
 # simtype: 1 => particles, 3 => Bfield, 4 => cut through BField, 7 => print geometry, 8 => print mr-drp for solid angle
 # 9 => print integrated mr-drp for incident theta vs energy
-simtype 1
+simtype 4
 
 # number of primary particles to be simulated
 simcount 10
 
 # max. simulation time [s]
-simtime 100
+simtime 1
 
 # path of file containing materials, paths are assumed to be relative to this config file's path
 materials_file materials.in
@@ -27,10 +27,10 @@ secondaries 1
 
 # For octupole cut
 # BCutPlane   1.0  -0.054 -0.054    	  1.0   -0.054  0.05508        1.0   0.05508  -0.054      101    101	   1
-BCutPlane   1.0  -0.054 -0.054    	  1.0   0.054  -0.054        1.0   -0.054  0.054      200    200	   1
+# BCutPlane   1.0  -0.054 -0.054    	  1.0   0.054  -0.054        1.0   -0.054  0.054      200    200	   1
 
 # For coil cut
-# BCutPlane   0.0   0.000  0.000    	  2.0   0.000  0.000        0.0   0.054  0.000      2000    10	   0
+BCutPlane   0.0   0.000  0.000    	  2.0   0.000  0.000        0.0   0.054  0.000      2000    10	   0
 
 # For octupole + coil cut
 # BCutPlane   0.0   0.000  0.000    	  2.0   0.030  0.040        2.0   0.000  0.000      2000    1	   0
@@ -197,6 +197,7 @@ polarization 1	# initial polarization is randomly chosen, weighted by this varia
 # 4 COMSOL	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt	1	0	1
 # 5 COMSOL	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt			1	0	1
 # 5 COMSOL	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
+5 COMSOL	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
 
 # 5 COMSOL	fields/magpy/Bfield_octupole-monoseg-tra-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
 # 5 COMSOL	fields/magpy/Bfield_octupole-monoseg-cyl-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
@@ -211,7 +212,7 @@ polarization 1	# initial polarization is randomly chosen, weighted by this varia
 # 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt	1	0	1
 # 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt			1	0	1
 # 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
-5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
+# 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
 
 
 # 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-tra-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
@@ -231,7 +232,7 @@ polarization 1	# initial polarization is randomly chosen, weighted by this varia
 #file-type 	magpy-file	BFieldScale	   Temporal
 # 16 PythonField 	magpytest	1	 0
 # 16 PythonField 	magpytest	1	 0
-17 PythonField	octupole		1	 0
+# 17 PythonField	octupole		1	 0
 # 18 PythonField	coil			1	0
 # 18 PythonField 	coil-copy	1	0
 

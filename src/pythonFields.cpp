@@ -24,10 +24,10 @@ TPythonField::TPythonField(const std::string ft, const bool tp){
 
   std::cout << " pythonField function loading" << std::endl;
 
-  // boost::python::object bmagpymodule = boost::python::import("magpylib");
-  // bpBFieldFunc = bmagpymodule.attr("getB");
-  boost::python::object bmagpymodule = boost::python::import("pythonField");
-  bpBFieldFunc = bmagpymodule.attr("BField");
+  boost::python::object bmagpymodule = boost::python::import("magpylib");
+  bpBFieldFunc = bmagpymodule.attr("getB");
+  // boost::python::object bmagpymodule = boost::python::import("pythonField");
+  // bpBFieldFunc = bmagpymodule.attr("BField");
 
   std::cout << " python magnetic source building" << std::endl;
   
@@ -63,17 +63,14 @@ TPythonField::TPythonField(const std::string ft, const bool tp){
       
 }
 
+
+
+
 void TPythonField::BField(const double x, const double y, const double z, const double t, double B[3], double dBidxj[3][3]) const {
 
   const double h = 1e-8;
   int dimarg = (dBidxj != nullptr) ? 7 : 1;
-  // PyObject *pArgs = PyTuple_New(2);
-  // PyObject *pList = PyList_New(dimarg);
-  // PyObject *pxyzList;
-  // PyArrayObject* npArray;
   double xyz[3];
-
-  
   boost::python::list bpList;
   
   for(int i=0; i<dimarg; ++i){
@@ -107,33 +104,17 @@ void TPythonField::BField(const double x, const double y, const double z, const 
       printf("out of case");
     }
 
-    // pxyzList = PyList_New(3);
     boost::python::list bpxyzList;
 
     for(int j=0; j<3; ++j){
-      // PyList_SetItem(pxyzList, j, PyFloat_FromDouble(1000 * xyz[j]));
       bpxyzList.append(1000 * xyz[j]);
     }
-    // PyList_SetItem(pList, i, pxyzList);
     bpList.append(bpxyzList);
   }
 
-  // PyTuple_SetItem(pArgs, 0, pMagnetObject);
-  // PyTuple_SetItem(pArgs, 1, pList);
-
-  // std::cout << "calling getBs" << std::endl;
-
-  // PyGILState_STATE gstate = PyGILState_Ensure();
-  // PyThreadState* gstate = PyEval_SaveThread();
-
-  
     
   double Bs[dimarg][3];
-  // boost::python::tuple argt=t;
-  // boost::python::tuple args;
   boost::python::object bnpArray;
-  // npArray = reinterpret_cast<PyArrayObject*>(PyObject_CallObject(pBFieldFunc, pArgs));
-
   boost::python::object bpSourceObjectlocal;
 
   if (temporal)
@@ -141,19 +122,12 @@ void TPythonField::BField(const double x, const double y, const double z, const 
   else
     bpSourceObjectlocal = bpSourceObject;
 
-  // args = boost::python::make_tuple(bpSourceObject, bpList, 1);
   bnpArray = bpBFieldFunc(bpSourceObjectlocal, bpList);
 
-
-  // PyGILState_Release(gstate);
-  // PyEval_RestoreThread(gstate);
   
-  // std::cout << "getting Bs" << std::endl;
-
   if (dBidxj != nullptr){
     for (int i=0; i<dimarg; ++i) {
       for (int j=0; j<3; ++j) { 
-	// Bs[i][j] = 0.001 * (*reinterpret_cast<double*>(PyArray_GETPTR2(npArray, i, j)));
 	Bs[i][j] = 0.001 * boost::python::extract<double>(bnpArray[i][j]);
       }
     }
@@ -167,7 +141,6 @@ void TPythonField::BField(const double x, const double y, const double z, const 
   for (int i=0; i<3; ++i) {
     B[i] = Bs[0][i];
   }
-
   
   if (dBidxj != nullptr){
 
@@ -177,8 +150,7 @@ void TPythonField::BField(const double x, const double y, const double z, const 
     for(int i=0; i<3; ++i){
       dBi_dxj[i][0] = (Bs[2][i] - Bs[1][i])/(2*h);
       dBi_dxj[i][1] = (Bs[4][i] - Bs[3][i])/(2*h);
-      dBi_dxj[i][2] = (Bs[6][i] - Bs[5][i])/(2*h);
-      
+      dBi_dxj[i][2] = (Bs[6][i] - Bs[5][i])/(2*h); 
     }
     
     trace_3 = 0; //(dBi_dxj[0][0] + dBi_dxj[1][1] + dBi_dxj[2][2])/3;
@@ -195,6 +167,110 @@ void TPythonField::BField(const double x, const double y, const double z, const 
     dBidxj[0][1] = dBidxj[1][0];
     dBidxj[1][2] = dBidxj[2][1];
     dBidxj[0][2] = dBidxj[2][0];
+    
+  }    
+}
+
+
+// void TPythonField::BField(const double x, const double y, const double z, const double t, double B[3], double dBidxj[3][3]) const {
+
+//   const double h = 1e-8;
+//   int dimarg = (dBidxj != nullptr) ? 7 : 1;
+//   double xyz[3];
+//   boost::python::list bpList;
+  
+//   for(int i=0; i<dimarg; ++i){
+
+//     xyz[0] = x;
+//     xyz[1] = y;
+//     xyz[2] = z;
+    
+//     switch(i) {
+//     case 0:
+//       break;
+//     case 1:
+//       xyz[0] -= h;
+//       break;
+//     case 2:
+//       xyz[0] += h;
+//       break;
+//     case 3:
+//       xyz[1] -= h;
+//       break;
+//     case 4:
+//       xyz[1] += h;
+//       break;
+//     case 5:
+//       xyz[2] -= h;
+//       break;
+//     case 6:
+//       xyz[2] += h;
+//       break;
+//     default:
+//       printf("out of case");
+//     }
+
+//     boost::python::list bpxyzList;
+
+//     for(int j=0; j<3; ++j){
+//       bpxyzList.append(1000 * xyz[j]);
+//     }
+//     bpList.append(bpxyzList);
+//   }
+
+//   boost::python::object bnpArray;
+//   boost::python::object bpSourceObjectlocal;
+
+//   if (temporal)
+//     bpSourceObjectlocal = buildSourceFunc(t);
+//   else
+//     bpSourceObjectlocal = bpSourceObject;
+
+//   bnpArray = bpBFieldFunc(bpSourceObjectlocal, bpList);
+  
+//   if (dBidxj != nullptr){
+//     double Bs[7][3];
+//     for (int i=0; i<7; ++i) {
+//       for (int j=0; j<3; ++j) { 
+//         Bs[i][j] = 0.001 * boost::python::extract<double>(bnpArray[i][j]);
+//       }
+//     }
+
+//     for (int i=0; i<3; ++i)
+//       B[i] = Bs[0][i];
+  
+
+//     double dBi_dxj[3][3];
+//     double trace_3 = 0.0;
+
+//     for(int i=0; i<3; ++i){
+//       dBi_dxj[i][0] = (Bs[2][i] - Bs[1][i])/(2*h);
+//       dBi_dxj[i][1] = (Bs[4][i] - Bs[3][i])/(2*h);
+//       dBi_dxj[i][2] = (Bs[6][i] - Bs[5][i])/(2*h); 
+//       trace_3 += dBi_dxj[i][i];
+//     }
+    
+//     trace_3 /= 3.0;
+
+//     for(int i=0; i<3; ++i){
+//       dBidxj[i][0] = dBi_dxj[i][0] - trace_3;
+//       dBidxj[i][1] = (dBi_dxj[i][1] + dBi_dxj[1][i])/2.0;
+//       dBidxj[i][2] = (dBi_dxj[i][2] + dBi_dxj[2][i])/2.0;
+//       dBidxj[0][i] = dBidxj[i][0];
+//       dBidxj[1][i] = dBidxj[i][1];
+//       dBidxj[2][i] = dBidxj[i][2];
+//     }
+//   }
+//   else{
+//     for (int j=0; j<3; ++j) {
+//       B[j] = 0.001 * boost::python::extract<double>(bnpArray[j]);
+//     }
+//   }
+// }
+
+
+
+
     
 
   //   double reltrace = (dBidxj[0][0] + dBidxj[1][1] + dBidxj[2][2])/sqrt(dBidxj[0][0]*dBidxj[0][0] + dBidxj[1][1]*dBidxj[1][1] + dBidxj[2][2]*dBidxj[2][2]);
@@ -217,17 +293,14 @@ void TPythonField::BField(const double x, const double y, const double z, const 
   // 	std::cout << std::endl;
   //     }
   //     std::cout << " reltrace = " << reltrace << ", relrotxy = " << relrotxy << ", relrotxz = " << relrotxz << ", relrotyz" << relrotyz << std::endl;
-  //     std::cout << " trace = " << trace << ", rotxy = " << rotxy << ", rotxz = " << rotxz << ", rotyz" << rotyz << std::endl;
-  //   }
-    
-  // }
+  //     std::cout << " trace = " << trace << ", rotxy = " << rotxy << ", rotxz = " << rotxz << ", rotyz" << rotyz << std::endl
 
 
-  
+//////////////////////
+
+
   // Py_DECREF(npArray);
   // Py_DECREF(pList);
   // PyTuple_SET_ITEM(pArgs, 0, pxyzList);
   // Py_DECREF(pxyzList);
   // Py_DECREF(pArgs);
-  
-}
