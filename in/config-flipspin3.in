@@ -10,7 +10,7 @@ simtype 1
 simcount 1
 
 # max. simulation time [s]
-simtime 1
+simtime 10
 
 # path of file containing materials, paths are assumed to be relative to this config file's path
 materials_file materials.in
@@ -216,8 +216,8 @@ polarization -1	# initial polarization is randomly chosen, weighted by this vari
 #5 COMSOL	long.txt	1		    0		        1
 #5 COMSOL	test.txt	1		    0		        1
 
-5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt			1	0	1
-# 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
+# 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt			1	0	1
+5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
 
 
 # Simulate magnetic field from a current I flowing from a list of points (x1, y1, z1) to (x2, y2, z2)
