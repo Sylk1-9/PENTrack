@@ -83,72 +83,136 @@ TECurrentField::TECurrentField(const std::string sft, const std::string &_It) {
 
 
 void TECurrentField::BField(const double x, const double y, const double z, const double t, double B[3], double dBidxj[3][3]) const {
+
   *tvar = t;
-  double current =  Itexpr.value();
-
-  double bx = 0.0;
-  double by = 0.0;
-  double bz = 0.0;
-
-  double dbx_dxi[3] = {0.0};
-  double dby_dxi[3] = {0.0};
-  double dbz_dxi[3] = {0.0};
+  double I =  Itexpr.value();
 
   for (const auto& segment : wireSegments) {
-    double x1 = segment.x1;
-    double y1 = segment.y1;
-    double z1 = segment.z1;
-    double x2 = segment.x2;
-    double y2 = segment.y2;
-    double z2 = segment.z2;
-    // double current = segment.current;
 
-    double dx = x2 - x1;
-    double dy = y2 - y1;
-    double dz = z2 - z1;
+    // Compute wire segment properties
+    double dx = segment.x2 - segment.x1;
+    double dy = segment.y2 - segment.y1;
+    double dz = segment.z2 - segment.z1;
 
-    double r = std::sqrt(dx * dx + dy * dy + dz * dz);
-    double r3 = r * r * r;
+    double length = std::sqrt(dx * dx + dy * dy + dz * dz);
+    double invLength = 1.0 / length;
 
-    double dlx = mu0/(4*pi) * current * (dy * (z - z1) - dz * (y - y1)) / r3;
-    double dly = mu0/(4*pi) * current * (dz * (x - x1) - dx * (z - z1)) / r3;
-    double dlz = mu0/(4*pi) * current * (dx * (y - y1) - dy * (x - x1)) / r3;
+    // Calculate wire segment orientation
+    double ux = dx * invLength;
+    double uy = dy * invLength;
+    double uz = dz * invLength;
 
-    bx += dlx;
-    by += dly;
-    bz += dlz;
+    // Calculate vector r from wire segment to observation point (x, y, z)
+    double rx = x - segment.x1;
+    double ry = y - segment.y1;
+    double rz = z - segment.z1;
 
-    // First derivatives
+    // Calculate scalar projection of r onto wire segment
+    double projection = (rx * ux + ry * uy + rz * uz);
+
+    // Calculate vector projection of r onto wire segment
+    double px = projection * ux;
+    double py = projection * uy;
+    double pz = projection * uz;
+
+    // Calculate vector projection of r perpendicular to wire segment
+    double qx = rx - px;
+    double qy = ry - py;
+    double qz = rz - pz;
+
+    // Calculate distance from wire segment to observation point
+    double distance = std::sqrt(qx * qx + qy * qy + qz * qz);
+
+    // Calculate magnetic field components
+    double factor = mu0 * I / (4.0 * pi * distance * distance * distance);
+
+    B[0] += factor * (3.0 * qx * px - distance * distance * ux);
+    B[1] += factor * (3.0 * qy * py - distance * distance * uy);
+    B[2] += factor * (3.0 * qz * pz - distance * distance * uz);
+
+    // Calculate derivatives of B with respect to x, y, and z
     if (dBidxj != nullptr){
-      double dr_dxi[3] = {0.0};
-      dr_dxi[0] = (x - x1) / r;
-      dr_dxi[1] = (y - y1) / r;
-      dr_dxi[2] = (z - z1) / r;
+      double factor2 = mu0 * I / (4.0 * pi * distance * distance * distance * distance * distance);
 
-      for (int i = 0; i < 3; i++) {
-	dbx_dxi[i] += mu0/(4*pi) * current * (dy * dr_dxi[i] - dz * dr_dxi[(i + 1) % 3]) / r3;
-	dby_dxi[i] += mu0/(4*pi) * current * (dz * dr_dxi[i] - dx * dr_dxi[(i + 1) % 3]) / r3;
-	dbz_dxi[i] += mu0/(4*pi) * current * (dx * dr_dxi[i] - dy * dr_dxi[(i + 1) % 3]) / r3;
-      }
+      dBidxj[0][0] = factor2 * (3.0 * px * px - distance * distance + 2.0 * qx * qx);
+      dBidxj[0][1] = factor2 * (3.0 * px * py + 2.0 * qx * qy);
+      dBidxj[0][2] = factor2 * (3.0 * px * pz + 2.0 * qx * qz);
+      dBidxj[1][0] = factor2 * (3.0 * py * px + 2.0 * qy * qx);
+      dBidxj[1][1] = factor2 * (3.0 * py * py - distance * distance + 2.0 * qy * qy);
+      dBidxj[1][2] = factor2 * (3.0 * py * pz + 2.0 * qy * qz);
+      dBidxj[2][0] = factor2 * (3.0 * pz * px + 2.0 * qz * qx);
+      dBidxj[2][1] = factor2 * (3.0 * pz * py + 2.0 * qz * qy);
+      dBidxj[2][2] = factor2 * (3.0 * pz * pz - distance * distance + 2.0 * qz * qz);
     }
   }
-
-  B[0] = bx;
-  B[1] = by;
-  B[2] = bz;
-
-  if (dBidxj != nullptr){
-
-    dBidxj[0][0] = dbx_dxi[0];
-    dBidxj[0][1] = dbx_dxi[1];
-    dBidxj[0][2] = dbx_dxi[2];
-
-    dBidxj[1][0] = dby_dxi[0];
-    dBidxj[1][1] = dby_dxi[1];
-    dBidxj[1][2] = dby_dxi[2];
-
-    dBidxj[2][0] = dbz_dxi[0];
-    dBidxj[2][1] = dbz_dxi[1];
-    dBidxj[2][2] = dbz_dxi[2];
-  }
 }
+
+// void TECurrentField::BField(const double x, const double y, const double z, const double t, double B[3], double dBidxj[3][3]) const {
+//   *tvar = t;
+//   double current =  Itexpr.value();
+
+//   double bx = 0.0;
+//   double by = 0.0;
+//   double bz = 0.0;
+
+//   double dbx_dxi[3] = {0.0};
+//   double dby_dxi[3] = {0.0};
+//   double dbz_dxi[3] = {0.0};
+
+//   for (const auto& segment : wireSegments) {
+//     double x1 = segment.x1;
+//     double y1 = segment.y1;
+//     double z1 = segment.z1;
+//     double x2 = segment.x2;
+//     double y2 = segment.y2;
+//     double z2 = segment.z2;
+
+//     double dx = x2 - x1;
+//     double dy = y2 - y1;
+//     double dz = z2 - z1;
+
+//     double r = std::sqrt(dx * dx + dy * dy + dz * dz);
+//     double r3 = r * r * r;
+
+//     double dlx = mu0 / (4 * pi) * current * (dy * (z - z1) - dz * (y - y1)) / r3;
+//     double dly = mu0 / (4 * pi) * current * (dz * (x - x1) - dx * (z - z1)) / r3;
+//     double dlz = mu0 / (4 * pi) * current * (dx * (y - y1) - dy * (x - x1)) / r3;
+
+//     bx += dlx;
+//     by += dly;
+//     bz += dlz;
+
+//     // First derivatives
+//     if (dBidxj != nullptr){
+//       double dr_dxi[3] = {0.0};
+//       dr_dxi[0] = (x - x1) / r;
+//       dr_dxi[1] = (y - y1) / r;
+//       dr_dxi[2] = (z - z1) / r;
+
+//       for (int i = 0; i < 3; i++) {
+// 	dbx_dxi[i] += mu0 / (4 * pi) * current * (dy * dr_dxi[i] - dz * dr_dxi[(i + 1) % 3]) / r3;
+// 	dby_dxi[i] += mu0 / (4 * pi) * current * (dz * dr_dxi[i] - dx * dr_dxi[(i + 1) % 3]) / r3;
+// 	dbz_dxi[i] += mu0 / (4 * pi) * current * (dx * dr_dxi[i] - dy * dr_dxi[(i + 1) % 3]) / r3;
+//       }
+//     }
+//   }
+
+//   B[0] = bx;
+//   B[1] = by;
+//   B[2] = bz;
+
+//   if (dBidxj != nullptr){
+
+//     dBidxj[0][0] = dbx_dxi[0];
+//     dBidxj[0][1] = dbx_dxi[1];
+//     dBidxj[0][2] = dbx_dxi[2];
+
+//     dBidxj[1][0] = dby_dxi[0];
+//     dBidxj[1][1] = dby_dxi[1];
+//     dBidxj[1][2] = dby_dxi[2];
+
+//     dBidxj[2][0] = dbz_dxi[0];
+//     dBidxj[2][1] = dbz_dxi[1];
+//     dBidxj[2][2] = dbz_dxi[2];
+//   }
+// }
