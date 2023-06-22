@@ -242,7 +242,7 @@ class THDF5Logger: public TLogger {
 private:
   hid_t HDF5file;
   std::mutex hdf5_mutex;
-
+  bool isClosed;
   // std::vector<std::mutex> hdf5_mutex_pool;
   // std::vector<hid_t> HDF5file_pool;
   

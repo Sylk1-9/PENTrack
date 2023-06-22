@@ -35,7 +35,7 @@ secondaries 1
 # BCutPlane   0.0   0.000  0.000    	  2.0   0.030  0.040        2.0   0.000  0.000      2000    1	   0
 
 # For spinflipper cut
-BCutPlane   0.975  -0.054 -0.054    	  0.975   0.054  -0.054        0.975   -0.054  0.054      200    200	   0.5
+BCutPlane   0.980  -0.054 -0.054    	  0.980   0.054  -0.054        0.980   -0.054  0.054      200    200	   0
 
 
 
@@ -56,7 +56,7 @@ logtype HDF5
 
 [GEOMETRY]
 ############# Solids the program will load ################
-# Each solid has to be assigned unique ID and a material from above.
+# Each solid has to be assigned unique ID and a material from above.b
 # IDs have to be larger than 0, ID 1 will be assumed to be the default medium which is always present.
 # Particles absorbed in a solid will be flagged with the ID of the solid.
 # The ID also defines the order in which overlapping solids are handled (highest ID will be considered first).
@@ -245,8 +245,8 @@ polarization 1	# initial polarization is randomly chosen, weighted by this varia
 
 # Simulate magnetic field from a current I flowing from a list of points (x1, y1, z1) to (x2, y2, z2)
 #ECurrentField		file   	 	   	   	Bscale  	  current
-10 ECurrentField		fields/spinflip/SF1.1.txt	1		  I1.1
-11 ECurrentField		fields/spinflip/SF1.2.txt	1		  I1.2
+10 ECurrentField		fields/spinflip/SF1.1-k4.txt	1		  I1.1
+11 ECurrentField		fields/spinflip/SF1.2-k4.txt	1		  I1.2
 
 
 # Simulate magnetic field from a current I flowing from point (x1, y1, z1) to (x2, y2, z2)

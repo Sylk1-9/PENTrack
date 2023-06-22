@@ -377,15 +377,8 @@ TTextLogger::~TTextLogger(){
   std::ostringstream oss;
   oss << std::this_thread::get_id();
   printf("Thread %s closing files \n", oss.str().c_str());
-
-  // std::lock_guard<std::mutex> lock_stream(logstreams_mutex);
-  // for (auto file : file_container) {
-  //   file.close();
-  // }
   for (auto &s: logstreams){if (s.second.is_open()) {s.second.close();}}
 }
-
-
 
 
 // // Original function : 
@@ -467,121 +460,7 @@ TROOTLogger::~TROOTLogger() {
   std::cout << "\nWriting root files & deleting them" <<std::flush;
   ROOTfile->Write();
 
-  // for (auto tree : trees) {
-  //   delete tree;
-  // }
-  // delete ROOTfile;
-
 }
-
-
-
-//////////////////
-
-
-// void TROOTLogger::DoLog(const std::string &particlename, const std::string &suffix, const std::vector<std::string> &titles, const std::vector<double> &vars){
-
-//   string name = particlename + suffix;
-
-//   // Lock the mutex before accessing the ROOT file
-//   std::lock_guard<std::mutex> lock_root(root_mutex);
-
-//   TNtupleD* tree = static_cast<TNtupleD*>(ROOTfile->Get(name.c_str()));
-
-//   if (not tree){
-//     std::cout << "\nThread " << std::this_thread::get_id() <<  " creating tree " << name.c_str() << std::endl << std::flush;
-
-//     ostringstream varliststr;
-//     copy(titles.begin(), titles.end(), ostream_iterator<string>(varliststr, ":"));
-//     string varlist = varliststr.str();
-//     varlist.pop_back();
-
-//     tree = new TNtupleD(name.c_str(), name.c_str(), varlist.c_str());
-
-//     // Add the tree to the container
-//     tree_container.push_back(tree);
-
-//     // Lock the mutex before adding a new TNtupleD object
-//     // std::lock_guard<std::mutex> lock_files(file_mutex);
-
-//     ROOTfile->Add(tree);
-//   }
-
-//   // Lock the mutex before filling the TNtupleD object
-//   // std::lock_guard<std::mutex> lock_tree(tree_mutex);
-
-//   tree->Fill(&vars[0]);
-// }
-
-
-// TROOTLogger::~TROOTLogger(){
-//   std::cout << "\nThread " << std::this_thread::get_id() <<  " writing root files & deleting it " << std::endl << std::flush;
-
-//   ROOTfile->Write();
-//   for (auto tree : tree_container) {
-//     delete tree;
-//   }
-//   delete ROOTfile;
-// }
-
-
-/////////////////////////////////////////////////////////
-
-
-
-
-// void TROOTLogger::DoLog(const std::string &particlename, const std::string &suffix, const std::vector<std::string> &titles, const std::vector<double> &vars){
-
-//   string name = particlename + suffix;
-
-//   // Lock the mutex before accessing the ROOT file
-//   std::lock_guard<std::mutex> lock_root(root_mutex);
-
-//   if (ROOTfile != nullptr) {
-//     TNtupleD* tree = static_cast<TNtupleD*>(ROOTfile->Get(name.c_str()));
-
-//     if (not tree){
-//       ostringstream varliststr;
-//       copy(titles.begin(), titles.end(), ostream_iterator<string>(varliststr, ":"));
-//       string varlist = varliststr.str();
-//       varlist.pop_back();
-
-//       tree = new TNtupleD(name.c_str(), name.c_str(), varlist.c_str());
-
-//       // Lock the mutex before adding a new TNtupleD object
-//       std::lock_guard<std::mutex> lock_files(file_mutex);
-
-//       ROOTfile->Add(tree);
-//     }
-
-//     // Lock the mutex before filling the TNtupleD object
-//     std::lock_guard<std::mutex> lock_tree(tree_mutex);
-
-//     tree->Fill(&vars[0]);
-//   }
-// }
-
-// void TROOTLogger::DoLog(const std::string &particlename, const std::string &suffix, const std::vector<std::string> &titles, const std::vector<double> &vars){
-
-//   // Lock the mutex before accessing the ROOT library
-//   // std::lock_guard<std::mutex> lock(root_mutex);
-    
-//   string name = particlename + suffix;
-//   TNtupleD* tree = static_cast<TNtupleD*>(ROOTfile->Get(name.c_str()));
-
-//   if (not tree){
-//     ostringstream varliststr;
-//     copy(titles.begin(), titles.end(), ostream_iterator<string>(varliststr, ":"));
-//     string varlist = varliststr.str();
-//     varlist.pop_back();
-//     tree = new TNtupleD(name.c_str(), name.c_str(), varlist.c_str());
-//   }
-//   tree->Fill(&vars[0]);
-// }
-
-
-
-
 
 
 
@@ -629,7 +508,56 @@ THDF5Logger::THDF5Logger(TConfig& aconfig){
     if (ret < 0) throw std::runtime_error("Could not create table in output file " + filename.str());
   }
   H5Tclose(string_type);
+  isClosed = false;
+
 }
+
+
+
+// Working, but slow : 
+void THDF5Logger::DoLog(const std::string &particlename, const std::string &suffix, const std::vector<std::string> &titles, const std::vector<double> &vars) {
+  // Check if interrupt signal is received
+  if (quit.load()) {
+    // Perform any necessary cleanup operations
+    if (!isClosed) {
+      H5Fclose(HDF5file);
+      isClosed = true;
+    }
+    // Exit the function or program gracefully
+    return;
+  }
+  
+  string name = particlename + suffix;
+  size_t Nfields = titles.size();
+  size_t offsets[Nfields];
+  for (size_t i = 0; i < Nfields; ++i) offsets[i] = i * sizeof(double);
+
+  // std::cout << "\nsaving HDF5 table for thread " << std::this_thread::get_id() << name << std::endl;
+  // Lock the mutex before accessing the HDF5 library
+  std::lock_guard<std::mutex> lock(hdf5_mutex);
+  // size_t mutexIndex = std::hash<std::string>{}(particlename) % hdf5_mutex_pool.size();
+  // std::lock_guard<std::mutex> lock(hdf5_mutex_pool[mutexIndex]);
+
+  
+  if (H5Lexists(HDF5file, name.c_str(), H5P_DEFAULT) <= 0){
+    const char *field_names[Nfields];
+    hid_t field_types[Nfields];
+    for (size_t i = 0; i < Nfields; ++i){
+      field_names[i] = titles[i].c_str();
+      field_types[i] = H5T_NATIVE_DOUBLE;
+    }
+
+    auto ret = H5TBmake_table(name.c_str(), HDF5file, name.c_str(), Nfields, 1, Nfields*sizeof(double), field_names, offsets, field_types, 10, nullptr, 1, vars.data());
+    if (ret < 0) throw std::runtime_error("Could not create table " + name);
+  }
+  else{
+    size_t sizes[Nfields];
+    for (size_t i = 0; i < Nfields; ++i) sizes[i] = sizeof(double);
+    auto ret = H5TBappend_records(HDF5file, name.c_str(), 1, Nfields*sizeof(double), offsets, sizes, vars.data());
+    if (ret < 0) throw std::runtime_error("Could not write data to table " + name);
+  }
+}
+
 
 
 // In construciton : localBuffer for threads
@@ -675,39 +603,6 @@ THDF5Logger::THDF5Logger(TConfig& aconfig){
 // }
 
 
-// Working, but slow : 
-void THDF5Logger::DoLog(const std::string &particlename, const std::string &suffix, const std::vector<std::string> &titles, const std::vector<double> &vars) {
-  string name = particlename + suffix;
-  size_t Nfields = titles.size();
-  size_t offsets[Nfields];
-  for (size_t i = 0; i < Nfields; ++i) offsets[i] = i * sizeof(double);
-
-  // std::cout << "\nsaving HDF5 table for thread " << std::this_thread::get_id() << name << std::endl;
-  // Lock the mutex before accessing the HDF5 library
-  std::lock_guard<std::mutex> lock(hdf5_mutex);
-  // size_t mutexIndex = std::hash<std::string>{}(particlename) % hdf5_mutex_pool.size();
-  // std::lock_guard<std::mutex> lock(hdf5_mutex_pool[mutexIndex]);
-
-  
-  if (H5Lexists(HDF5file, name.c_str(), H5P_DEFAULT) <= 0){
-    const char *field_names[Nfields];
-    hid_t field_types[Nfields];
-    for (size_t i = 0; i < Nfields; ++i){
-      field_names[i] = titles[i].c_str();
-      field_types[i] = H5T_NATIVE_DOUBLE;
-    }
-
-    auto ret = H5TBmake_table(name.c_str(), HDF5file, name.c_str(), Nfields, 1, Nfields*sizeof(double), field_names, offsets, field_types, 10, nullptr, 1, vars.data());
-    if (ret < 0) throw std::runtime_error("Could not create table " + name);
-  }
-  else{
-    size_t sizes[Nfields];
-    for (size_t i = 0; i < Nfields; ++i) sizes[i] = sizeof(double);
-    auto ret = H5TBappend_records(HDF5file, name.c_str(), 1, Nfields*sizeof(double), offsets, sizes, vars.data());
-    if (ret < 0) throw std::runtime_error("Could not write data to table " + name);
-  }
-}
-
 
 // void THDF5Logger::DoLog(const std::string &particlename, const std::string &suffix, const std::vector<std::string> &titles, const std::vector<double> &vars){
 //     string name = particlename + suffix;
@@ -733,8 +628,10 @@ void THDF5Logger::DoLog(const std::string &particlename, const std::string &suff
 //     }
 // }
 
-THDF5Logger::~THDF5Logger(){
-  H5Fclose(HDF5file);
+THDF5Logger::~THDF5Logger() {
+    if (!isClosed) {
+        H5Fclose(HDF5file);
+        isClosed = true;
+    }
 }
-
 #endif
