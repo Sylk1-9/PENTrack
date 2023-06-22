@@ -25,9 +25,9 @@ TECurrentField::TECurrentField(const std::string sft, const std::string &_It) {
   symbol_table.add_constants();
   exprtk::parser<double> parser;
   std::string expr{_It,};
-  Itexpr.register_symbol_table(symbol_table);
-  if (not parser.compile(expr, Itexpr)){
-    throw std::runtime_error(exprtk::parser_error::to_str(parser.get_error(0).mode) + " while parsing Custom It Current formula '" + expr + "': " + parser.get_error(0).diagnostic);
+  Iexpr.register_symbol_table(symbol_table);
+  if (not parser.compile(expr, Iexpr)){
+    throw std::runtime_error(exprtk::parser_error::to_str(parser.get_error(0).mode) + " while parsing Custom I(t) Current formula '" + expr + "': " + parser.get_error(0).diagnostic);
   }
 
   
@@ -70,7 +70,6 @@ TECurrentField::TECurrentField(const std::string sft, const std::string &_It) {
     segment.y2 = std::stod(line_parts[4], nullptr);
     segment.z2 = std::stod(line_parts[5], nullptr);
     
-    // segment.current = current;
     wireSegments.push_back(segment);    
   }
 
@@ -84,7 +83,7 @@ TECurrentField::TECurrentField(const std::string sft, const std::string &_It) {
 void TECurrentField::BField(const double x, const double y, const double z, const double t, double B[3], double dBidxj[3][3]) const {
 
   *tvar = t;
-  double I =  Itexpr.value();
+  double I =  Iexpr.value();
   
   for(int i=0; i<3; ++i){
     B[i] = 0;

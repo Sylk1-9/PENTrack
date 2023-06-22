@@ -30,7 +30,7 @@ public:
    * @ft string of the file name containing a function that returns a magnet magpy object.
    */
   
-  TECurrentField(const std::string ft, const std::string &_It);
+  TECurrentField(const std::string ft, const std::string &_I);
   
   /**
    * Calculates B field B[3] and the derivatives dBidxj[3][3] for a given point x,y,z and time t
@@ -62,7 +62,7 @@ public:
 private:
   std::vector<WireSegment> wireSegments;
   std::unique_ptr<double> tvar; ///< Variables used to evaluate formulas, they need to be pointers to make sure references stored in the exprtk expression do not get invalidated when copying
-  exprtk::expression<double> Itexpr; ///< Formula interpreters, one for each field component
+  exprtk::expression<double> Iexpr; ///< Formula interpreters for the electrical current
 };
 
 #endif /*PENTRACK_ELECTRICCURRENTFIELDS_H_*/
