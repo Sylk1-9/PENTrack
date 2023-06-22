@@ -37,7 +37,6 @@
 
 // #define USEPYTHON
 #ifdef USEPYTHON
-// #include "pythonFields.h"
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #endif
@@ -143,6 +142,27 @@ int main(int argc, char **argv){
 #endif
 
   cout << "Loading fields...\n";
+
+  ////////////////////
+
+  // TECurrentField ecurrentfield();
+
+  // // Design the wire in 3D
+  // ecurrentfield.addWireSegment(0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0);
+  // ecurrentfield.addWireSegment(1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0);
+  // ecurrentfield.addWireSegment(1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0);
+  // ecurrentfield.addWireSegment(0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+  
+  // Compute magnetic field at a given point
+  // double x = 0.5;
+  // double y = 0.5;
+  // double z = 0.0;
+  // double ecurrentmagneticField = ecurrentfield.computeMagneticField(x, y, z);
+  
+  // Output the result
+  // std::cout << "Magnetic Field at (" << x << ", " << y << ", " << z << "): " << ecurrentmagneticField << std::endl;
+    
+  ////////////////////
   
   // load field configuration from config.in
   TFieldManager field(configin);
@@ -325,7 +345,7 @@ int main(int argc, char **argv){
     cout << "That's it... Have a nice day!\n";
 
 #ifdef USEPYTHON
-  // Py_InitializeEx(0);
+  // Py_InitializeEx*(0);
   if (Py_FinalizeEx() < 0) {
     return 120;
   }

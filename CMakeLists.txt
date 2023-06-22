@@ -55,7 +55,7 @@ if (Boost_FOUND)
 endif()
 
 
-set(pentrack_SOURCES src/globals.cpp src/trianglemesh.cpp src/geometry.cpp src/mc.cpp src/field.cpp src/edmfields.cpp src/tracking.cpp src/logger.cpp src/field_2d.cpp src/field_3d.cpp src/fields.cpp src/harmonicfields.cpp src/conductor.cpp src/particle.cpp src/neutron.cpp src/microroughness.cpp src/electron.cpp src/proton.cpp src/mercury.cpp src/xenon.cpp src/source.cpp src/config.cpp src/analyticFields.cpp src/threadpool.cpp)
+set(pentrack_SOURCES src/globals.cpp src/trianglemesh.cpp src/geometry.cpp src/mc.cpp src/field.cpp src/edmfields.cpp src/tracking.cpp src/logger.cpp src/field_2d.cpp src/field_3d.cpp src/fields.cpp src/harmonicfields.cpp src/conductor.cpp src/particle.cpp src/neutron.cpp src/microroughness.cpp src/electron.cpp src/proton.cpp src/mercury.cpp src/xenon.cpp src/source.cpp src/config.cpp src/analyticFields.cpp src/threadpool.cpp src/ecurrentFields.cpp)
  
 
 # ind_package(Python3 REQUIRED Development)
@@ -100,10 +100,6 @@ add_executable(PENTrack src/main.cpp $<TARGET_OBJECTS:PENTrack_src> $<TARGET_OBJ
 # target_link_libraries (PENTrack ${Boost_LIBRARIES} ${CGAL_LIBRARIES} Python3::Python)
 target_link_libraries (PENTrack ${Boost_LIBRARIES} ${CGAL_LIBRARIES})
 
-
-# Copy the Python module to the build directory
-# configure_file(src/MagpyField.py MagpyField.py COPYONLY)
-# configure_file(in/magpytest.py magpytest.py COPYONLY)
 
 if (Python3_FOUND)
   message (STATUS "Found Python3 " ${Python3_VERSION})

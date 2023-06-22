@@ -14,6 +14,8 @@
 #include "edmfields.h"
 #include "harmonicfields.h"
 #include "analyticFields.h"
+#include "ecurrentFields.h"
+
 
 #ifdef USEPYTHON
 #include "pythonFields.h"
@@ -30,6 +32,7 @@ TFieldManager::TFieldManager(TConfig &conf){
     double bW, xma, xmi, yma, ymi, zma, zmi;
     double axis_x, axis_y, axis_z, angle, G0, G1, G2, G3, G4, G5, G6, G7, G8, G9, G10, G11, G12, G13, G14, G15, G16, G17, G18, G19, G20, G21, G22, G23;
     std::string Bscale, Escale, Bx, By, Bz;
+    std::string It; // Electric current formula expression I(t) 
     std::string fieldtype;
     std::istringstream ss(i.second);
     ss >> type;
@@ -116,9 +119,14 @@ TFieldManager::TFieldManager(TConfig &conf){
       Bscale = ResolveFormula(Bscale, conf["FORMULAS"]);
       fields.emplace_back(TFieldContainer(std::move(f), Bscale, "0", xma, xmi, yma, ymi, zma, zmi, bW));
     }
+    else if (type == "ECurrentField" and ss >> ft >> Bscale >> It){
+      std::unique_ptr<TField> f(new TECurrentField(ft, conf["FORMULAS"][It]));
+      Bscale = ResolveFormula(Bscale, conf["FORMULAS"]);
+      fields.emplace_back(TFieldContainer(std::move(f), Bscale, "0"));
+    }
 #ifdef USEPYTHON
     else if (type == "PythonField" and ss >> ft >> Bscale >> temporal){
-      std::cout << "USEPYTHON == 1, inside fields.cpp switch" << std::endl;
+      // std::cout << "USEPYTHON == 1, inside fields.cpp switch" << std::endl;
       std::unique_ptr<TField> f(new TPythonField(ft, temporal));
       Bscale = ResolveFormula(Bscale, conf["FORMULAS"]);
       fields.emplace_back(TFieldContainer(std::move(f), Bscale, "0"));
