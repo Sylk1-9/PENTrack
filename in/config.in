@@ -4,7 +4,7 @@
 [GLOBAL]
 # simtype: 1 => particles, 3 => Bfield, 4 => cut through BField, 7 => print geometry, 8 => print mr-drp for solid angle
 # 9 => print integrated mr-drp for incident theta vs energy
-simtype 4
+simtype 1
 
 # number of primary particles to be simulated
 simcount 10
@@ -65,16 +65,16 @@ logtype HDF5
 #ID	STLfile    	    	      	 	     	material_name    ignore_times
 # PENtrack_Test
 1	ignored						default
-2	CAD/aSPECT_tube.stl				UCNdet
-3	CAD/halbach.stl					UCNdet
-4	CAD/stabilisation_tubes.stl			UCNdet
-5	CAD/store/detector_store.stl			UCNdet
-6	CAD/store/foil_store.stl			UCNdet
-7	CAD/store/SF_copper_store.stl			UCNdet
-8	CAD/store/SF_tube_store.stl			UCNdet
-9	CAD/store/SF_quartztube_store.stl		UCNdet
-10	CAD/store/SF_quartztube1_store.stl		UCNdet
-11	CAD/store/SF_seperation_foil_store.stl		UCNdet
+2	CAD/aSPECT_tube.stl				PolishedSteel
+3	CAD/halbach.stl					PolishedSteel
+4	CAD/stabilisation_tubes.stl			PolishedSteel
+5	CAD/store/detector_store.stl			PolishedSteel
+6	CAD/store/foil_store.stl			PolishedSteel
+7	CAD/store/SF_copper_store.stl			PolishedSteel
+8	CAD/store/SF_tube_store.stl			PolishedSteel
+9	CAD/store/SF_quartztube_store.stl		PolishedSteel
+10	CAD/store/SF_quartztube1_store.stl		PolishedSteel
+11	CAD/store/SF_seperation_foil_store.stl		PolishedSteel
 
 
 

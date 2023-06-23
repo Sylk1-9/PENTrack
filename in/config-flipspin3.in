@@ -37,8 +37,8 @@ logtype HDF5
 
 
 [GEOMETRY]
->############# Solids the program will load ################
-# Each solid has to be assigned unique ID and a material from above.
+############# Solids the program will load ################
+# Each solid has to be assigned unique ID and a material from above.b
 # IDs have to be larger than 0, ID 1 will be assumed to be the default medium which is always present.
 # Particles absorbed in a solid will be flagged with the ID of the solid.
 # The ID also defines the order in which overlapping solids are handled (highest ID will be considered first).
@@ -46,40 +46,17 @@ logtype HDF5
 # Ignore times are pairs of times [s] in between the solid will be ignored, e.g. 100-200 500-1000.
 #ID	STLfile    	    	      	 	     	material_name    ignore_times
 # PENtrack_Test
-1	ignored						        default
-2	CAD/aSPECT_tube.stl				    PolishedSteel
-3	CAD/halbach.stl					    PolishedSteel
+1	ignored						default
+2	CAD/aSPECT_tube.stl				PolishedSteel
+3	CAD/halbach.stl					PolishedSteel
 4	CAD/stabilisation_tubes.stl			PolishedSteel
-#5	CAD/store/detector_store.stl				PolishedSteel
-6	CAD/store/foil_store1.stl			        UCNdet
-7	CAD/fill/SF_copper_fill.stl				PolishedSteel
-8	CAD/fill/SF_tube_fill.stl				PolishedSteel
-9	CAD/fill/SF_quartztube_fill.stl			PolishedSteel
-10	CAD/fill/SF_quartztube1_fill.stl			PolishedSteel
-11	CAD/fill/SF_seperation_foil_fill.stl		PolishedSteel
-
-#2	spinflip_volume.STL		SpinFlipper
-# 2	octupole.stl			UCNdet
-#3	detector_zclean.stl			UCNdet			200-10000
-#3	polarizer.STL			FePolarizerOnAl
-#4	storagevolume_60degfeeder_bellow.STL		PolishedSteel
-#5	guide_experiment.STL		PolishedSteel
-#6	guide_source.STL		PolishedSteel
-#7	guide_detector.STL		PolishedSteel
-#8	switch.STL			PolishedSteel
-#9	valve.STL			PolishedSteel		0-200 500-1000
-#10	switch_flap_source.STL	PolishedSteel		200-1000
-#11	switch_flap_middle.STL	PolishedSteel		0-200 500-1000
-#12	switch_flap_detector.STL	PolishedSteel		0-500
-#13	foil_detector.STL		Al
-#14	UCNdet.STL			UCNdet
-#15	protdet.STL			Al
-#16	absorber_up.STL		PE			500-560
-#17	absorber_middle.STL		PE			0-500 520-540 560-1000
-#18	absorber_down.STL		PE			0-520 540-1000
-#19	source.STL			UCNdet			200-1000
-#20	source.STL			PolishedSteel		0-200
-#21	PENtrack_Test.STL				PolishedSteel
+5	CAD/store/detector_store.stl			PolishedSteel
+6	CAD/store/foil_store.stl			PolishedSteel
+7	CAD/store/SF_copper_store.stl			PolishedSteel
+8	CAD/store/SF_tube_store.stl			PolishedSteel
+9	CAD/store/SF_quartztube_store.stl		PolishedSteel
+10	CAD/store/SF_quartztube1_store.stl		PolishedSteel
+11	CAD/store/SF_seperation_foil_store.stl		PolishedSteel
 
 
 
@@ -220,8 +197,8 @@ polarization -1	# initial polarization is randomly chosen, weighted by this vari
 
 # Simulate magnetic field from a current I flowing from a list of points (x1, y1, z1) to (x2, y2, z2)
 #ECurrentField		file   	 	   	   	Bscale  	  current
-10 ECurrentField		fields/spinflip/SF1.1-k4.txt	1		  I1.1
-11 ECurrentField		fields/spinflip/SF1.2-k4.txt	1		  I1.2
+10 ECurrentField		fields/spinflip/SF1.1-k10.txt	1		  I1.1
+11 ECurrentField		fields/spinflip/SF1.2-k10.txt	1		  I1.2
 
 
 # Simulate magnetic field from a current I flowing from point (x1, y1, z1) to (x2, y2, z2)
