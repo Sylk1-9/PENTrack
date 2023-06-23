@@ -197,8 +197,8 @@ polarization -1	# initial polarization is randomly chosen, weighted by this vari
 
 # Simulate magnetic field from a current I flowing from a list of points (x1, y1, z1) to (x2, y2, z2)
 #ECurrentField		file   	 	   	   	Bscale  	  current
-10 ECurrentField		fields/spinflip/SF1.1-k10.txt	1		  I1.1
-11 ECurrentField		fields/spinflip/SF1.2-k10.txt	1		  I1.2
+10 ECurrentField		fields/spinflip/SF2.1-k10.txt	1		  I2.1
+11 ECurrentField		fields/spinflip/SF2.2-k10.txt	1		  I2.2
 
 
 # Simulate magnetic field from a current I flowing from point (x1, y1, z1) to (x2, y2, z2)
@@ -374,8 +374,8 @@ tmax 1e-5
 # detected    solidend == 14                              # for example, you could set this as an endlogfilter to only log particles that are absorbed in the detector
 
 
-I1.1 22*sin(38314864*t)
-I1.2 22*cos(38314864*t)
+I2.1 22*sin(38314864*t)
+I2.2 22*cos(38314864*t)
 
 
 #Bx 0                                # These are the field components used for the CustomBField defined in the FIELDS section
