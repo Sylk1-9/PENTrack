@@ -397,8 +397,8 @@ tmax 1e-5
 # detected    solidend == 14                              # for example, you could set this as an endlogfilter to only log particles that are absorbed in the detector
 
 
-I1.1 22*sin(t)
-I1.2 22*cos(t)
+I1.1 22*sin(38314864*t)
+I1.2 22*cos(38314864*t)
 
 
 #Bx 0                                # These are the field components used for the CustomBField defined in the FIELDS section

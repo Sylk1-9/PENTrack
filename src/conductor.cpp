@@ -13,8 +13,7 @@ TConductorField::TConductorField(const double SW1xx, const double SW1yy, const d
 
 };
 
-void TConductorField::BField(const double x, const double y, const double z, const double t,
-		double B[3], double dBidxj[3][3]) const{
+void TConductorField::BField(const double x, const double y, const double z, const double t, double B[3], double dBidxj[3][3]) const{
 	double vorfaktor = mu0 * I / (4 * pi);
 
 	double t1 = SW2z * SW2z;
