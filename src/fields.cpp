@@ -119,17 +119,17 @@ TFieldManager::TFieldManager(TConfig &conf){
       Bscale = ResolveFormula(Bscale, conf["FORMULAS"]);
       fields.emplace_back(TFieldContainer(std::move(f), Bscale, "0", xma, xmi, yma, ymi, zma, zmi, bW));
     }
-    else if (type == "ECurrentField" and ss >> ft >> Bscale >> It){
+    else if (type == "ECurrentField" and ss >> ft >> It >> xma >> xmi >> yma >> ymi >> zma >> zmi >> Bscale){
       std::unique_ptr<TField> f(new TECurrentField(ft, conf["FORMULAS"][It]));
       Bscale = ResolveFormula(Bscale, conf["FORMULAS"]);
-      fields.emplace_back(TFieldContainer(std::move(f), Bscale, "0"));
+      fields.emplace_back(TFieldContainer(std::move(f), Bscale, "0", xma, xmi, yma, ymi, zma, zmi, 0.));
     }
 #ifdef USEPYTHON
-    else if (type == "PythonField" and ss >> ft >> Bscale >> temporal){
+    else if (type == "PythonField" and ss >> ft >> temporal >> xma >> xmi >> yma >> ymi >> zma >> zmi >> Bscale){
       // std::cout << "USEPYTHON == 1, inside fields.cpp switch" << std::endl;
       std::unique_ptr<TField> f(new TPythonField(ft, temporal));
       Bscale = ResolveFormula(Bscale, conf["FORMULAS"]);
-      fields.emplace_back(TFieldContainer(std::move(f), Bscale, "0"));
+      fields.emplace_back(TFieldContainer(std::move(f), Bscale, "0", xma, xmi, yma, ymi, zma, zmi, 0.));
     }
 #endif
     else{

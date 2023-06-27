@@ -4,7 +4,7 @@
 [GLOBAL]
 # simtype: 1 => particles, 3 => Bfield, 4 => cut through BField, 7 => print geometry, 8 => print mr-drp for solid angle
 # 9 => print integrated mr-drp for incident theta vs energy
-simtype 1
+simtype 4
 
 # number of primary particles to be simulated
 simcount 10
@@ -230,23 +230,20 @@ polarization 1	# initial polarization is randomly chosen, weighted by this varia
 # Magpy source can be static (Temporal = 0) or time-depend (Temporal=1). 
 # The field is only evaluated within x/y/z min/max boundaries. If a BoundaryWidth is defined, the field will be brought smoothly to zero at these boundaries.
 
-#file-type 	magpy-file	BFieldScale	   Temporal
+#file-type 	magpy-file	Temporal xmax  xmin  ymax   ymin    zmax   zmin     Bscale
 # 16 PythonField 	magpytest	1	 0
 # 16 PythonField 	magpytest	1	 0
 # 17 PythonField	octupole		1	 0
 # 18 PythonField	coil			1	0
 # 18 PythonField 	coil-copy	1	0
 
-# 18 PythonField		SF2		1	1
-
-
-# 18 PythonField		SF2		1	1
+# 18 PythonField		SF2	1	1.1   0.8   0.054  -0.054  0.054  -0.054   1
 
 
 # Simulate magnetic field from a current I flowing from a list of points (x1, y1, z1) to (x2, y2, z2)
-#ECurrentField		file   	 	   	   	Bscale  	  current
-10 ECurrentField		fields/spinflip/SF1.1-k4.txt	1		  I1.1
-11 ECurrentField		fields/spinflip/SF1.2-k4.txt	1		  I1.2
+#ECurrentField	    	file   	 	   	   	current xmax  xmin  ymax   ymin    zmax   zmin     Bscale
+10 ECurrentField	fields/spinflip/SF2.1-k4.txt	I2.1	1.1   0.9   0.054  -0.054  0.054  -0.054   1
+11 ECurrentField	fields/spinflip/SF2.2-k4.txt	I2.2	1.1   0.9   0.054  -0.054  0.054  -0.054   1
 
 
 # Simulate magnetic field from a current I flowing from point (x1, y1, z1) to (x2, y2, z2)
@@ -408,6 +405,6 @@ tmax 1e-5
 # By 0.005*sin(38.3148640032*t)  
 # Bz 0.5-0.4*z
 
-I1.1 22*sin(38314864*t)
-I1.2 22*cos(38314864*t)
+I2.1 22*sin(38314864*t)
+I2.2 22*cos(38314864*t)
 
