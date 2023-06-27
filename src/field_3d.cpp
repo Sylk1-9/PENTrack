@@ -493,26 +493,27 @@ void TabField3::PreInterpol(const array3D &Tab, const std::array<array3D, 7> &dT
   //   dFdxdydz = dTab[6];
   // }
 
-  if (!dTab[0].empty()){
-    // // print partial derivatives infos (sly)
-    // long unsigned int ixx=100, iyy=20, izz=25;
-    long unsigned int ixx=30, iyy=18, izz=18;
-    std::array<unsigned long, 3> myindices = {ixx, iyy, izz}; // collect indices of corners of each grid cell
+  // if (!dTab[0].empty()){
+  //   // // print partial derivatives infos (sly)
+  //   // long unsigned int ixx=100, iyy=20, izz=25;
+  //   long unsigned int ixx=30, iyy=18, izz=18;
+  //   std::array<unsigned long, 3> myindices = {ixx, iyy, izz}; // collect indices of corners of each grid cell
 
-    double mycellx = xyz[0][ixx+1] - xyz[0][ixx];
-    double mycelly = xyz[1][iyy+1] - xyz[1][iyy];
-    double mycellz = xyz[2][izz+1] - xyz[2][izz];
+  //   double mycellx = xyz[0][ixx+1] - xyz[0][ixx];
+  //   double mycelly = xyz[1][iyy+1] - xyz[1][iyy];
+  //   double mycellz = xyz[2][izz+1] - xyz[2][izz];
 
-    std::cout << "\nx = " <<  xyz[0][ixx] <<" y = " << xyz[1][iyy] << " z = " << xyz[2][izz] << std::endl;
-    std::cout << "Tab = " <<  Tab(myindices) << std::endl;
-    std::cout << "dFdx = " <<  dFdx(myindices)*mycellx << " | dTab = "<< dTab[0](myindices)*mycellx << std::endl;
-    std::cout << "dFdy = "   <<  dFdy(myindices)*mycelly << " | dTab = "<< dTab[1](myindices)*mycelly << std::endl;
-    std::cout << "dFdz = "   <<  dFdz(myindices)*mycellz <<  " | dTab = "<< dTab[2](myindices)*mycellz << std::endl;
-    std::cout << "dFdxdy = " <<  dFdxdy(myindices)*mycellx*mycelly << " | dTab = "<< dTab[3](myindices)*mycellx*mycelly << std::endl;
-    std::cout << "dFdxdz = " <<  dFdxdz(myindices)*mycellx*mycellz << " | dTab = "<< dTab[4](myindices)*mycellx*mycellz << std::endl;
-    std::cout << "dFdydz = " <<  dFdydz(myindices)*mycelly*mycellz << " | dTab = "<< dTab[5](myindices)*mycelly*mycellz << std::endl;
-    std::cout << "dFdxdydz = " <<  dFdxdydz(myindices)*mycellx*mycelly*mycellz << " | dTab = "<< dTab[6](myindices)*mycellx*mycelly*mycellz << std::endl;
-  }
+  //   std::cout << "\nx = " <<  xyz[0][ixx] <<" y = " << xyz[1][iyy] << " z = " << xyz[2][izz] << std::endl;
+  //   std::cout << "Tab = " <<  Tab(myindices) << std::endl;
+  //   std::cout << "dFdx = " <<  dFdx(myindices)*mycellx << " | dTab = "<< dTab[0](myindices)*mycellx << std::endl;
+  //   std::cout << "dFdy = "   <<  dFdy(myindices)*mycelly << " | dTab = "<< dTab[1](myindices)*mycelly << std::endl;
+  //   std::cout << "dFdz = "   <<  dFdz(myindices)*mycellz <<  " | dTab = "<< dTab[2](myindices)*mycellz << std::endl;
+  //   std::cout << "dFdxdy = " <<  dFdxdy(myindices)*mycellx*mycelly << " | dTab = "<< dTab[3](myindices)*mycellx*mycelly << std::endl;
+  //   std::cout << "dFdxdz = " <<  dFdxdz(myindices)*mycellx*mycellz << " | dTab = "<< dTab[4](myindices)*mycellx*mycellz << std::endl;
+  //   std::cout << "dFdydz = " <<  dFdydz(myindices)*mycelly*mycellz << " | dTab = "<< dTab[5](myindices)*mycelly*mycellz << std::endl;
+  //   std::cout << "dFdxdydz = " <<  dFdxdydz(myindices)*mycellx*mycelly*mycellz << " | dTab = "<< dTab[6](myindices)*mycellx*mycelly*mycellz << std::endl;
+  // }
+
   
   // // Pre interpol
   for (unsigned long ix = 0; ix < len[0]; ++ix){
