@@ -104,8 +104,6 @@ int main(int argc, char **argv){
   signal (SIGUSR1, catch_alarm);
   signal (SIGUSR2, catch_alarm);
   signal (SIGXCPU, catch_alarm);
-
-
   
   // read config
   TConfig configin = ConfigInit(argc, argv);
@@ -143,26 +141,6 @@ int main(int argc, char **argv){
 
   cout << "Loading fields...\n";
 
-  ////////////////////
-
-  // TECurrentField ecurrentfield();
-
-  // // Design the wire in 3D
-  // ecurrentfield.addWireSegment(0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0);
-  // ecurrentfield.addWireSegment(1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0);
-  // ecurrentfield.addWireSegment(1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0);
-  // ecurrentfield.addWireSegment(0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0);
-  
-  // Compute magnetic field at a given point
-  // double x = 0.5;
-  // double y = 0.5;
-  // double z = 0.0;
-  // double ecurrentmagneticField = ecurrentfield.computeMagneticField(x, y, z);
-  
-  // Output the result
-  // std::cout << "Magnetic Field at (" << x << ", " << y << ", " << z << "): " << ecurrentmagneticField << std::endl;
-    
-  ////////////////////
   
   // load field configuration from config.in
   TFieldManager field(configin);
@@ -271,7 +249,7 @@ int main(int argc, char **argv){
   // 	th.join();
   //   }
 
-    ///////////////////////////
+  ///////////////////////////
   
   if (simtype == PARTICLE) { // if proton or neutron shall be simulated
     // TTracker tracker(configin);

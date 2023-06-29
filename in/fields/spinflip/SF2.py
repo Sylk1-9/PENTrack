@@ -17,11 +17,7 @@ class SF_field:
         self.k = k  # resolution of saddle coil curves
 
     def circ(self, phi, x, x_off, r):  # generate points on a circle of radius r at height z
-<<<<<<< HEAD
         return np.array([[r * np.sin(phii / 360 * 2 * np.pi), r * np.cos(phii / 360 * 2 * np.pi), x + x_off] for phii in phi])
-=======
-        return np.array([[x + x_off, r * np.sin(phii / 360 * 2 * np.pi), r * np.cos(phii / 360 * 2 * np.pi)] for phii in phi])
->>>>>>> refs/remotes/origin/main
 
     def sf_field(self):
 
@@ -49,16 +45,16 @@ class SF_field:
 
 
         sf_objects = [
-            magpy.current.Line(self.cur, [startrung1, endrung1]),
-            magpy.current.Line(self.cur, rpath1),
-            magpy.current.Line(self.cur, rpath2),
-            magpy.current.Line(self.cur, [startrung2, endrung2]),
-            magpy.current.Line(self.cur, rpath3),
-            magpy.current.Line(self.cur, rpath4),
-            magpy.current.Line(self.cur, [ startrung3, endrung3]),
-            magpy.current.Line(self.cur, [startrung4, endrung4])
+            mag.current.Line(self.cur, [startrung1, endrung1]),
+            mag.current.Line(self.cur, rpath1),
+            mag.current.Line(self.cur, rpath2),
+            mag.current.Line(self.cur, [startrung2, endrung2]),
+            mag.current.Line(self.cur, rpath3),
+            mag.current.Line(self.cur, rpath4),
+            mag.current.Line(self.cur, [ startrung3, endrung3]),
+            mag.current.Line(self.cur, [startrung4, endrung4])
         ]
-        spinflipper = magpy.Collection(sf_objects, style_label="sf1_c1")
+        spinflipper = mag.Collection(sf_objects, style_label="sf1_c1")
 
         return spinflipper
 
@@ -75,11 +71,7 @@ def buildSource(t=0, winding=100):
     x_off_C1 = 975
     r_C1 = 31.5
     cur_C1 = 22
-<<<<<<< HEAD
     k_C1 = 100
-=======
-    k_C1 = 4
->>>>>>> refs/remotes/origin/main
     f_C1 = 38314864
 
 
@@ -90,25 +82,14 @@ def buildSource(t=0, winding=100):
     x_off_C2 = 985
     r_C2 = 31.5
     cur_C2 = 22
-<<<<<<< HEAD
     k_C2 = 100
-=======
-    k_C2 = 4
->>>>>>> refs/remotes/origin/main
     f_C2 = 38314864
     
     spinflipper_C1 = SF_field(phi_C1, phi_off_C1, length_C1, x_off_C1, r_C1, cur_C1*np.sin(f_C1*t), k_C1).sf_field()
     spinflipper_C2 = SF_field(phi_C2, phi_off_C2, length_C2, x_off_C2, r_C2, cur_C2*np.cos(f_C2*t), k_C2).sf_field()
 
     spinflipper = [spinflipper_C1, spinflipper_C2]
-    spinflipper = magpy.Collection(spinflipper, style_label="sf" + "str(SF)")
-<<<<<<< HEAD
+    spinflipper = mag.Collection(spinflipper, style_label="sf" + "str(SF)")
     
 
     return spinflipper
-=======
-
-    return spinflipper
-    
-
->>>>>>> refs/remotes/origin/main

@@ -7,10 +7,10 @@
 simtype 1
 
 # number of primary particles to be simulated
-simcount 2
+simcount 1
 
 # max. simulation time [s]
-simtime 2
+simtime 1
 
 # path of file containing materials, paths are assumed to be relative to this config file's path
 materials_file materials.in
@@ -24,7 +24,7 @@ secondaries 0
 
 #parameters to be used for generating a 2d histogram for the mr diffuse reflection probability into a solid angle
 #Param order: Fermi pot. [neV], Neut energy [neV], RMS roughness [nm], correlation length [nm], theta_i [0..pi/2]
-#MRSolidAngleDRP 220 200 1E-9 25E-9 0.1current * (dy * dr_dxi[i] - dz * dr_dxi[(i + 1) % 3]) / r3;
+#MRSolidAngleDRP 220 200 1E-9 25E-9 0.1
 
 #parameters to be used for generating a 2d histogram of the integrated diffuse reflection probabilitites of the incident angle vs energy of a neutron
 #Parameter order: Fermi potential of the material, RMS roughness [nm], Correlation length [nm], starting angle [0..pi/2], ending angle [0..pi/2],
@@ -38,7 +38,7 @@ logtype HDF5
 
 [GEOMETRY]
 ############# Solids the program will load ################
-# Each solid has to be assigned unique ID and a material from above.b
+# Each solid has to be assigned unique ID and a material from above.
 # IDs have to be larger than 0, ID 1 will be assumed to be the default medium which is always present.
 # Particles absorbed in a solid will be flagged with the ID of the solid.
 # The ID also defines the order in which overlapping solids are handled (highest ID will be considered first).
@@ -46,18 +46,40 @@ logtype HDF5
 # Ignore times are pairs of times [s] in between the solid will be ignored, e.g. 100-200 500-1000.
 #ID	STLfile    	    	      	 	     	material_name    ignore_times
 # PENtrack_Test
-1	ignored						default
-2	CAD/aSPECT_tube.stl				PolishedSteel
-3	CAD/halbach.stl					PolishedSteel
+1	ignored						        default
+2	CAD/aSPECT_tube.stl				    PolishedSteel
+3	CAD/halbach.stl					    PolishedSteel
 4	CAD/stabilisation_tubes.stl			PolishedSteel
-5	CAD/store/detector_store.stl			PolishedSteel
-# 6	CAD/store/foil_store.stl			PolishedSteel
+#5	CAD/store/detector_store.stl				PolishedSteel
 6	CAD/store/foil_store1.stl			        UCNdet
-7	CAD/store/SF_copper_store.stl			PolishedSteel
-8	CAD/store/SF_tube_store.stl			PolishedSteel
-9	CAD/store/SF_quartztube_store.stl		PolishedSteel
-10	CAD/store/SF_quartztube1_store.stl		PolishedSteel
-11	CAD/store/SF_seperation_foil_store.stl		PolishedSteel
+7	CAD/fill/SF_copper_fill.stl				PolishedSteel
+8	CAD/fill/SF_tube_fill.stl				PolishedSteel
+9	CAD/fill/SF_quartztube_fill.stl			PolishedSteel
+10	CAD/fill/SF_quartztube1_fill.stl			PolishedSteel
+11	CAD/fill/SF_seperation_foil_fill.stl		PolishedSteel
+
+#2	spinflip_volume.STL		SpinFlipper
+# 2	octupole.stl			UCNdet
+#3	detector_zclean.stl			UCNdet			200-10000
+#3	polarizer.STL			FePolarizerOnAl
+#4	storagevolume_60degfeeder_bellow.STL		PolishedSteel
+#5	guide_experiment.STL		PolishedSteel
+#6	guide_source.STL		PolishedSteel
+#7	guide_detector.STL		PolishedSteel
+#8	switch.STL			PolishedSteel
+#9	valve.STL			PolishedSteel		0-200 500-1000
+#10	switch_flap_source.STL	PolishedSteel		200-1000
+#11	switch_flap_middle.STL	PolishedSteel		0-200 500-1000
+#12	switch_flap_detector.STL	PolishedSteel		0-500
+#13	foil_detector.STL		Al
+#14	UCNdet.STL			UCNdet
+#15	protdet.STL			Al
+#16	absorber_up.STL		PE			500-560
+#17	absorber_middle.STL		PE			0-500 520-540 560-1000
+#18	absorber_down.STL		PE			0-520 540-1000
+#19	source.STL			UCNdet			200-1000
+#20	source.STL			PolishedSteel		0-200
+#21	PENtrack_Test.STL				PolishedSteel
 
 
 
@@ -92,7 +114,7 @@ sourcemode	boxvolume
 # parameters 0	0		0		360		0.600	0.601
 
 #		x_min	x_max	y_min	y_max	z_min	z_max	(boxvolume)
-parameters	0.9	0.901	-0.001	0.001	-0.001	0.001
+parameters	0.84	0.841	-0.001	0.001	-0.001	0.001
 ###
 
 particle	neutron		# type of particle the source should create
@@ -192,19 +214,6 @@ polarization -1	# initial polarization is randomly chosen, weighted by this vari
 #5 COMSOL	long.txt	1		    0		        1
 #5 COMSOL	test.txt	1		    0		        1
 
-# 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt			1	0	1
-# 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
-
-5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin900_xmax1100_hx10_yzmax54_hyz1.txt			1	0	1
-# 5 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin800_xmax1200_hx10_yzmax54_hyz1.txt			1	0	1
-# 5 TRICUBIC	fields/magpy/Bfield_octupole-comp-monoseg-cub-tric_xmin800_xmax1200_hx10_yzmax54_hyz1.txt			1	0	1
-
-
-# Simulate magnetic field from a current I flowing from a list of points (x1, y1, z1) to (x2, y2, z2)
-#ECurrentField	    	file   	 	   	   	current xmax  xmin  ymax   ymin    zmax   zmin     Bscale
-10 ECurrentField	fields/spinflip/SF2.1-k4.txt	I2.1	1.0   0.95   0.054  -0.054  0.054  -0.054   1
-11 ECurrentField	fields/spinflip/SF2.2-k4.txt	I2.2	1.0   0.95   0.054  -0.054  0.054  -0.054   1
-
 
 # Simulate magnetic field from a current I flowing from point (x1, y1, z1) to (x2, y2, z2)
 #Conductor		I		x1		y1		z1		x2		y2		z2		scale
@@ -300,8 +309,8 @@ polarization -1	# initial polarization is randomly chosen, weighted by this vari
 #15 CustomBField Bx By Bz 1.055 0.725 0.054 -0.054 0.054 -0.054 0 1
 #16 CustomBField Bx1 By1 Bz1 1.5 0.5 0.054 -0.054 0.054 -0.054 0 1
 
-# 15 CustomBField Bx1 By1 Bz1 1.1 0.98 0.054 -0.054 0.054 -0.054 0 1
-# 16 CustomBField Bx By Bz 0.98 0.85 0.054 -0.054 0.054 -0.054 0 1
+15 CustomBField Bx1 By1 Bz1 1.1 0.98 0.054 -0.054 0.054 -0.054 0 1
+16 CustomBField Bx By Bz 0.98 0.85 0.054 -0.054 0.054 -0.054 0 1
 
 ## Magpy calculates the three field components from magnet magpy object provided by a .py file section.
 # Each component can depend on the spatial coordinates x, y, z and a time variable t. Field derivatives are approximated numerically using a five-point stencil method.
@@ -332,7 +341,7 @@ endlogfilter
 
 tracklog 1			# print complete trajectory to file [0/1]
 tracklogvars jobnumber particle polarisation t x y z vx vy vz H E Bx dBxdx dBxdy dBxdz By dBydx dBydy dBydz Bz dBzdx dBzdy dBzdz Ex Ey Ez V
-trackloginterval 1e-4	# min. distance interval [m] between track points in tracklog file
+trackloginterval 1e-3	# min. distance interval [m] between track points in tracklog file
 tracklogfilter
 
 hitlog 1			# print geometry hits to file [0/1]
@@ -378,11 +387,6 @@ tmax 1e-5
 # vabs        sqrt(vxstart^2 + vystart^2 + vzstart^2)     # for example, you could now add "vabs" to the list of endlogvars to print the absolute inital velocity to the endlog
 # detected    solidend == 14                              # for example, you could set this as an endlogfilter to only log particles that are absorbed in the detector
 
-
-I2.1 22*sin(38314864*t)
-I2.2 22*cos(38314864*t)
-
-
 #Bx 0                                # These are the field components used for the CustomBField defined in the FIELDS section
 #By 0.005*sin(38314864.0032*t)      
 #Bz 0.005*cos(38314864.0032*t)
@@ -405,19 +409,19 @@ I2.2 22*cos(38314864*t)
 # Bx1 -17.34366894*x^3 + 55.23964573*x^2 + -58.61642577*x +20.92745677
 
 
-# Bx -17.34366894*(x^3) + 55.23964573*(x^2) - 58.61642577*x + 20.92745677
+Bx -17.34366894*(x^3) + 55.23964573*(x^2) - 58.61642577*x + 20.92745677
 
-# By 0.000004*(1/sqrt((z-0.01575)^2+(y-0.02728)^2) + 1/sqrt((z-0.01575)^2+(y+0.02728)^2) + 1/sqrt((z+0.01575)^2+(y-0.02728)^2) + 1/sqrt((z+0.01575)^2+(y+0.02728)^2)) *cos(38314864*t)*2/pi * atan(exp(pi * 50 *(x-(0.98-0.0606))))       
+By 0.000004*(1/sqrt((z-0.01575)^2+(y-0.02728)^2) + 1/sqrt((z-0.01575)^2+(y+0.02728)^2) + 1/sqrt((z+0.01575)^2+(y-0.02728)^2) + 1/sqrt((z+0.01575)^2+(y+0.02728)^2)) *cos(38314864*t)*2/pi * atan(exp(pi * 50 *(x-(0.98-0.0606))))       
 
-# Bz 0.000004*(1/sqrt((z-0.01575)^2+(y-0.02728)^2) + 1/sqrt((z-0.01575)^2+(y+0.02728)^2) + 1/sqrt((z+0.01575)^2+(y-0.02728)^2) + 1/sqrt((z+0.01575)^2+(y+0.02728)^2)) *sin(38314864*t)*2/pi * atan(exp(pi * 50 *(x-(0.98-0.0606))))                                    # These are the field components used for the CustomBField defined in the FIELDS section
+Bz 0.000004*(1/sqrt((z-0.01575)^2+(y-0.02728)^2) + 1/sqrt((z-0.01575)^2+(y+0.02728)^2) + 1/sqrt((z+0.01575)^2+(y-0.02728)^2) + 1/sqrt((z+0.01575)^2+(y+0.02728)^2)) *sin(38314864*t)*2/pi * atan(exp(pi * 50 *(x-(0.98-0.0606))))                                    # These are the field components used for the CustomBField defined in the FIELDS section
 
 
 #### 0.000004
 #### 38314864.0032
 
-# Bx1 -17.34366894*x^3 + 55.23964573*x^2 + -58.61642577*x +20.92745677
+Bx1 -17.34366894*x^3 + 55.23964573*x^2 + -58.61642577*x +20.92745677
 
-# By1 0.000004*(1/sqrt((z-0.01575)^2+(y-0.02728)^2) + 1/sqrt((z-0.01575)^2+(y+0.02728)^2) + 1/sqrt((z+0.01575)^2+(y-0.02728)^2) + 1/sqrt((z+0.01575)^2+(y+0.02728)^2)) * cos(38314864*t)*(1-2/pi * atan(exp(pi * 50 *(x-(0.98+0.0594)))))
+By1 0.000004*(1/sqrt((z-0.01575)^2+(y-0.02728)^2) + 1/sqrt((z-0.01575)^2+(y+0.02728)^2) + 1/sqrt((z+0.01575)^2+(y-0.02728)^2) + 1/sqrt((z+0.01575)^2+(y+0.02728)^2)) * cos(38314864*t)*(1-2/pi * atan(exp(pi * 50 *(x-(0.98+0.0594)))))
 
-# Bz1 0.000004*(1/sqrt((z-0.01575)^2+(y-0.02728)^2) + 1/sqrt((z-0.01575)^2+(y+0.02728)^2) + 1/sqrt((z+0.01575)^2+(y-0.02728)^2) + 1/sqrt((z+0.01575)^2+(y+0.02728)^2)) * sin(38314864*t)*(1-2/pi * atan(exp(pi * 50 *(x-(0.98+0.0594)))))                    # These are the field components used for the CustomBField defined in the FIELDS section
+Bz1 0.000004*(1/sqrt((z-0.01575)^2+(y-0.02728)^2) + 1/sqrt((z-0.01575)^2+(y+0.02728)^2) + 1/sqrt((z+0.01575)^2+(y-0.02728)^2) + 1/sqrt((z+0.01575)^2+(y+0.02728)^2)) * sin(38314864*t)*(1-2/pi * atan(exp(pi * 50 *(x-(0.98+0.0594)))))                    # These are the field components used for the CustomBField defined in the FIELDS section
 
