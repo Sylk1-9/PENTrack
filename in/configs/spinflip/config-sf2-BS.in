@@ -50,9 +50,9 @@ logtype HDF5
 2	CAD/aSPECT_tube.stl				PolishedSteel
 3	CAD/halbach.stl					PolishedSteel
 4	CAD/stabilisation_tubes.stl			PolishedSteel
-5	CAD/fill/detector_store.stl			PolishedSteel
+5	CAD/store/detector_store.stl			PolishedSteel
 # 6	CAD/fill/foil_fill.stl				PolishedSteel
-6	CAD/fill/foil_fill1.stl			        UCNdet
+6	CAD/store/foil_store1.stl			UCNdet
 7	CAD/fill/SF_copper_fill.stl			PolishedSteel
 8	CAD/fill/SF_tube_fill.stl			PolishedSteel
 9	CAD/fill/SF_quartztube_fill.stl			PolishedSteel
