@@ -212,6 +212,12 @@ double ElectronBetaSpectrum(const double E);
 double MaxwellBoltzSpectrum (const double T, const double E);
 
 /**
+ * Energy distribution of PSI beamport from fitting 15 gaussian sum
+  * @param E energy in eV
+ */
+double CustomSpectra(const double E);
+
+/**
  * Find given formula name in list of formulas
  * 
  * @param formulaName Name of formula

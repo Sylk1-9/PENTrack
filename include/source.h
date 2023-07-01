@@ -30,6 +30,7 @@ protected:
 	std::piecewise_linear_distribution<double> phi_v; ///< Parsed initial azimuthal angle distribution of velocity given by user
 	std::piecewise_linear_distribution<double> theta_v; ///< Parsed initial polar angle distribution of velocity given by user
 	std::piecewise_constant_distribution<double> timedist; ///< Particle start time probability distribution
+	std::normal_distribution<double> normtimedist;  ///< Particle start time probability distribution (normal distribution for PSI
 
 	double polarization; ///< Initial polarization of created particles
 public:
@@ -249,6 +250,82 @@ public:
 		phimax *= conv;
 	}
 };
+
+inline double customPDF1(double x) {
+    // Define your custom PDF logic here as a sum of Gaussians
+    // Range: 8 to 60
+    double C = 0.03459551343345807;
+    double X_mean = -0.009450635326076718;
+    double sigma = 1.7003977634379006;
+    double k = 0.13720477934750563;
+    return k + C * std::exp(-0.5 * std::pow((x - X_mean) / sigma, 2));
+}
+
+inline double customPDF2(double x) {
+    // Define your custom PDF logic here as a linear function
+    // Range: 8 to 60
+    double m =  -3683.56942;
+    double c = 140.69792;
+    return m*x + c ;
+}
+
+//New version
+class TCylindricalVolumeSourceExt: public TVolumeSource{
+private:
+	double rmin, rmax, phimin, phimax, zmin, zmax, x0, y0, z0;
+
+	/**
+	 * Produce random point in the source volume
+	 *
+	 * @param x Returns x coordinate
+	 * @param y Returns y coordinate
+	 * @param z Returns z coordinate
+	 */
+	void RandomPointInSourceVolume(double &x, double &y, double &z, TMCGenerator &mc) const final{
+		std::uniform_real_distribution<double> unidist(std::pow(rmin,2), std::pow(rmax,2));
+		std::uniform_real_distribution<double> unidist1(-1, 1);
+		std::piecewise_linear_distribution<double> distribution1(1000, std::pow(rmin,2), std::pow(rmax,2), customPDF2);
+		std::piecewise_linear_distribution<double> distribution(1000, -3.13, 3.13, customPDF1);
+		double r = std::sqrt(distribution1(mc)); // weighting because of the volume element and a r^2 probability outwards
+		double psi = distribution(mc);
+		z = z0 -r*std::cos(psi); 
+		y = y0 + r*std::sin(psi);
+		x = x0 + unidist1(mc)*(zmax - zmin)/2;
+		 //For mirror beamline
+		 //z = -0.7179 -r*std::cos(psi); 
+	         //y =  -0.0001 + r*std::sin(psi);
+		 //x = -5.469 + unidist1(mc)*(zmax - zmin)/2;   
+		 //For linear beamline
+		 //z = -r*std::cos(psi); 
+		 //y = r*std::sin(psi);
+		 //x = -5.641 + unidist1(mc)*(zmax - zmin)/2;  
+		 //For S beamline
+		   //z = -0.7179 -r*std::cos(psi); 
+		   //y = -0.0020 + r*std::sin(psi);
+		   //x = -5.6407 + unidist1(mc)*(zmax - zmin)/2; 
+		 //Mirror-Souce
+		   //z = -0.71798 -r*std::cos(psi); 
+	          // y =  -0.00018 + r*std::sin(psi);
+		   //x = -5.6407 + unidist1(mc)*(zmax - zmin)/2;   
+		  //Mirror-tauSPECT
+		     //z = -0.71798 -r*std::cos(psi); 
+	            // y =  -0.00018 + r*std::sin(psi);
+		     //x = -5.6407 + unidist1(mc)*(zmax - zmin)/2;  
+	}
+public:
+	/**
+	 * Constructor.
+	 *
+	 * @param sourceconf Map of source options
+	 */
+	explicit TCylindricalVolumeSourceExt(std::map<std::string, std::string> &sourceconf):
+			TVolumeSource(sourceconf), rmin(0), rmax(0), phimin(0), phimax(0), zmin(0), zmax(0){
+		std::istringstream(sourceconf["parameters"]) >> rmin >> rmax >> phimin >> phimax >> zmin >> zmax >> x0 >> y0 >> z0;
+		phimin *= conv;
+		phimax *= conv;
+	}
+};
+
 
 /**
  * Surface source using a surface inside a cylindrial coordinate range
