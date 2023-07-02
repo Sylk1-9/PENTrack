@@ -107,7 +107,7 @@ Enormal		0					# give particles an energy boost normal to surface (surface sourc
 PhaseSpaceWeighting	0			# weight initial particle density by available phase space (volume source only! see above)
 
 ### initial energy range [eV] and spectrum of particles
-Emin 0e-9
+Emin 50e-9
 Emax 60e-9
 #Emin 100e-9 
 #Emax 300e-9
@@ -148,7 +148,7 @@ theta_v sin(x)
 #theta_v sin(x)	# differential initial distribution of polar angle of velocity
 
 
-polarization 1	# initial polarization is randomly chosen, weighted by this variable (1: low-field-seekers only, -1: high-field-seekers only) [-1..1]
+polarization -1	# initial polarization is randomly chosen, weighted by this variable (1: low-field-seekers only, -1: high-field-seekers only) [-1..1]
 
 
 [FIELDS]
@@ -370,9 +370,13 @@ tmax 1e-5
 # vabs        sqrt(vxstart^2 + vystart^2 + vzstart^2)     # for example, you could now add "vabs" to the list of endlogvars to print the absolute inital velocity to the endlog
 # detected    solidend == 14                              # for example, you could set this as an endlogfilter to only log particles that are absorbed in the detector
 
+# correct polarisaton for sp
+# I2.1 22*sin(38314864*t)
+# I2.2 22*cos(38314864*t)
 
-I2.1 22*sin(38314864*t)
-I2.2 22*cos(38314864*t)
+# inverse polarisation
+I2.1 102*cos(38314864*t)
+I2.2 102*sin(38314864*t)
 
 
 #Bx 0                                # These are the field components used for the CustomBField defined in the FIELDS section
