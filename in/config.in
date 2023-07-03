@@ -7,10 +7,10 @@
 simtype 1
 
 # number of primary particles to be simulated
-simcount 4
+simcount 100
 
 # max. simulation time [s]
-simtime 10
+simtime 20
 
 # path of file containing materials, paths are assumed to be relative to this config file's path
 materials_file materials.in
@@ -203,12 +203,12 @@ polarization 1	# initial polarization is randomly chosen, weighted by this varia
 # 5 TRICUBIC	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx100_yzmax54_hyz9.txt			1	0	1
 # 4 TRICUBIC	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx50_yzmax54_hyz6.txt	1	0	1
 # 5 TRICUBIC	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx50_yzmax54_hyz6.txt			1	0	1
-4 TRICUBIC	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt	1	0	1
-5 TRICUBIC	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt	1	0	1
+# 4 TRICUBIC	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt	1	0	1
+# 5 TRICUBIC	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt	1	0	1
 # 4 TRICUBIC	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt	1	0	1
 # 5 TRICUBIC	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt			1	0	1
-# 4 TRICUBIC	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
-# 5 TRICUBIC	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
+4 TRICUBIC	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
+5 TRICUBIC	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
 
 
 # 4 TRICUBIC	fields/meshes/Bfield_octupole-monoseg-tra-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
