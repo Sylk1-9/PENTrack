@@ -38,7 +38,6 @@ keydic = {
 
 magpy.defaults.display.style.current.arrow.width = 4
 
-
 # stl_file_paths = glob.glob(workingdir + "in/CAD/*.stl") + glob.glob(workingdir + "in/CAD/store/*.stl")
 class SetVisibilityCallback:
     """Helper callback to keep a reference to the actor being modified."""
@@ -53,28 +52,6 @@ class SetVisibilityCallback:
         else:
             self.actors.SetVisibility(state)
 
-
-
-class MyCustomRoutine:
-    def __init__(self, mesh):
-        self.output = mesh  # Expected PyVista mesh type
-        # default parameters
-        self.kwargs = {
-            'radius': 0.5,
-            'theta_resolution': 30,
-            'phi_resolution': 30,
-        }
-
-    def __call__(self, param, value):
-        self.kwargs[param] = value
-        self.update()
-
-    def update(self):
-        # This is where you call your simulation
-        result = pv.Sphere(**self.kwargs)
-        self.output.copy_from(result)
-        return
-
             
 class data:    
     def __init__(self, dfile="000000000002", dfilext=".h5", keys=('nt'), loadstl=True, plotter=None, ptdir="/home/sly/Work/Physics/Neutrons/tSPECT/PENtrack/pentrack/"):
@@ -85,6 +62,7 @@ class data:
         self.df = {}
         self.stlfiles = []
         self.stlactors = []
+        self.logsactor = {}
         self.loadata()
         if loadstl:
             self.loadstl()
@@ -242,87 +220,119 @@ class data:
         return self.plotter, self.magactors
 
 
-    def plotends(self, state="start", ptype="neutron", color=None):
+    def plotlogs(self, state="start", ptype="neutron", color=None):
+        '''
+        state = "start", "end", or "hit"
+        '''
+        st = '' if "hit" in state else state
+        ltype = 'h' if "hit" in state else 'e'
         if (ptype == 'n' or ptype == "neutron"):
-            key = 'ne'
+            key = 'n'
         elif (ptype == 'p' or ptype == "proton"):
-            key = 'pe'
-        elif (ptype == 'p' or ptype == "electron"):
-            key = 'ee'
+            key = 'p'
+        elif (ptype == 'e' or ptype == "electron"):
+            key = 'e'
 
         if color is None:
             color = "black" if state == "start" else "red"
         
-        self.plotter.add_mesh(1000 * da.df[key][['x'+state, 'y'+state, 'z'+state]].values, color=color, render_points_as_spheres=True, point_size=6)
+        self.logsactor[key+ltype+state] = self.plotter.add_mesh(1000 * da.df[key+ltype][['x'+st, 'y'+st, 'z'+st]].values, color=color, render_points_as_spheres=True, point_size=6)
 
         return self.plotter
+    
 
-    def plothits(self, ptype="neutron", color=None):
-        if (ptype == 'n' or ptype == "neutron"):
-            key = 'nh'
-        elif (ptype == 'p' or ptype == "proton"):
-            key = 'ph'
-        elif (ptype == 'p' or ptype == "electron"):
-            key = 'eh'
+    def animate(self, dur=1, dt=0.005, framerate=50, savegif=False):
+        if savegif:
+            self.plotter.open_gif("/home/sly/Work/Physics/Neutrons/tSPECT/PENtrack/plots/animations/penanalyse/animation-%s-2.gif" % dfile)
 
-        if color is None:
-            color = "black" if state == "start" else "red"
+        df_nts = self.df['nt'].sort_values(['particle', 't'])
+
+        points = pv.PolyData(1000 * self.df['ne'].sort_values('particle')[['xstart', 'ystart', 'zstart']].values)
+        points['particle'] = self.df['ne'].sort_values('particle')['particle']
+        points['t'] = self.df['ne']['tstart']
+
+        cloud = pv.PolyData(points)
+        self.plotter.add_points(cloud, color='blue', render_points_as_spheres=True, point_size=6)
+        # particles = df_nts['particle'].unique()
+
+        interpolation_functions = {}
+        for particle, data in df_nts.groupby('particle'):
+            positions = data[['x', 'y', 'z']].values
+            times = data['t'].values
+            interpolation_functions[particle] = scipy.interpolate.interp1d(times, positions, axis=0, bounds_error=False, fill_value=(data[['x', 'y', 'z']].iloc[0], data[['x', 'y', 'z']].iloc[-1]))
+
+
+        self.time_stamp = 0
+        def update_animation():
+            self.time_stamp += dt
+            interpolated_positions = []
+            for particle, interpolation_func in interpolation_functions.items():
+                interpolated_positions.append(interpolation_func(self.time_stamp))
+
+            cloud.points = 1000 * np.array(interpolated_positions)
+            self.plotter.update()
+            if savegif:
+                self.plotter.write_frame()
+
         
-        self.plotter.add_mesh(1000 * da.df[key][['x', 'y', 'z']].values, color=color, render_points_as_spheres=True, point_size=6)
-
+        self.plotter.add_callback(update_animation, int(1000/framerate), int(dur*framerate/dt))
+        # self.plotter.add_callback(update_animation, int(0.001/framerate), int(200/(framerate*dt)))
         return self.plotter
-        
-        
 
 
-dfile = "000000000005"
+
+dfile = "000000000006"
 da = data(dfile)
-# pl, magactors = da.plotmag(opacity=0)
+pl, magactors = da.plotmag(opacity=0.01)
 pl, stlactors = da.plotstl(opacity=0.01)
 # pl = da.plotends("end"")
-pl = da.plothits(ptype="n", color="pink")
+pl = da.plotlogs(ptype="n", state="start", color="black")
+pl = da.plotlogs(ptype="n", state="start", color="pink")
+pl = da.plotlogs(ptype="n", state="hit", color="red")
+pl = da.animate(dur=10, framerate=30, dt=0.005, savegif=True)
 
-gif = True
-if gif:
-    pl.open_gif("/home/sly/Work/Physics/Neutrons/tSPECT/PENtrack/animation-%s.gif" % dfile)
+# gif = False
+# if gif:
+#     pl.open_gif("/home/sly/Work/Physics/Neutrons/tSPECT/PENtrack/plots/animations/penanalyse/animation-%s-2.gif" % dfile)
 
-df_nts = da.df['nt'].sort_values(['particle', 't'])
+# df_nts = da.df['nt'].sort_values(['particle', 't'])
 
-points = pv.PolyData(1000 * da.df['ne'].sort_values('particle')[['xstart', 'ystart', 'zstart']].values)
-points['particle'] = da.df['ne'].sort_values('particle')['particle']
-points['t'] = da.df['ne']['tstart']
+# points = pv.PolyData(1000 * da.df['ne'].sort_values('particle')[['xstart', 'ystart', 'zstart']].values)
+# points['particle'] = da.df['ne'].sort_values('particle')['particle']
+# points['t'] = da.df['ne']['tstart']
 
-cloud = pv.PolyData(points)
-pl.add_points(cloud, color='blue', render_points_as_spheres=True, point_size=6)
+# cloud = pv.PolyData(points)
+# pl.add_points(cloud, color='blue', render_points_as_spheres=True, point_size=6)
 
-particles = df_nts['particle'].unique()
+# particles = df_nts['particle'].unique()
 
 
-interpolation_functions = {}
-for particle, data in df_nts.groupby('particle'):
-    positions = data[['x', 'y', 'z']].values
-    times = data['t'].values
+# interpolation_functions = {}
+# for particle, data in df_nts.groupby('particle'):
+#     positions = data[['x', 'y', 'z']].values
+#     times = data['t'].values
     
-    interpolation_functions[particle] = scipy.interpolate.interp1d(times, positions, axis=0, bounds_error=False, fill_value=(data[['x', 'y', 'z']].iloc[0], data[['x', 'y', 'z']].iloc[-1]))
+#     interpolation_functions[particle] = scipy.interpolate.interp1d(times, positions, axis=0, bounds_error=False, fill_value=(data[['x', 'y', 'z']].iloc[0], data[['x', 'y', 'z']].iloc[-1]))
 
 
    
-time_stamp = 0.0
-dt = 0.005
-def update_animation():
-    global time_stamp
-    time_stamp += dt
-    interpolated_positions = []
-    for particle, interpolation_func in interpolation_functions.items():
-        interpolated_positions.append(interpolation_func(time_stamp))
+# time_stamp = 0.0
+# dt = 0.005
+# framerate = 5 # s
+# def update_animation():
+#     global time_stamp
+#     time_stamp += dt
+#     interpolated_positions = []
+#     for particle, interpolation_func in interpolation_functions.items():
+#         interpolated_positions.append(interpolation_func(time_stamp))
 
-    points.points = 1000 * np.array(interpolated_positions)
-    pl.update()
-    if gif:
-        pl.write_frame()
+#     cloud.points = 1000 * np.array(interpolated_positions)
+#     pl.update()
+#     if gif:
+#         pl.write_frame()
 
 
-pl.add_callback(update_animation, 100, int(10/dt))
+# pl.add_callback(update_animation, int(0.001/framerate), int(200/(framerate*dt)))
 
-# pl.close()
+# # pl.close()
 

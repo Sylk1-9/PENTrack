@@ -47,17 +47,17 @@ logtype HDF5
 #ID	STLfile    	    	      	 	     	material_name    ignore_times
 # PENtrack_Test
 1	ignored						default
-2	STLs/tSPECT//aSPECT_tube.stl				PolishedSteel
-3	STLs/tSPECT//halbach.stl					PolishedSteel
-4	STLs/tSPECT//stabilisation_tubes.stl			PolishedSteel
-5	STLs/tSPECT//store/detector_store.stl			PolishedSteel
-# 6	STLs/tSPECT//fill/foil_fill.stl				PolishedSteel
-6	STLs/tSPECT//store/foil_store1.stl			UCNdet
-7	STLs/tSPECT//fill/SF_copper_fill.stl			PolishedSteel
-8	STLs/tSPECT//fill/SF_tube_fill.stl			PolishedSteel
-9	STLs/tSPECT//fill/SF_quartztube_fill.stl			PolishedSteel
-10	STLs/tSPECT//fill/SF_quartztube1_fill.stl		PolishedSteel
-11	STLs/tSPECT//fill/SF_seperation_foil_fill.stl		PolishedSteel
+2	STLs/tSPECT/aSPECT_tube.stl				PolishedSteel
+3	STLs/tSPECT/halbach.stl					PolishedSteel
+4	STLs/tSPECT/stabilisation_tubes.stl			PolishedSteel
+5	STLs/tSPECT/store/detector_store.stl			PolishedSteel
+# 6	STLs/tSPECT/fill/foil_fill.stl				PolishedSteel
+6	STLs/tSPECT/store/foil_store1.stl			UCNdet
+7	STLs/tSPECT/fill/SF_copper_fill.stl			PolishedSteel
+8	STLs/tSPECT/fill/SF_tube_fill.stl			PolishedSteel
+9	STLs/tSPECT/fill/SF_quartztube_fill.stl			PolishedSteel
+10	STLs/tSPECT/fill/SF_quartztube1_fill.stl		PolishedSteel
+11	STLs/tSPECT/fill/SF_seperation_foil_fill.stl		PolishedSteel
 
 
 
@@ -188,8 +188,8 @@ polarization -1	# initial polarization is randomly chosen, weighted by this vari
 # 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
 
 5 TRICUBIC	fields/meshes/Bfield_coil-tric_xmin800_xmax1200_hx10_yzmax54_hyz1.txt			1	0	1
-# 6 TRICUBIC	../fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin800_xmax1200_hx10_yzmax54_hyz1.txt			1	0	1
-# 7 TRICUBIC	../fields/magpy/Bfield_octupole-comp-monoseg-cub-tric_xmin800_xmax1200_hx10_yzmax54_hyz1.txt			1	0	1
+# 6 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin800_xmax1200_hx10_yzmax54_hyz1.txt			1	0	1
+# 7 TRICUBIC	fields/magpy/Bfield_octupole-comp-monoseg-cub-tric_xmin800_xmax1200_hx10_yzmax54_hyz1.txt			1	0	1
 
 
 # Simulate magnetic field from a current I flowing from a list of points (x1, y1, z1) to (x2, y2, z2)
@@ -375,8 +375,8 @@ tmax 1e-5
 # I2.2 22*cos(38314864*t)
 
 # inverse polarisation
-I2.1 102*cos(38314864*t)
-I2.2 102*sin(38314864*t)
+I2.1 5*sin(38314864*t)
+I2.2 5*cos(38314864*t)
 
 
 #Bx 0                                # These are the field components used for the CustomBField defined in the FIELDS section
