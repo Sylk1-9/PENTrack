@@ -4,13 +4,13 @@
 [GLOBAL]
 # simtype: 1 => particles, 3 => Bfield, 4 => cut through BField, 7 => print geometry, 8 => print mr-drp for solid angle
 # 9 => print integrated mr-drp for incident theta vs energy
-simtype 4
+simtype 1
 
 # number of primary particles to be simulated
-simcount 10
+simcount 100
 
 # max. simulation time [s]
-simtime 1
+simtime 10
 
 # path of file containing materials, paths are assumed to be relative to this config file's path
 materials_file materials.in
@@ -19,10 +19,8 @@ materials_file materials.in
 secondaries 1
 
 
-
 #cut through B-field at time t (simtype == 4) (x1 y1 z1  x2 y2 z2  x3 y3 z3 num1 num2 t)
 #define cut plane by three points and number of sample points in direction 1->2/1->3
-
 #	    x1 	  y1 	z1     	      	  x2  y2     z2  	  x3   y3    z3 	 num1   num2	   t
 
 # For octupole cut
@@ -35,7 +33,7 @@ secondaries 1
 # BCutPlane   0.0   0.000  0.000    	  2.0   0.030  0.040        2.0   0.000  0.000      2000    1	   0
 
 # For spinflipper cut
-BCutPlane   0.980  -0.054 -0.054    	  0.980   0.054  -0.054        0.980   -0.054  0.054      200    200	   0
+# BCutPlane   0.980  -0.054 -0.054    	  0.980   0.054  -0.054        0.980   -0.054  0.054      200    200	   0
 
 
 
@@ -65,16 +63,16 @@ logtype HDF5
 #ID	STLfile    	    	      	 	     	material_name    ignore_times
 # PENtrack_Test
 1	ignored						default
-2	CAD/aSPECT_tube.stl				PolishedSteel
-3	CAD/halbach.stl					PolishedSteel
-4	CAD/stabilisation_tubes.stl			PolishedSteel
-5	CAD/store/detector_store.stl			PolishedSteel
-6	CAD/store/foil_store.stl			PolishedSteel
-7	CAD/store/SF_copper_store.stl			PolishedSteel
-8	CAD/store/SF_tube_store.stl			PolishedSteel
-9	CAD/store/SF_quartztube_store.stl		PolishedSteel
-10	CAD/store/SF_quartztube1_store.stl		PolishedSteel
-11	CAD/store/SF_seperation_foil_store.stl		PolishedSteel
+2	STLs/tSPECT/aSPECT_tube.stl				PolishedSteel
+3	STLs/tSPECT/halbach.stl					PolishedSteel
+4	STLs/tSPECT/stabilisation_tubes.stl			PolishedSteel
+5	STLs/tSPECT/store/detector_store.stl			PolishedSteel
+6	STLs/tSPECT/store/foil_store.stl			PolishedSteel
+7	STLs/tSPECT/store/SF_copper_store.stl			PolishedSteel
+8	STLs/tSPECT/store/SF_tube_store.stl			PolishedSteel
+9	STLs/tSPECT/store/SF_quartztube_store.stl		PolishedSteel
+10	STLs/tSPECT/store/SF_quartztube1_store.stl		PolishedSteel
+11	STLs/tSPECT/store/SF_seperation_foil_store.stl		PolishedSteel
 
 
 
@@ -124,7 +122,7 @@ PhaseSpaceWeighting	0			# weight initial particle density by available phase spa
 
 ### initial energy range [eV] and spectrum of particles
 Emin 0e-9
-Emax 40e-9
+Emax 50e-9
 #Emin 100e-9 
 #Emax 300e-9
 #spectrum 1
@@ -185,149 +183,58 @@ polarization 1	# initial polarization is randomly chosen, weighted by this varia
 # For each field a time-dependent scaling factor (can be defined in the FORMULAS section) can be added.
 # Note that rapidly changing fields might be missed by the trajectory integrator making too large time steps
 ##################################################
-#3Dfield 	table-file	BFieldScale	EFieldScale	CoordinateScale
-
-
 #3Dfield 	table-file	BFieldScale	BoundaryWidth	CoordinateScale
-# 4 COMSOL	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx100_yzmax54_hyz9.txt	1	0	1
-# 5 COMSOL	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx100_yzmax54_hyz9.txt			1	0	1
-# 4 COMSOL	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx50_yzmax54_hyz6.txt	1	0	1
-# 5 COMSOL	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx50_yzmax54_hyz6.txt			1	0	1
-# 4 COMSOL	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt	1	0	1
-# 5 COMSOL	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt			1	0	1
-# 4 COMSOL	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt	1	0	1
-# 5 COMSOL	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt			1	0	1
-# 5 COMSOL	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
-# 5 COMSOL	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
-# 5 COMSOL	fields/magpy/Bfield_octupole-monoseg-tra-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
+# 4 COMSOL	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx100_yzmax54_hyz9.txt	1	0	1
+# 5 COMSOL	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx100_yzmax54_hyz9.txt			1	0	1
+# 4 COMSOL	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx50_yzmax54_hyz6.txt	1	0	1
+# 5 COMSOL	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx50_yzmax54_hyz6.txt			1	0	1
+# 4 COMSOL	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt	1	0	1
+# 5 COMSOL	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt			1	0	1
+# 4 COMSOL	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt	1	0	1
+# 5 COMSOL	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt			1	0	1
+# 5 COMSOL	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
+# 5 COMSOL	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
+# 5 COMSOL	fields/meshes/Bfield_octupole-monoseg-tra-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
 
-# 5 COMSOL	fields/magpy/Bfield_octupole-monoseg-cyl-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
-
-
-# 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx100_yzmax54_hyz9.txt	1	0	1
-# 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx100_yzmax54_hyz9.txt			1	0	1
-# 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx50_yzmax54_hyz6.txt	1	0	1
-# 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx50_yzmax54_hyz6.txt			1	0	1
-# 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt	1	0	1
-# 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt	1	0	1
-# 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt	1	0	1
-# 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt			1	0	1
-# 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
-# 5 TRICUBIC	fields/magpy/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
+# 5 COMSOL	fields/meshes/Bfield_octupole-monoseg-cyl-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
 
 
-# 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-tra-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
-# 4 TRICUBIC	fields/magpy/Bfield_octupole-monoseg-cyl-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
+# 4 TRICUBIC	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx100_yzmax54_hyz9.txt	1	0	1
+# 5 TRICUBIC	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx100_yzmax54_hyz9.txt			1	0	1
+# 4 TRICUBIC	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx50_yzmax54_hyz6.txt	1	0	1
+# 5 TRICUBIC	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx50_yzmax54_hyz6.txt			1	0	1
+# 4 TRICUBIC	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt	1	0	1
+# 5 TRICUBIC	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt	1	0	1
+# 4 TRICUBIC	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt	1	0	1
+# 5 TRICUBIC	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt			1	0	1
+4 TRICUBIC	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
+5 TRICUBIC	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
+
+
+# 4 TRICUBIC	fields/meshes/Bfield_octupole-monoseg-tra-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
+# 4 TRICUBIC	fields/meshes/Bfield_octupole-monoseg-cyl-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
 
 ## delta = 1 octupole
-# 4 TRICUBIC	fields/magpy/Bfield_octupole-tra-tric_delta1_xmin0_xmax2000_hx25_yzmax54_hyz3.txt	1	0	1
+# 4 TRICUBIC	fields/meshes/Bfield_octupole-tra-tric_delta1_xmin0_xmax2000_hx25_yzmax54_hyz3.txt	1	0	1
 
 
 
 
-## Magpy calculates the three field components from magnet magpy object provided by a .py file section.
+## Pyrhon fields calculates the three field components from magnet (for example magpy object) provided in .py file.
 # Each component can depend on the spatial coordinates x, y, z and a time variable t. Field derivatives are approximated numerically using a five-point stencil method.
-# Magpy source can be static (Temporal = 0) or time-depend (Temporal=1). 
+# Python source can be static (Temporal = 0) or time-depend (Temporal=1). 
 # The field is only evaluated within x/y/z min/max boundaries. If a BoundaryWidth is defined, the field will be brought smoothly to zero at these boundaries.
 
 #file-type 	magpy-file	Temporal xmax  xmin  ymax   ymin    zmax   zmin     Bscale
-# 16 PythonField 	magpytest	1	 0
-# 16 PythonField 	magpytest	1	 0
 # 17 PythonField	octupole		1	 0
 # 18 PythonField	coil			1	0
-# 18 PythonField 	coil-copy	1	0
-
-# 18 PythonField		SF2	1	1.1   0.8   0.054  -0.054  0.054  -0.054   1
+# 18 PythonField	SF2	1	1.1   0.8   0.054  -0.054  0.054  -0.054   1
 
 
 # Simulate magnetic field from a current I flowing from a list of points (x1, y1, z1) to (x2, y2, z2)
 #ECurrentField	    	file   	 	   	   	current xmax  xmin  ymax   ymin    zmax   zmin     Bscale
-10 ECurrentField	fields/spinflip/SF2.1-k4.txt	I2.1	1.1   0.9   0.054  -0.054  0.054  -0.054   1
-11 ECurrentField	fields/spinflip/SF2.2-k4.txt	I2.2	1.1   0.9   0.054  -0.054  0.054  -0.054   1
-
-
-# Simulate magnetic field from a current I flowing from point (x1, y1, z1) to (x2, y2, z2)
-#Conductor		I		x1		y1		z1		x2		y2		z2		scale
-#5 Conductor		12500	0		0		-1		0		0		2		1
-
-
-# ExponentialFieldX is described by:
-# B_x = a1 * exp(- a2* x + a3) + c1
-# B_y = y * a1 * a2 / 2 * exp(- a2* x + a3) + c2
-# B_z = z * a1 * a2 / 2 * exp(- a2* x + a3) + c2
-# Parameters a1, c1, and c2 should be units [Tesla]
-# Field is turned off outside of the xyz min/max boundaries specified [meters]
-
-# ExponentialFieldX a1  a2  a3  c1  c2  xmax  xmin  ymax  ymin  zmax  zmin scale
-#6 ExponentialFieldX 5E-5 1  -4 0   0   3     -3     1     -1     1     -1  1
-
-
-# LinearFieldZ is described by:
-# B_z = a1*x + a2
-# a1 = [T/m] and a2 = [T]
-# Field is turned off outside of the xyz min/max boundaries specified [meters]
-
-## LinearFieldZ a1      a2     xmax  xmin  ymax  ymin  zmax  zmin scale
-#7 LinearFieldZ  2E-6   1E-6   0     -1     1     -1     1     -1   1
-
-
-# EDMStaticB0GradZField defines a z-oriented field of strength edmB0z0 with a small gradient edmB0z0dz along z, leading to small x and y components.
-# The origin and orientation of the z-axis can be adjusted with the edmB0[xyz]off parameters and a polar and azimuthal angle.
-# The field is only evaluated within x/y/z min/max boundaries. If a BoundaryWidth is defined, the field will be brought smoothly to zero at these boundaries.
-
-### EDMStaticB0GradZField   edmB0xoff edmB0yoff edmB0zoff pol_ang azm_ang edmB0z0 edmdB0z0dz BoundaryWidth xmax    xmin    ymax    ymin    zmax    zmin scale
-#8 EDMStaticB0GradZField     0         0          0       0       0       1E-6    0          0             3       0      1       -1      1       -1      1
-
-
-# B0GradZ is described by:
-# B_z = a1/2 * z^2 + a2 z + z0
-# dBdz = a1 * z + a2
-# a1 = [T/m^2]; a2 = [T/m]; z0 = [T]
-# Field is turned off outside of the xyz min/max boundaries specified [meters]
-
-## B0GradZ    a1      a2     z0  xmax  xmin  ymax  ymin  zmax  zmin scale
-#9 B0GradZ       0    0     1E-6     1     -1     1   -1     1  -1    1
-
-
-# B0GradX2 is described by:
-# B_z = (a_1 x^2 + a_2 x + a3) z + z0
-# dBdz = a_1 x^2 + a_2 x + a3
-
-## B0GradX2    a1      a2   a3     z0  xmax  xmin  ymax  ymin  zmax  zmin scale
-#10 B0GradX2  1E-8    0      0       1E-6     1     -1     1     -1     1  -1   1
-
-
-# B0GradXY is described by:
-# B_z = a_1 xyz + a_2 z + z0
-# dBdz =  a_1 xy + a_2
-# Field is turned off outside of the xyz min/max boundaries specified [meters]
-
-## B0GradXY    a1      a2     z0       xmax  xmin  ymax  ymin  zmax  zmin scale
-#11 B0GradXY  1E-8       0     1E-6     1     -1     1     -1     1  -1   1
-
-
-# B0_XY is described by:
-# B_z = a_1 xy + z0
-# B_y = a_1 xz
-# B_x = a_1 yz
-# Field is turned off outside of the xyz min/max boundaries specified [meters]
-
-## B0_XY    a1    z0       xmax  xmin  ymax  ymin  zmax  zmin scale
-#12 B0_XY   1E-7  1E-6        1     -1     1     -1     1  -1   1
-
-
-# HarmonicExpandedBField defines a field composed of Legendre polynomials up to third order with coefficients G(l,m), see https://arxiv.org/abs/1811.06085.
-# The origin can be adjusted with the edmB0[xyz]off parameters. The orientation can be rotated by a given angle around an axis.
-# The field is only evaluated within x/y/z min/max boundaries. If a BoundaryWidth is defined, the field will be brought smoothly to zero outside these boundaries.
-
-#HarmonicExpandedBField     edmB0xoff   edmB0yoff   edmB0zoff   BoundaryWidth   xmax 	xmin 	ymax 	ymin 	zmax 	zmin    scale   axis_x  axis_y  axis_z  angle   G(0,-1) G(0,0)  G(0,1)  G(1,-2) G(1,-1) G(1,0)  G(1,1)  G(1,2)  G(2,-3) G(2,-2) G(2,-1) G(2,0)  G(2,1)  G(2,2)  G(2,3)  G(3,-4) G(3,-3) G(3,-2) G(3,-1) G(3,0)  G(3,1)  G(3,2)  G(3,3)  G(3,4)
-#13 HarmonicExpandedBField 	0	        0        0	        0.01        1    -1  	  1 	    -1	    1	    -1	    1       1       1       1       1.9     0       0       0       0       0       30      0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0
-
-
-# EDMStaticEField defines an homogeneous electric field, simply set all three components of the electric-field vector.
-
-#EDMStaticEField    Ex  Ey  Ez  scale
-#14 EDMStaticEField 0   0   1e6 1
+# 10 ECurrentField	fields/spinflip/SF2.1-k4.txt	I2.1	1.1   0.9   0.054  -0.054  0.054  -0.054   1
+# 11 ECurrentField	fields/spinflip/SF2.2-k4.txt	I2.2	1.1   0.9   0.054  -0.054  0.054  -0.054   1
 
 
 ## CustomBField calculates the three field components from formulas defined in the FORMULAS section.
@@ -336,10 +243,6 @@ polarization 1	# initial polarization is randomly chosen, weighted by this varia
 
 # CustomBField Bx-formula By-formula Bz-formula xmax xmin ymax ymin zmax zmin BoundaryWidth scale
 #15 CustomBField Bx By Bz 0.054 -0.054 0.054 -0.054 1.055 0.905 0 1
-
-
-# CustomBField xmax xmin ymax ymin zmax zmin BoundaryWidth scale
-# 16 Magpy       magpytest.py 0.054 -0.054 0.054 -0.054 1.055 0.905 0 1
 
 
 ######### default values for particle-specific settings ############
@@ -396,15 +299,9 @@ tmax 1e-5
 ############ define formulas used for CustomBField or output to log files
 ## see the supported syntax in the ExprTk documentation at http://partow.net/programming/exprtk/index.html
 [FORMULAS]
-# magnetRamp  t < 400 ? 0 : (t < 500 ? 0.01*(t-400) : (t < 700 ? 1 : (t<800?0.01*(800-t) : 0)))    # ramp magnetic field from 0% to 100% between t=400s and t=500s, then ramp back down between t=700s and t=800s
 
-# vabs        sqrt(vxstart^2 + vystart^2 + vzstart^2)     # for example, you could now add "vabs" to the list of endlogvars to print the absolute inital velocity to the endlog
-# detected    solidend == 14                              # for example, you could set this as an endlogfilter to only log particles that are absorbed in the detector
 
-# Bx 0.005*cos(38.3148640032*t)                                               # These are the field components used for the CustomBField defined in the FIELDS section
-# By 0.005*sin(38.3148640032*t)  
-# Bz 0.5-0.4*z
-
+# # spinflippers
 I2.1 22*sin(38314864*t)
 I2.2 22*cos(38314864*t)
 
