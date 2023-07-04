@@ -253,17 +253,38 @@ class data:
         if color is None:
             color = "black" if state == "start" else "red"
         
-        self.plotter.add_mesh(1000 * da.df[key][['x'+state, 'y'+state, 'z'+state]].values, color=color, render_points_as_spheres=True, point_size=10)
+        self.plotter.add_mesh(1000 * da.df[key][['x'+state, 'y'+state, 'z'+state]].values, color=color, render_points_as_spheres=True, point_size=6)
+
+        return self.plotter
+
+    def plothits(self, ptype="neutron", color=None):
+        if (ptype == 'n' or ptype == "neutron"):
+            key = 'nh'
+        elif (ptype == 'p' or ptype == "proton"):
+            key = 'ph'
+        elif (ptype == 'p' or ptype == "electron"):
+            key = 'eh'
+
+        if color is None:
+            color = "black" if state == "start" else "red"
+        
+        self.plotter.add_mesh(1000 * da.df[key][['x', 'y', 'z']].values, color=color, render_points_as_spheres=True, point_size=6)
 
         return self.plotter
         
+        
 
-da = data()
+
+dfile = "000000000005"
+da = data(dfile)
 # pl, magactors = da.plotmag(opacity=0)
 pl, stlactors = da.plotstl(opacity=0.01)
-# pl = da.plotends("end")
+# pl = da.plotends("end"")
+pl = da.plothits(ptype="n", color="pink")
 
-
+gif = True
+if gif:
+    pl.open_gif("/home/sly/Work/Physics/Neutrons/tSPECT/PENtrack/animation-%s.gif" % dfile)
 
 df_nts = da.df['nt'].sort_values(['particle', 't'])
 
@@ -272,7 +293,7 @@ points['particle'] = da.df['ne'].sort_values('particle')['particle']
 points['t'] = da.df['ne']['tstart']
 
 cloud = pv.PolyData(points)
-pl.add_points(cloud, color='blue', render_points_as_spheres=True, point_size=10)
+pl.add_points(cloud, color='blue', render_points_as_spheres=True, point_size=6)
 
 particles = df_nts['particle'].unique()
 
@@ -284,9 +305,10 @@ for particle, data in df_nts.groupby('particle'):
     
     interpolation_functions[particle] = scipy.interpolate.interp1d(times, positions, axis=0, bounds_error=False, fill_value=(data[['x', 'y', 'z']].iloc[0], data[['x', 'y', 'z']].iloc[-1]))
 
-    
+
+   
 time_stamp = 0.0
-dt = 0.01
+dt = 0.005
 def update_animation():
     global time_stamp
     time_stamp += dt
@@ -296,7 +318,11 @@ def update_animation():
 
     points.points = 1000 * np.array(interpolated_positions)
     pl.update()
-    
-pl.add_callback(update_animation, 10, int(5/dt))
+    if gif:
+        pl.write_frame()
 
+
+pl.add_callback(update_animation, 100, int(10/dt))
+
+# pl.close()
 
