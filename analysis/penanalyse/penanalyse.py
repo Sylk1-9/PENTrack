@@ -63,7 +63,9 @@ class data:
         self.stlfiles = []
         self.stlactors = []
         self.logsactor = {}
+        self.pactor = None
         self.loadata()
+        self.simcount = int(str(da.df['config']["GLOBAL"][3][1]).split(" ")[1].split("\\")[0])
         if loadstl:
             self.loadstl()
         # self.axes = None
@@ -126,7 +128,7 @@ class data:
 
 
     def initplotter(self):
-        plotter = pvqt.BackgroundPlotter()
+        plotter = pvqt.BackgroundPlotter(window_size=(2*1024, 2*768))
         plotter.show_bounds(color="black")
         return plotter
 
@@ -136,7 +138,7 @@ class data:
             actor.GetProperty().SetOpacity(opacity)
 
             
-    def plotstl(self, plotter=None, opacity=1, stlfiles=None):
+    def plotstl(self, opacity=1, stlfiles=None):
 
         self.plotter = self.initplotter() if self.plotter is None else self.plotter
         self.stlactors = []
@@ -146,7 +148,6 @@ class data:
         pos = 2*size
         colors = get_distinct_colors(len(stlfiles))
 
-        
         for stlfile, color in zip(stlfiles, colors):
             mesh = pv.read(stlfile).scale([1000.0, 1000.0, 1000.0], inplace=False)
             # mesh = mesh.rotate_y(-90, point=axes.origin, inplace=False)
@@ -226,35 +227,82 @@ class data:
         '''
         st = '' if "hit" in state else state
         ltype = 'h' if "hit" in state else 'e'
+
+        pos = 0
         if (ptype == 'n' or ptype == "neutron"):
             key = 'n'
         elif (ptype == 'p' or ptype == "proton"):
             key = 'p'
+            pos = 60
         elif (ptype == 'e' or ptype == "electron"):
             key = 'e'
+            pos = 90
+            
 
-        if color is None:
-            color = "black" if state == "start" else "red"
+        if state == "start":
+            color = "black" if color is None else color
+        elif state == "end":
+            color = "red" if color is None  else color
+            pos += 30
+        else:
+            color = "pink" if color is None  else color
+            pos += 60
         
-        self.logsactor[key+ltype+state] = self.plotter.add_mesh(1000 * da.df[key+ltype][['x'+st, 'y'+st, 'z'+st]].values, color=color, render_points_as_spheres=True, point_size=6)
+        actor = self.plotter.add_mesh(1000 * da.df[key+ltype][['x'+st, 'y'+st, 'z'+st]].values, color=color, render_points_as_spheres=True, point_size=6)
+        self.logsactor[key+ltype+state] = actor
+        
+        callback = SetVisibilityCallback(actor)
+        self.plotter.add_checkbox_button_widget(
+            callback,
+            value=True,
+            position=(300 + pos, 1),
+            size=30,
+            border_size=1,
+            color_on=color,
+            color_off='grey',
+            background_color='grey',
+        )
 
         return self.plotter
     
 
-    def animate(self, dur=1, dt=0.005, framerate=50, savegif=False):
+    def play_animation(self, speed, nparticle=None):
+        self.dt = self.idt * speed
+
+    
+    def animate(self, dur=1, dt=0.005, framerate=50, savegif=False, minp=0, maxp=None):
         if savegif:
             self.plotter.open_gif("/home/sly/Work/Physics/Neutrons/tSPECT/PENtrack/plots/animations/penanalyse/animation-%s-2.gif" % dfile)
 
         df_nts = self.df['nt'].sort_values(['particle', 't'])
+        maxp = self.simcount if maxp is None else maxp
+        df_nts = df_nts[(df_nts['particle'] >= minp) & (df_nts['particle'] <= maxp)]
 
-        points = pv.PolyData(1000 * self.df['ne'].sort_values('particle')[['xstart', 'ystart', 'zstart']].values)
-        points['particle'] = self.df['ne'].sort_values('particle')['particle']
-        points['t'] = self.df['ne']['tstart']
+        df_ne = self.df['ne']
+        df_ne = df_ne[(df_ne['particle'] >= minp) & (df_ne['particle'] <= maxp)]
+
+        points = pv.PolyData(1000 * df_ne[['xstart', 'ystart', 'zstart']].values)
+        points['particle'] = df_ne.sort_values('particle')['particle']
+        points['t'] = df_ne['tstart']
 
         cloud = pv.PolyData(points)
-        self.plotter.add_points(cloud, color='blue', render_points_as_spheres=True, point_size=6)
+        actor = self.plotter.add_points(cloud, color='blue', render_points_as_spheres=True, point_size=8)
         # particles = df_nts['particle'].unique()
+        self.pactor = actor
 
+        callback = SetVisibilityCallback(actor)
+        self.plotter.add_checkbox_button_widget(
+            callback,
+            value=True,
+            position=(550, 1),
+            size=30,
+            border_size=1,
+            color_on="white",
+            color_off='grey',
+            background_color='grey',
+        )
+
+        
         interpolation_functions = {}
         for particle, data in df_nts.groupby('particle'):
             positions = data[['x', 'y', 'z']].values
@@ -263,8 +311,14 @@ class data:
 
 
         self.time_stamp = 0
+        self.idt = dt
+        # maxtime = dur*framerate/dt
         def update_animation():
-            self.time_stamp += dt
+            if ((self.dt <= 0) and (self.time_stamp >= 0)) or ((self.dt >= 0) and (self.time_stamp <= dur)):
+                self.time_stamp += self.dt
+            # if (self.dt >= 0) and (self.time_stamp <= dur):
+                # self.time_stamp += self.dt
+                            
             interpolated_positions = []
             for particle, interpolation_func in interpolation_functions.items():
                 interpolated_positions.append(interpolation_func(self.time_stamp))
@@ -274,65 +328,30 @@ class data:
             if savegif:
                 self.plotter.write_frame()
 
-        
-        self.plotter.add_callback(update_animation, int(1000/framerate), int(dur*framerate/dt))
+        self.plotter.add_slider_widget(self.play_animation, (-5, 5), value=1, pointa=(0.6, 0.1), pointb=(0.9, 0.1), slider_width=0.02, tube_width=0.005, color="white")
+
+        # self.plotter.add_callback(update_animation, int(1000/framerate), int(dur*framerate/dt))
+        self.plotter.add_callback(update_animation, int(1000/framerate), None)
         # self.plotter.add_callback(update_animation, int(0.001/framerate), int(200/(framerate*dt)))
         return self.plotter
 
 
 
+# name of datafile
 dfile = "000000000006"
+
+# instantiate data object
 da = data(dfile)
+
+# plots stl surface and magnetic source
 pl, magactors = da.plotmag(opacity=0.01)
 pl, stlactors = da.plotstl(opacity=0.01)
-# pl = da.plotends("end"")
+
+# plots neutrons start, end, and hits points.
 pl = da.plotlogs(ptype="n", state="start", color="black")
-pl = da.plotlogs(ptype="n", state="start", color="pink")
+pl = da.plotlogs(ptype="n", state="end", color="pink")
 pl = da.plotlogs(ptype="n", state="hit", color="red")
-pl = da.animate(dur=10, framerate=30, dt=0.005, savegif=True)
 
-# gif = False
-# if gif:
-#     pl.open_gif("/home/sly/Work/Physics/Neutrons/tSPECT/PENtrack/plots/animations/penanalyse/animation-%s-2.gif" % dfile)
-
-# df_nts = da.df['nt'].sort_values(['particle', 't'])
-
-# points = pv.PolyData(1000 * da.df['ne'].sort_values('particle')[['xstart', 'ystart', 'zstart']].values)
-# points['particle'] = da.df['ne'].sort_values('particle')['particle']
-# points['t'] = da.df['ne']['tstart']
-
-# cloud = pv.PolyData(points)
-# pl.add_points(cloud, color='blue', render_points_as_spheres=True, point_size=6)
-
-# particles = df_nts['particle'].unique()
-
-
-# interpolation_functions = {}
-# for particle, data in df_nts.groupby('particle'):
-#     positions = data[['x', 'y', 'z']].values
-#     times = data['t'].values
-    
-#     interpolation_functions[particle] = scipy.interpolate.interp1d(times, positions, axis=0, bounds_error=False, fill_value=(data[['x', 'y', 'z']].iloc[0], data[['x', 'y', 'z']].iloc[-1]))
-
-
-   
-# time_stamp = 0.0
-# dt = 0.005
-# framerate = 5 # s
-# def update_animation():
-#     global time_stamp
-#     time_stamp += dt
-#     interpolated_positions = []
-#     for particle, interpolation_func in interpolation_functions.items():
-#         interpolated_positions.append(interpolation_func(time_stamp))
-
-#     cloud.points = 1000 * np.array(interpolated_positions)
-#     pl.update()
-#     if gif:
-#         pl.write_frame()
-
-
-# pl.add_callback(update_animation, int(0.001/framerate), int(200/(framerate*dt)))
-
-# # pl.close()
+# # play animation
+pl = da.animate(dur=11, framerate=10, dt=0.01, savegif=False, minp=0, maxp=10)
 
