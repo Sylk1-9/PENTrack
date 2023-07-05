@@ -62,7 +62,8 @@ void TTracker::IntegrateParticle(std::unique_ptr<TParticle>& p, const double tma
   }while(SpinTimess.good());
   state_type spin = p->GetFinalSpin();
 
-  dense_stepper_type stepper = boost::numeric::odeint::make_dense_output(1e-9, 1e-9, stepper_type());
+  // dense_stepper_type stepper = boost::numeric::odeint::make_dense_output(1e-9, 1e-9, stepper_type()); // original value
+  dense_stepper_type stepper = boost::numeric::odeint::make_dense_output(1e-7, 1e-7, stepper_type()); // to DoTo sly
   stepper.initialize(y, x, 10.*MAX_TRACK_DEVIATION/sqrt(y[3]*y[3] + y[4]*y[4] + y[5]*y[5])); // initialize stepper with fixed spatial length
 
   //	progress_display progress(100, cout, ' ' + to_string(particlenumber) + ' ');
@@ -430,8 +431,8 @@ void TTracker::IntegrateSpin(const std::unique_ptr<TParticle>& p, state_type &sp
     }
 
 
-    dense_stepper_type spinstepper = boost::numeric::odeint::make_dense_output(1e-12, 1e-12, stepper_type());
-    // dense_stepper_type spinstepper = boost::numeric::odeint::make_dense_output(1e-16, 1e-16, stepper_type()); // ToDo Sly
+    dense_stepper_type spinstepper = boost::numeric::odeint::make_dense_output(1e-6, 1e-6, stepper_type());
+    // dense_stepper_type spinstepper = boost::numeric::odeint::make_dense_output(1e-12, 1e-12, stepper_type()); // original
     spinstepper.initialize(spin, x1, std::abs(pi/p->GetGyromagneticRatio()/Babs1)); // initialize integrator with step size = half rotation
     // spinstepper.initialize(spin, x1, std::abs(pi/p->GetGyromagneticRatio()/Babs1/36)); // initialize integrator with step size = half rotation ToDo sly
     logger->PrintSpin(p, x1, spinstepper, stepper, field);

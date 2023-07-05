@@ -221,8 +221,31 @@ std::piecewise_linear_distribution<double> parse_distribution(const std::string 
   symbol_table.add_function("ProtonBetaSpectrum", ProtonBetaSpectrum);
   symbol_table.add_function("ElectronBetaSpectrum", ElectronBetaSpectrum);
   symbol_table.add_function("MaxwellBoltzSpectrum", MaxwellBoltzSpectrum);
-  symbol_table.add_function("CustomSpectra", CustomSpectra); //for PSI spectrum
+  symbol_table.add_function("CustomSpectra", CustomSpectra); //for PSI spectrum // Utkarsh
   symbol_table.add_constants();
+
+  exprtk::expression<double> expression;
+  expression.register_symbol_table(symbol_table);
+
+  exprtk::parser<double> parser;
+  if (not parser.compile(func, expression)){
+    throw std::runtime_error(exprtk::parser_error::to_str(parser.get_error(0).mode) + " while parsing formula '" + func + "': " + parser.get_error(0).diagnostic);
+  }
+  return parse_distribution(
+			    [&x, &expression](const double px){
+			      x = px;
+			      return expression.value();
+			    },
+			    range_min,
+			    range_max
+			    );
+}
+
+std::piecewise_linear_distribution<double> proton_beta_distribution = parse_distribution(ProtonBetaSpectrum, 0., 750.);
+std::piecewise_linear_distribution<double> electron_beta_distribution = parse_distribution(ElectronBetaSpectrum, 0., 782000.);
+
+
+constants();
 
   exprtk::expression<double> expression;
   expression.register_symbol_table(symbol_table);

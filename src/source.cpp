@@ -79,7 +79,7 @@ TParticleSource::TParticleSource(std::map<std::string, std::string> &sourceconf)
 	
 	double mean = 2.97;
 	double sigma =  0.8113;
-	normtimedist = std::normal_distribution<double> (mean, sigma);
+	normtimedist = std::normal_distribution<double> (mean, sigma); // Utkarsh
 }
 
 
@@ -198,9 +198,12 @@ TParticle* TVolumeSource::CreateParticle(TMCGenerator &mc, TGeometry &geometry, 
 	}
 	else{ // create particles uniformly distributed in volume
 		double t;
-		do{
-		t = std::exp(normtimedist(mc));
+		do{ // Utkarsh
+		  t = std::exp(normtimedist(mc));
 		}while(!(0<t && t<fActiveTime));
+		
+		// t = timedist(mc); // original
+
 		double x, y, z;
 		RandomPointInSourceVolume(x, y, z, mc);
 		int pol = pdist(mc);
@@ -220,7 +223,7 @@ TParticleSource* CreateParticleSource(TConfig &config, const TGeometry &geometry
 	else if (sourcemode == "cylvolume"){
 		source = new TCylindricalVolumeSource(sc);
 	}
-	else if (sourcemode == "cylvolumeext"){
+	else if (sourcemode == "cylvolumeext"){ // Utkarsh
 		source = new TCylindricalVolumeSourceExt(sc);
 	}
 	else if (sourcemode == "STLvolume"){

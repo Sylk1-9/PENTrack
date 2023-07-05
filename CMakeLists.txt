@@ -9,6 +9,9 @@ endif()
 #set(CMAKE_CXX_STANDARD 11)
 #set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
+
 include_directories("alglib-3.15.0/cpp/src")
 add_library(alglib OBJECT alglib-3.15.0/cpp/src/alglibinternal.cpp
   alglib-3.15.0/cpp/src/integration.cpp
