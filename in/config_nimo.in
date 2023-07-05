@@ -49,12 +49,10 @@ logtype HDF5
 #ID	STLfile    	    	      	 	     	material_name    ignore_times
 # PENtrack_Test
 1	ignored						default	
-2	CAD/fill12/shifted/beamport_flange.stl		UCNdet
-3	CAD/fill12/shifted/45deg_bent_beamline.stl	NiMo
-4	CAD/fill12/shifted/static_beamline.stl		PolishedSteel
-5	CAD/fill12/shifted/quartz_tube.stl		PolishedSteel
-6	CAD/fill12/shifted/quartz_det.stl		UCNdet
-7	CAD/fill12/shifted/spinflipper.stl		PolishedSteel
+2	CAD/fill11/beamport_flange.stl			UCNdet
+3	CAD/fill11/45deg_bent_beamline.stl		NiMo
+4	CAD/fill11/static_beamline.stl			PolishedSteel
+6	CAD/fill11/sim_det.stl				UCNdet
 #2	CAD/fill14/shifted/beamport_flange.stl		UCNdet
 #3	CAD/fill14/shifted/mirror_tubes.stl		PolishedSteel	
 #4	CAD/fill14/shifted/deckel_flansch.stl		PolishedSteel
@@ -187,13 +185,13 @@ sourcemode	cylvolumeext
 #S beamline
 #parameters		0	0.0328	0	360	0.001	0.0015	 -5.6407  -0.0020  -0.7179
 #45 deg bent beamline
-#parameters		0	0.0899	0	360	0.001	0.0015	 -5.625   -0.00019  -0.7179
+parameters		0	0.0899	0	360	0.001	0.0015	 -5.625   -0.00019  -0.7179
 #linear beamline + flange
 #parameters		0	0.0899	0	360	0.001	0.0015	 -5.641   -0.00019   -0.7179
 #mirror beamline, kim origin
 #parameters 		0	0.0899	0	360	0.001	0.0015	 -3.655  -0.00019   -0.7179
 #45 deg bent beamline, kim origin
-parameters		0	0.0899	0	360	0.001	0.0015	 -3.6394   -0.00019  -0.7179
+#parameters		0	0.0899	0	360	0.001	0.0015	 -3.6394   -0.00019  -0.7179
 
 
 #		x_min	x_max	y_min	y_max	z_min	z_max	(boxvolume)
@@ -431,7 +429,7 @@ endlogfilter
 
 tracklog 1			# print complete trajectory to file [0/1]
 #tracklogvars jobnumber particle polarisation t x y z vx vy vz H E Bx dBxdx dBxdy dBxdz By dBydx dBydy dBydz Bz dBzdx dBzdy dBzdz Ex Ey Ez V
-tracklogvars particle t x y z vx vy vz
+tracklogvars particle t x y z vx vy vz H E
 trackloginterval 5e-4	# min. distance interval [m] between track points in tracklog file
 tracklogfilter
 
