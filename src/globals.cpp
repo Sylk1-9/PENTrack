@@ -100,6 +100,101 @@ double ElectronBetaSpectrum(const double E){
 	return 8.2*sqrt(E*1e-6*E*1e-6 + 2*E*1e-6*m_e*c_0*c_0*1e-6) * pow(Qvalue - E*1e-6, 2) * (E*1e-6 + m_e*c_0*c_0*1e-6);
 }
 
+//PSI Energy Distribution
+double CustomSpectra(const double x){
+	//double Qvalue = 0.782; //[MeV]
+	
+
+	/*double mu0 = 8.395126018312903;
+	double mu1 = 12.375899956396774;
+	double mu2 = 16.356673894480647;
+	double mu3 = 20.337447832564518;
+	double mu4 = 24.31822177064839;
+	double mu5 = 28.298995708732264;
+	double mu6 = 32.279769646816135;
+	double mu7 = 36.260543584900006;
+	double mu8 = 40.24131752298388;
+	double mu9 = 44.22209146106775;
+	double mu10 = 48.20286539915162;
+	double mu11 = 52.18363933723549;
+	double mu12 = 56.16441327531936;
+	double mu13 = 60.14518721340323;
+	double mu14 = 64.1259611514871;
+
+	double sigma0 = 3.980773938083871;
+	double sigma1 = 3.980773938083873;
+	double sigma2 = 3.980773938083871;
+	double sigma3 = 3.980773938083871;
+	double sigma4 = 3.9807739380838747;
+	double sigma5 = 3.980773938083871;
+	double sigma6 = 3.980773938083871;
+	double sigma7 = 3.980773938083871;
+	double sigma8 = 3.980773938083871;
+	double sigma9 = 3.980773938083871;
+	double sigma10 = 3.980773938083871;
+	double sigma11 = 3.980773938083871;
+	double sigma12 = 3.980773938083871;
+	double sigma13 = 3.980773938083871;
+	double sigma14 = 3.980773938083871;
+
+	double weight0 = -0.0038259588046314907;
+	double weight1 = 0.0018427747738501976;
+	double weight2 = 0.0027976182196698396;
+	double weight3 = 0.05301957439689664;
+	double weight4 = 0.05951985089363676;
+	double weight5 = 0.11225430242356893;
+	double weight6 = 0.19885780277965415;
+	double weight7 = 0.07857912170660608;
+	double weight8 = 0.55204282492915;
+	double weight9 = -0.2898920321542926;
+	double weight10 = 0.2733590456106674;
+	double weight11 = -0.1343521259478031;
+	double weight12 = 0.11429855235002506;
+	double weight13 = -0.02961704867853232;
+	double weight14 = 0.014524065621129179;
+	
+	double pdf0 = weight0  * std::exp(-0.5 * std::pow((x - mu0) / sigma0, 2));
+	double pdf1 = weight1  * std::exp(-0.5 * std::pow((x - mu1 ) / sigma1, 2));
+	double pdf2 = weight2  * std::exp(-0.5 * std::pow((x - mu2 ) / sigma2, 2));
+	double pdf3 = weight3  * std::exp(-0.5 * std::pow((x - mu3 ) / sigma3, 2));
+	double pdf4 = weight4  * std::exp(-0.5 * std::pow((x - mu4 ) / sigma4, 2));
+	double pdf5 = weight5  * std::exp(-0.5 * std::pow((x - mu5 ) / sigma5, 2));
+	double pdf6 = weight6  * std::exp(-0.5 * std::pow((x - mu6 ) / sigma6, 2));
+	double pdf7 = weight7  * std::exp(-0.5 * std::pow((x - mu7 ) / sigma7, 2));
+	double pdf8 = weight8  * std::exp(-0.5 * std::pow((x - mu8 ) / sigma8, 2));
+	double pdf9 = weight9  * std::exp(-0.5 * std::pow((x - mu9 ) / sigma9, 2));
+	double pdf10 = weight10  * std::exp(-0.5 * std::pow((x - mu10 ) / sigma10, 2));
+	double pdf11 = weight11  * std::exp(-0.5 * std::pow((x - mu11 ) / sigma11, 2));
+	double pdf12 = weight12  * std::exp(-0.5 * std::pow((x - mu12 ) / sigma12, 2));
+	double pdf13 = weight13  * std::exp(-0.5 * std::pow((x - mu13 ) / sigma13, 2));
+	double pdf14 = weight14  * std::exp(-0.5 * std::pow((x - mu14 ) / sigma14, 2));
+
+	return pdf0 + pdf1 + pdf2 + pdf3 + pdf4 + pdf5 + pdf6 + pdf7 + pdf8 + pdf9 + pdf10 + pdf11 + pdf12 + pdf13 + pdf14;*/
+	
+	double mu[15]  = {4.38835197e-08, 6.46920663e-08, 8.55006130e-08, 1.06309160e-07
+, 1.27117706e-07, 1.47926253e-07, 1.68734800e-07, 1.89543346e-07
+, 2.10351893e-07, 2.31160440e-07, 2.51968986e-07, 2.72777533e-07
+, 2.93586080e-07, 3.14394626e-07, 3.35203173e-07};
+
+	double sigma[15] = {2.08085467e-08, 2.08085467e-08, 2.08085467e-08, 2.08085467e-08
+, 2.08085467e-08, 2.08085467e-08, 2.08085467e-08, 2.08085467e-08
+, 2.08085467e-08, 2.08085467e-08, 2.08085467e-08, 2.08085467e-08
+, 2.08085467e-08, 2.08085467e-08, 2.08085467e-08};
+
+	double weight[15] = {-0.00382596, 0.00184277, 0.00279762, 0.05301957, 0.05951985, 0.1122543
+, 0.1988578, 0.07857912, 0.55204282, -0.28989203, 0.27335905, -0.13435213
+, 0.11429855, -0.02961705, 0.01452407};
+	
+	double s = 0;
+	int i = 0;
+
+	for ( i=0 ; i<15 ; ++i ){
+	s = s+ weight[i]*std::exp(-0.5 * std::pow((x - mu[i] ) / sigma[i], 2)); //since data is fit in neV
+	}
+	return s; //returns energy in eV
+
+}
+
 // energy distribution of comagnetometer gases using Maxwell-Boltzmann distribution
 // from en.wikipedia.org/wiki/Maxwell%E2%80%93Boltzmann_distribution
 // result always < 1!

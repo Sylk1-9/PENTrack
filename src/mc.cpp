@@ -221,6 +221,7 @@ std::piecewise_linear_distribution<double> parse_distribution(const std::string 
   symbol_table.add_function("ProtonBetaSpectrum", ProtonBetaSpectrum);
   symbol_table.add_function("ElectronBetaSpectrum", ElectronBetaSpectrum);
   symbol_table.add_function("MaxwellBoltzSpectrum", MaxwellBoltzSpectrum);
+  symbol_table.add_function("CustomSpectra", CustomSpectra); //for PSI spectrum
   symbol_table.add_constants();
 
   exprtk::expression<double> expression;
