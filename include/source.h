@@ -30,7 +30,7 @@ protected:
 	std::piecewise_linear_distribution<double> phi_v; ///< Parsed initial azimuthal angle distribution of velocity given by user
 	std::piecewise_linear_distribution<double> theta_v; ///< Parsed initial polar angle distribution of velocity given by user
 	std::piecewise_constant_distribution<double> timedist; ///< Particle start time probability distribution
-	std::normal_distribution<double> normtimedist;  ///< Particle start time probability distribution (normal distribution for PSI
+	std::normal_distribution<double> normtimedist;  ///< Particle start time probability distribution (normal distribution for PSI // Utkarsh
 
 	double polarization; ///< Initial polarization of created particles
 public:
@@ -251,6 +251,10 @@ public:
 	}
 };
 
+
+
+//////////////// utkarsh
+
 inline double customPDF1(double x) {
     // Define your custom PDF logic here as a sum of Gaussians
     // Range: 8 to 60
@@ -325,6 +329,8 @@ public:
 		phimax *= conv;
 	}
 };
+
+////////////////
 
 
 /**

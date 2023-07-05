@@ -15,7 +15,6 @@
 default		0			0			0				0	0	0	0	0   0
 SuperReflector  2000			0.1			0				0	0	0	0	0   0
 PolishedSteel	183			0.0852			0				1e-5	2.6e-9	20e-9	0	0   0
-#PolishedSteel	183			0.0852			0				1e-5	0	0	0	0   0
 PE		-8.6553			0.492			0.5				0	0	0	0	0   0
 Ti		-51.1			0.0432			0.2				1e-5	0	0	0	0   0
 Cu		170.7470		0.0726			0.2				1e-5	0	0	0	0   0
@@ -40,4 +39,4 @@ GS20		103.4			1.237			0.16				0	0	0	0	0   0	# Li6-enriched glass scintillator ht
 GS30		83.1			1.23e-4			0.16				0	0	0	0	0   0	# Li6-depleted glass scintillator
 SpinFlipper	0			0			0				0.99	0	0	0	0   0	# Whenever UCN cross surface with this material their spin is flipped with 99% probability
 FePolarizerOnAl	209			0.00281			0.16				0.05	0	0	2	0   0	# This mimicks a magnetized iron film coated onto an Al foil. Since iron film is too thin to be represented in StL files, we use a single material with iron's real potential (to correctly model energy-dependece of polarization) and Al's imagnary potential (to correctly model absorption in foil, assuming absorption in iron is negligible)
-Ni58Mo		307.88 			0.02755 		0				0	2.4E-9	12E-9	0	0   0    #85 % 58Ni 15 % Mo		
+Ni58Mo		307.88 			0.02755 		0				0	2.4E-9	12E-9	0	0   0    #85 % 58Ni 15 % Mo (mirror beamline)		
