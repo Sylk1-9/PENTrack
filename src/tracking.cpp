@@ -62,7 +62,8 @@ void TTracker::IntegrateParticle(std::unique_ptr<TParticle>& p, const double tma
   }while(SpinTimess.good());
   state_type spin = p->GetFinalSpin();
 
-  dense_stepper_type stepper = boost::numeric::odeint::make_dense_output(1e-9, 1e-9, stepper_type());
+  // dense_stepper_type stepper = boost::numeric::odeint::make_dense_output(1e-9, 1e-9, stepper_type()); // original value
+  dense_stepper_type stepper = boost::numeric::odeint::make_dense_output(1e-7, 1e-7, stepper_type()); // to DoTo sly
   stepper.initialize(y, x, 10.*MAX_TRACK_DEVIATION/sqrt(y[3]*y[3] + y[4]*y[4] + y[5]*y[5])); // initialize stepper with fixed spatial length
 
   //	progress_display progress(100, cout, ' ' + to_string(particlenumber) + ' ');
