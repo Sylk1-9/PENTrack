@@ -474,15 +474,15 @@ void TabField3::PreInterpol(const array3D &Tab, const std::array<array3D, 7> &dT
 
   array3D dFdx, dFdy, dFdz, dFdxdy, dFdxdz, dFdydz, dFdxdydz; // derivatives with respect to x, y, z, xy, xz, yz, xyz
 
-  // if (dTab[0].empty()){    	  	
-  CalcDerivs(Tab, 0, dFdx); // dF/dx
-  CalcDerivs(Tab, 1, dFdy); // dF/dy
-  CalcDerivs(Tab, 2, dFdz); // dF/dz
-  CalcDerivs(dFdx, 1, dFdxdy); // d2F/dxdy
-  CalcDerivs(dFdx, 2, dFdxdz); // d2F/dxdz
-  CalcDerivs(dFdy, 2, dFdydz); // d2F/dydz
-  CalcDerivs(dFdxdy, 2, dFdxdydz); // d3F/dxdydz
-  // }
+  if (dTab[0].empty()){    	  	
+    CalcDerivs(Tab, 0, dFdx); // dF/dx
+    CalcDerivs(Tab, 1, dFdy); // dF/dy
+    CalcDerivs(Tab, 2, dFdz); // dF/dz
+    CalcDerivs(dFdx, 1, dFdxdy); // d2F/dxdy
+    CalcDerivs(dFdx, 2, dFdxdz); // d2F/dxdz
+    CalcDerivs(dFdy, 2, dFdydz); // d2F/dydz
+    CalcDerivs(dFdxdy, 2, dFdxdydz); // d3F/dxdydz
+  }
   // else {
   //   dFdx = dTab[0];
   //   dFdy = dTab[1];

@@ -688,7 +688,7 @@ void SimulateParticles(int nparticle, TParticleSource* source, TMCGenerator* mc,
 
   std::ostringstream oss;
   oss << std::this_thread::get_id();
-  printf("Thread %s assigned to %i %s(s) \n", oss.str().c_str(), nparticle, source->GetParticleName().c_str());
+  // printf("Thread %s assigned to %i %s(s) \n", oss.str().c_str(), nparticle, source->GetParticleName().c_str());
 
   for (int iMC = 0; iMC < nparticle; iMC++) {
     if (quit.load())

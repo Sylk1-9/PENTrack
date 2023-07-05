@@ -7,10 +7,10 @@
 simtype 1
 
 # number of primary particles to be simulated
-simcount 100
+simcount 200
 
 # max. simulation time [s]
-simtime 10
+simtime 100
 
 # path of file containing materials, paths are assumed to be relative to this config file's path
 materials_file materials.in
@@ -162,7 +162,7 @@ theta_v sin(x)
 #theta_v sin(x)	# differential initial distribution of polar angle of velocity
 
 
-polarization 1	# initial polarization is randomly chosen, weighted by this variable (1: low-field-seekers only, -1: high-field-seekers only) [-1..1]
+polarization 0	# initial polarization is randomly chosen, weighted by this variable (1: low-field-seekers only, -1: high-field-seekers only) [-1..1]
 
 
 [FIELDS]
