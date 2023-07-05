@@ -10,7 +10,7 @@ simtype 1
 simcount 200
 
 # max. simulation time [s]
-simtime 100
+simtime 10
 
 # path of file containing materials, paths are assumed to be relative to this config file's path
 materials_file materials.in

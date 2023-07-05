@@ -15,7 +15,9 @@ import magpylib as magpy
 import magtspect as magt
 from colorsys import hls_to_rgb
 import numpy as np 
-import time
+from datetime import datetime
+# import imageio.v3 as iio
+import pygifsicle as pygifsicle
 
 def get_distinct_colors(n):
     colors = []
@@ -30,6 +32,8 @@ def get_distinct_colors(n):
 plt.ion()
 plt.show()
 
+lighting = True
+
 keydic = {
         'neutrontrack':'nt', 'neutronhit':'nh', 'neutronend':'ne', 'neutronsnapshot':'ns', 'neutronspin':'nS',
         'protontrack':'pt', 'protonhit':'ph', 'protonend':'pe', 'protonsnapshot':'ps', 'protonspin':'pS',
@@ -39,18 +43,6 @@ keydic = {
 magpy.defaults.display.style.current.arrow.width = 4
 
 # stl_file_paths = glob.glob(workingdir + "in/CAD/*.stl") + glob.glob(workingdir + "in/CAD/store/*.stl")
-class SetVisibilityCallback:
-    """Helper callback to keep a reference to the actor being modified."""
-
-    def __init__(self, actors):
-        self.actors = actors
-
-    def __call__(self, state):
-        if isinstance(self.actors, (list, tuple, set, dict)):
-            for actor in self.actors:
-                actor.SetVisibility(state)
-        else:
-            self.actors.SetVisibility(state)
 
             
 class data:    
@@ -61,16 +53,17 @@ class data:
         self.dfilext = dfilext
         self.df = {}
         self.stlfiles = []
-        self.stlactors = []
-        self.logsactor = {}
-        self.pactor = None
+        # self.plotter.stlactors = []
+        # self.plotter.logsactor = {}
+        # self.pactor = None
         self.loadata()
         self.simcount = int(str(self.df['config']["GLOBAL"][3][1]).split(" ")[1].split("\\")[0])
+        self.simtime = int(str(self.df['config']["GLOBAL"][4][1]).split(" ")[1].split("\\")[0])
         if loadstl:
             self.loadstl()
         # self.axes = None
         self.plotter = plotter
-            
+                
     def loadata(self):
         if (("h5" in self.dfilext) or ("hdf5" in self.dfilext))  :
             fh5 = h5py.File(self.ptdir + "out/" + self.dfile + ".h5",'r')
@@ -120,13 +113,49 @@ class data:
                 self.stlfiles.append(self.ptdir + "in/" + strgeo[1])
 
     def loadallstl(self):
-        stl_file_paths = glob.glob(self.ptdir + "in/STLs/*.stl") + glob.glob(self.ptdir + "in/STLs/store/*.stl")
+        # stl_file_paths = glob.glob(self.ptdir + "in/STLs/*.stl") + glob.glob(self.ptdir + "in/STLs/store/*.stl")
         for geo in geolist:
             strgeo = str(geo[1]).split("\\t")
             if "ignored" not in strgeo[1]:
                 self.allstlfiles.append(self.ptdir + "in/" + strgeo[1])
 
+                
+    class SetVisibilityCallback:
+        """Helper callback to keep a reference to the actor being modified."""
 
+        def __init__(self, actors):
+            self.actors = actors
+
+        def __call__(self, state):
+            if isinstance(self.actors, (list, tuple, set, dict)):
+                for actor in self.actors:
+                    actor.SetVisibility(state)
+            else:
+                self.actors.SetVisibility(state)
+
+    class RecordGifCallback:
+        """Helper callback to keep a reference to the actor being modified."""
+
+        def __init__(self, plotter, dfile, spath, fps):
+            self.plotter = plotter
+            self.dfile = dfile
+            self.spath = spath
+            self.gifname = None
+            self.fps = fps
+        def __call__(self, state):
+            self.plotter.savegif = state
+            if state:
+                current_datetime = datetime.now()
+                formatted_datetime = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
+                self.gifname = self.spath + "/animation-%s-%s.gif" % (self.dfile, formatted_datetime)
+                self.plotter.open_gif(self.gifname, subrectangles=True, fps=self.fps)
+            else:
+                self.plotter.open_gif(self.spath + "/dummy.gif")
+                if self.gifname is not None:
+                    pygifsicle.optimize(self.gifname) # For overwriting the original one
+
+
+            
     def initplotter(self):
         plotter = pvqt.BackgroundPlotter(window_size=(2*1024, 2*768))
         plotter.show_bounds(color="black")
@@ -134,14 +163,14 @@ class data:
 
     
     def opacity_stl(self, opacity):
-        for actor in self.stlactors:
+        for actor in self.plotter.stlactors:
             actor.GetProperty().SetOpacity(opacity)
 
             
     def plotstl(self, opacity=1, stlfiles=None):
 
         self.plotter = self.initplotter() if self.plotter is None else self.plotter
-        self.stlactors = []
+        self.plotter.stlactors = []
         stlfiles = self.stlfiles if stlfiles is None else stlfiles
 
         size = 30
@@ -151,11 +180,11 @@ class data:
         for stlfile, color in zip(stlfiles, colors):
             mesh = pv.read(stlfile).scale([1000.0, 1000.0, 1000.0], inplace=False)
             # mesh = mesh.rotate_y(-90, point=axes.origin, inplace=False)
-            actor = self.plotter.add_mesh(mesh, opacity=opacity, color=color)
+            actor = self.plotter.add_mesh(mesh, opacity=opacity, color=color, lighting=lighting)
             
-            self.stlactors.append(actor)
+            self.plotter.stlactors.append(actor)
             
-            callback = SetVisibilityCallback(actor)
+            callback = self.SetVisibilityCallback(actor)
             self.plotter.add_checkbox_button_widget(
                 callback,
                 value=True,
@@ -170,18 +199,18 @@ class data:
         
         self.plotter.add_slider_widget(self.opacity_stl, (0.0, 1.0), value=opacity, pointa=(0.04, 0.6), pointb=(0.04, 0.9),  slider_width=0.02, tube_width=0.005, color="black")
 
-        return self.plotter, self.stlactors
+        return self.plotter, self.plotter.stlactors
 
 
     def opacity_mag(self, opacity):
-        for actor in self.magactors:
+        for actor in self.plotter.magactors:
             actor.GetProperty().SetOpacity(opacity)
 
             
     def plotmag(self, opacity=1):
         
         self.plotter = self.initplotter() if self.plotter is None else self.plotter
-        self.stlactors = []
+        self.plotter.magactors = []
       
         co = magt.coil(wx=20, wr=50).source.rotate_from_angax(90, axis='y', anchor=0)
         octu = magt.octupole(nzseg=1, nring=24, stype="cyl").source.rotate_from_angax(90, axis='y', anchor=0)
@@ -202,7 +231,7 @@ class data:
             self.plotter = source.show(backend='pyvista', canvas=self.plotter, return_fig=True, style_magnetization_show=False)
             actor = [v for k,v in self.plotter.actors.items() if k not in oldvactors]
 
-            callback = SetVisibilityCallback(actor)
+            callback = self.SetVisibilityCallback(actor)
             self.plotter.add_checkbox_button_widget(
                 callback,
                 value=True,
@@ -215,16 +244,21 @@ class data:
             )
             pos = pos + size + (size // 10)
 
-        self.magactors = [v for k,v in self.plotter.actors.items() if k not in prevactors]
+        self.plotter.magactors = [v for k,v in self.plotter.actors.items() if k not in prevactors]
         self.plotter.add_slider_widget(self.opacity_mag, (0, 1), value=opacity, pointa=(0.6, 0.03), pointb=(0.9, 0.03), slider_width=0.02, tube_width=0.005, color="black")
 
-        return self.plotter, self.magactors
+        return self.plotter, self.plotter.magactors
 
 
-    def plotlogs(self, state="start", ptype="neutron", color=None):
+    def plotlogs(self, state="start", ptype="neutron", pselect=None, color=None):
         '''
         state = "start", "end", or "hit"
         '''
+        self.plotter = self.initplotter() if self.plotter is None else self.plotter
+        
+        if not hasattr(self.plotter, "logsactor"):
+            self.plotter.logsactor = {}
+             
         st = '' if "hit" in state else state
         ltype = 'h' if "hit" in state else 'e'
 
@@ -248,16 +282,21 @@ class data:
             color = "pink" if color is None  else color
             pos += 60
 
-        positions = da.df[key+ltype][['x'+st, 'y'+st, 'z'+st]].values
+        df_log = da.df[key+ltype]
+        
+        if pselect is not None:
+            df_log = df_log[df_log['particle'].isin(pselect)]
+            
+        positions = df_log[['x'+st, 'y'+st, 'z'+st]].values
         cloud = pv.PolyData(1000 * positions)
 
         # cloud["colors"] = np.ones((cloud.n_faces, 3)) * 100
         
         # actor = self.plotter.add_mesh(1000 * positions, color=color, render_points_as_spheres=True, point_size=6)
-        actor = self.plotter.add_mesh(cloud, render_points_as_spheres=True, point_size=6)
-        self.logsactor[key+ltype+state] = actor
+        actor = self.plotter.add_mesh(cloud, render_points_as_spheres=True, point_size=6, lighting=lighting)
+        self.plotter.logsactor[key+ltype+state] = actor
         
-        callback = SetVisibilityCallback(actor)
+        callback = self.SetVisibilityCallback(actor)
         self.plotter.add_checkbox_button_widget(
             callback,
             value=True,
@@ -273,41 +312,71 @@ class data:
     
 
     def speedanime(self, speed):
-        self.dt = self.idt * speed
+        self.dt = self.idt * np.sign(speed) * speed**2
 
     
-    def animate(self, dur=1, dt=0.005, framerate=50, savegif=False, spath="/home/sly/Work/Physics/Neutrons/tSPECT/PENtrack/plots/animations/penanalyse/", pselect=None, minp=0, maxp=None):
+    def animate(self, dt=0.005, fps=30, savegif=False, spath="/home/sly/Work/Physics/Neutrons/tSPECT/PENtrack/plots/animations/penanalyse/", pselect=None, minp=0, maxp=None, displaypID=False):
         
-        if savegif:
-            self.plotter.open_gif(spath + "animation-%s-2.gif" % dfile)
-
+        # if savegif:
+            # self.plotter.open_gif(spath + "animation-%s-2.gif" % dfile)
+        self.plotter = self.initplotter() if self.plotter is None else self.plotter
+        self.plotter.savegif = False
+        
         df_nts = self.df['nt'] #.sort_values(['particle', 't'])
         df_ne = self.df['ne']
         maxp = self.simcount if maxp is None else maxp
         if pselect is not None:
-            df_nts = df_nts.isin(pselect)
-            df_ne = df_ne.isin(pselect)
+            df_nts = df_nts[df_nts['particle'].isin(pselect)]
+            df_ne = df_ne[df_ne['particle'].isin(pselect)]
         else:
             df_nts = df_nts[(df_nts['particle'] >= minp) & (df_nts['particle'] <= maxp)]
             df_ne = df_ne[(df_ne['particle'] >= minp) & (df_ne['particle'] <= maxp)]
 
+        # filterends = df_ne[(df_ne["xstart"] == df_ne["xend"]) | (df_ne["ystart"] == df_ne["yend"]) | (df_ne["zstart"] == df_ne["zend"])]['particle']
+        # df_nts = df_nts[df_nts["x"] > -3.6]
+        
         df_nts = df_nts.sort_values(['particle', 't'])
         df_ne = df_ne.sort_values(['particle'])
-
+        
+        self.plotter.enable_depth_peeling()
         cloud = pv.PolyData(1000 * df_ne[['xstart', 'ystart', 'zstart']].values)
-        cloud["colors"] = np.ones((cloud.n_faces, 3)) * 100
-        self.cloud = cloud
+        colors = np.ones((cloud.n_faces, 3))
+        colors[:, 0] = 200
+        # cloud["colors"] = colors
 
+        # opacity = np.concatenate((1*np.ones((len(df_ne), 1)), colors), axis=1)
+        opacity = np.concatenate((colors, 1*np.ones((len(df_ne), 1))), axis=1)
+        cloud["opacity"] = 200 # opacity
 
-        # self.cloud = cloud
+        # SetVisibility(state)
+        
+        if displaypID:
+            cloud["pID"] = [f"{int(i)}" for i in df_ne['particle']]
 
-        # cloud = pv.PolyData(points)
-        # actor = self.plotter.add_points(cloud, color='blue', render_points_as_spheres=True, point_size=8)
-        self.pactor = self.plotter.add_points(self.cloud, render_points_as_spheres=True, point_size=8, scalars="colors", rgb=True)
+            self.plotter.labelpactor = self.plotter.add_point_labels(cloud, "pID", font_size=20, render_points_as_spheres=True, point_size=6)
 
-       
+            callback = self.SetViqsibilityCallback(self.plotter.labelpactor)
+            self.plotter.add_checkbox_button_widget(
+                callback,
+                value=True,
+                position=(550, 40),
+                size=30,
+                border_size=1,
+                color_on="black",
+                color_off='grey',
+                background_color='grey',
+            )
 
-        callback = SetVisibilityCallback(self.pactor)
+        
+        # self.plotter.pactor = self.plotter.add_points(cloud, render_points_as_spheres=True, point_size=8, scalars="colors", rgb=True)
+        self.plotter.pactor = self.plotter.add_points(cloud,
+                                                      render_points_as_spheres=True,
+                                                      point_size=8,
+                                                      # scalars="colors",
+                                                      opacity="opacity",
+                                                      rgb=True)
+        
+        callback = self.SetVisibilityCallback(self.plotter.pactor)
         self.plotter.add_checkbox_button_widget(
             callback,
             value=True,
@@ -319,48 +388,65 @@ class data:
             background_color='grey',
         )
 
+                
+        callback = self.RecordGifCallback(self.plotter, self.dfile, spath, fps=10)
+        self.plotter.add_checkbox_button_widget(
+            callback,
+            value=False,
+            position=(600, 1),
+            size=30,
+            border_size=1,
+            color_on="green",
+            color_off='grey',
+            background_color='grey',
+        )
         
+
         interpolation_functions = {}
         for particle, data in df_nts.groupby('particle'):
             positions = data[['x', 'y', 'z', 'polarisation']].values
             times = data['t'].values
             interpolation_functions[particle] = scipy.interpolate.interp1d(times, positions, axis=0, bounds_error=False, fill_value=(data[['x', 'y', 'z', 'polarisation']].iloc[0], data[['x', 'y', 'z', 'polarisation']].iloc[-1]))
 
-
-        self.time_stamp = 0
+        pl.time_stamp = 0
         self.idt = dt
-        # maxtime = dur*framerate/dt
         def update_animation():
-            if ((self.dt <= 0) and (self.time_stamp > 0)) or ((self.dt >= 0) and (self.time_stamp < dur)):
-                self.time_stamp += self.dt
-            # if (self.dt >= 0) and (self.time_stamp <= dur):
-                # self.time_stamp += self.dt
+            if ((self.dt <= 0) and (pl.time_stamp > 0)) or ((self.dt >= 0) and (pl.time_stamp < self.simtime)):
+                pl.time_stamp += self.dt
                             
             interpolated_vals = []
             for particle, interpolation_func in interpolation_functions.items():
-                interpolated_vals.append(interpolation_func(self.time_stamp))
+                interpolated_vals.append(interpolation_func(pl.time_stamp))
 
             interpolated_vals = np.array(interpolated_vals)
             cloud.points = 1000 * interpolated_vals[:, :3]
+
+            # colors = np.ones((cloud.n_faces, 3)) + 50*interpolated_vals[:, 3, None]
+            # colors[:, 0] = 200
+            # cloud["colors"] = colors
+
+            # opacity = np.array(pl.time_stamp < df_ne['tend']).astype(int)
+            # cloud["opacity"] = opacity
+            
+            # self.plotter.render()
             self.plotter.update()
-            if savegif:
+
+            if self.plotter.savegif:
                 self.plotter.write_frame()
+            
+        self.plotter.add_slider_widget(self.speedanime, (-4, 4), value=1, pointa=(0.6, 0.1), pointb=(0.9, 0.1), slider_width=0.02, tube_width=0.005, color="white")
 
-            colors = np.ones((cloud.n_faces, 3)) + 50*interpolated_vals[:, 3, None]
-            colors[:, 0] = 200
-            cloud["colors"] = colors
-        self.plotter.add_slider_widget(self.speedanime, (-5, 5), value=1, pointa=(0.6, 0.1), pointb=(0.9, 0.1), slider_width=0.02, tube_width=0.005, color="white")
-
-        # self.plotter.add_callback(update_animation, int(1000/framerate), int(dur*framerate/dt))
-        self.plotter.add_callback(update_animation, int(1000/framerate), None)
-        # self.plotter.add_callback(update_animation, int(0.001/framerate), int(200/(framerate*dt)))
+        # self.plotter.add_callback(update_animation, int(1000/fps), int(dur*fps/dt))
+        self.plotter.add_callback(update_animation, int(1000/fps), None)
+        # self.plotter.add_callback(update_animation, int(0.001/fps), int(200/(fps*dt)))
         return self.plotter
 
 
 
     
 # name of datafile
-dfile = "000000000010"
+# dfile = "000000000105"
+dfile = "000000000001"
 
 # instantiate data object
 da = data(dfile)
@@ -369,11 +455,17 @@ da = data(dfile)
 pl, magactors = da.plotmag(opacity=0.01)
 pl, stlactors = da.plotstl(opacity=0.01)
 
+df_ne = da.df['ne']
+
+# pselect = df_ne[df_ne['xend'] > df_ne['xstart'] + 0.1]['particle']
+pselect = np.arange(1, 100)
+
 # plots neutrons start, end, and hits points.
-pl = da.plotlogs(ptype="n", state="start", color="black")
-pl = da.plotlogs(ptype="n", state="end", color="pink")
-pl = da.plotlogs(ptype="n", state="hit", color="red")
+# pl = da.plotlogs(ptype="n", state="start", pselect=pselect, color="black")
+# pl = da.plotlogs(ptype="n", state="end", pselect=pselect, color="pink")
+# pl = da.plotlogs(ptype="n", state="hit", pselect=pselect, color="red")
 
 # # play animation
-pl = da.animate(dur=100, framerate=30, dt=0.01, savegif=False, minp=0, maxp=None)
+ 
+pl = da.animate(fps=30, dt=0.01, savegif=False, pselect= pselect, minp=0, maxp=None)
 

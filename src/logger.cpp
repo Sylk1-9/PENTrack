@@ -147,8 +147,7 @@ void TLogger::PrintSnapshot(const std::unique_ptr<TParticle>& p, const value_typ
   }
 }
 
-void TLogger::PrintTrack(const std::unique_ptr<TParticle>& p, const value_type x1, const state_type &y1, const value_type x, const state_type& y,
-			 const state_type &spin, const solid &sld, const TFieldManager &field){
+void TLogger::PrintTrack(const std::unique_ptr<TParticle>& p, const value_type x1, const state_type &y1, const value_type x, const state_type& y, const state_type &spin, const solid &sld, const TFieldManager &field, const bool force){
   bool log = false;
   double interval = 0.;
   istringstream(config[p->GetName()]["tracklog"]) >> log;
@@ -156,8 +155,11 @@ void TLogger::PrintTrack(const std::unique_ptr<TParticle>& p, const value_type x
   if (not log or interval <= 0)
     return;
 
-  if (y[8] > 0 and int(y1[8]/interval) == int(y[8]/interval)) // if this is the first point or tracklength did cross an integer multiple of trackloginterval
+  // // modified : Sly ToDo
+  if (y[8] > 0 and int(y1[8]/interval) == int(y[8]/interval) and !force){ // if this is the first point or tracklength (y[8]) did cross an integer multiple of trackloginterval
+    // std::cout << "exit print track" << std::endl;
     return;
+  }
 
   double B[3] = {0,0,0};
   double dBidxj[3][3] = {{0,0,0},{0,0,0},{0,0,0}};
@@ -629,9 +631,9 @@ void THDF5Logger::DoLog(const std::string &particlename, const std::string &suff
 // }
 
 THDF5Logger::~THDF5Logger() {
-    if (!isClosed) {
-        H5Fclose(HDF5file);
-        isClosed = true;
-    }
+  if (!isClosed) {
+    H5Fclose(HDF5file);
+    isClosed = true;
+  }
 }
 #endif
