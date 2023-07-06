@@ -19,6 +19,7 @@ from datetime import datetime
 # import imageio.v3 as iio
 import pygifsicle as pygifsicle
 
+
 def get_distinct_colors(n):
     colors = []
     for i in np.arange(360., 0., -360. / n):
@@ -156,22 +157,24 @@ class data:
             self.dfile = dfile
             self.spath = spath
             self.gifname = None
-            self.fps = 10 # fps
+            self.fps = fps
         def __call__(self, state):
             self.plotter.savegif = state
             if state:
+                print("recording gif")
                 current_datetime = datetime.now()
                 formatted_datetime = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
                 self.gifname = self.spath + "/animation-%s-%s.gif" % (self.dfile, formatted_datetime)
                 self.plotter.open_gif(self.gifname, subrectangles=True, fps=self.fps)
             else:
+                print("saving and converting gif (please wait)")
                 self.plotter.open_gif(self.spath + "/dummy.gif")
                 if self.gifname is not None:
                     pygifsicle.optimize(self.gifname) # For overwriting the original one
 
     
     def initplotter(self):
-        plotter = pvqt.BackgroundPlotter(window_size=(2*1024, 2*768))
+        plotter = pvqt.BackgroundPlotter(window_size=(2*1024, 2*768), multi_samples=2)
         plotter.show_bounds(color="black")
         return plotter
 
@@ -213,7 +216,7 @@ class data:
         
         self.plotter.add_slider_widget(self.opacity_stl, (0.0, 1.0), value=opacity, pointa=(0.04, 0.6), pointb=(0.04, 0.98),  slider_width=0.03, tube_width=0.006, color="black")
 
-        return self.plotter, self.plotter.stlactors
+        return self.plotter
 
 
     def opacity_mag(self, opacity):
@@ -262,7 +265,7 @@ class data:
         # self.plotter.add_slider_widget(self.opacity_mag, (0, 1), value=opacity, pointa=(0.6, 0.03), pointb=(0.9, 0.03), slider_width=0.02, tube_width=0.005, color="black")
         self.plotter.add_slider_widget(self.opacity_mag, (0, 1), value=opacity, pointa=(0.1, 0.6), pointb=(0.1, 0.98),  slider_width=0.03, tube_width=0.006, color="black")
 
-        return self.plotter, self.plotter.magactors
+        return self.plotter
 
 
     def plotlogs(self, state="start", ptype="neutron", pselect=None, color=None):
@@ -307,8 +310,7 @@ class data:
 
         # cloud["colors"] = np.ones((cloud.n_faces, 3)) * 100
         
-        actor = self.plotter.add_mesh(1000 * positions, color=color, render_points_as_spheres=True, point_size=6)
-        # actor = self.plotter.add_mesh(cloud, render_points_as_spheres=True, point_size=6, lighting=lighting)
+        actor = self.plotter.add_mesh(1000 * positions, color=color, render_points_as_spheres=True, point_size=6, lighting=lighting)
         self.plotter.logsactor[key+ltype+state] = actor
         
         callback = self.SetVisibilityCallback(actor)
@@ -328,11 +330,11 @@ class data:
 
 
     def speedanime(self, speed):
-        self.dt = self.idt * np.sign(speed) * speed**2
+        self.plotter.dt = self.plotter.idt * np.sign(speed) * speed**2
 
 
     
-    def animate(self, dt=0.005, fps=30, spath="/home/sly/Work/Physics/Neutrons/tSPECT/PENtrack/plots/animations/penanalyse/", pselect=None, minp=0, maxp=None, displaypID=False):
+    def animate(self, ti=0, tf=None, dt=0.005, fps=10, spath="/home/sly/Work/Physics/Neutrons/tSPECT/PENtrack/plots/animations/penanalyse/", pselect=None, minp=0, maxp=None, displaypID=False):
         """
         Main function for animation
         """
@@ -344,27 +346,33 @@ class data:
         df_nts = self.df['nt'] #.sort_values(['particle', 't'])
         df_ne = self.df['ne']
         maxp = self.simcount if maxp is None else maxp
+        
         if pselect is not None:
             df_nts = df_nts[df_nts['particle'].isin(pselect)]
             df_ne = df_ne[df_ne['particle'].isin(pselect)]
-        else:
-            df_nts = df_nts[(df_nts['particle'] >= minp) & (df_nts['particle'] <= maxp)]
-            df_ne = df_ne[(df_ne['particle'] >= minp) & (df_ne['particle'] <= maxp)]
-
+        # else:
+        df_nts = df_nts[(df_nts['particle'] >= minp) & (df_nts['particle'] <= maxp)]
+        df_ne = df_ne[(df_ne['particle'] >= minp) & (df_ne['particle'] <= maxp)]
             
         df_nts = df_nts.sort_values(['particle', 't'])
         df_ne = df_ne.sort_values(['particle'])
+
+        if tf is not None:
+            df_nts = df_nts[df_nts['t'] < tf]
+        else:
+            tf = self.simtime
         
         # self.plotter.enable_depth_peeling()
         cloud = pv.PolyData(1000 * df_ne[['xstart', 'ystart', 'zstart']].values)
 
         rgba = np.array(pv.Color(pcolor).int_rgba)[None] * np.ones((cloud.n_faces, 4))
-        rgba[:, -1] *= 255
+        rgba[:, 0] = 255//2 + 75*df_ne['polstart'].values
+        rgba[:, 1] = 255//2 - 75*df_ne['polstart'].values
+        rgba[:, 2] = 120
+        rgba[:, -1] = 1
         cloud["rgba"] = rgba
-        
-        # SetVisibility(state)
-        
-        self.plotter.pactor = self.plotter.add_points(cloud, render_points_as_spheres=True, point_size=8, scalars="rgba", rgba=True)
+
+        self.plotter.pactor = self.plotter.add_points(cloud, render_points_as_spheres=True, point_size=8, scalars="rgba", rgba=True, lighting=lighting)
 
         if displaypID:
             cloud["pID"] = [f"{int(i)}" for i in df_ne['particle']]
@@ -384,8 +392,7 @@ class data:
             )
 
 
-
-        callback = self.RecordGifCallback(self.plotter, self.dfile, spath, fps=10)
+        callback = self.RecordGifCallback(self.plotter, self.dfile, spath, fps=5)
         self.plotter.add_checkbox_button_widget(
             callback,
             value=False,
@@ -417,42 +424,41 @@ class data:
             times = data['t'].values
             interpolation_functions[particle] = scipy.interpolate.interp1d(times, positions, axis=0, bounds_error=False, fill_value=(data[['x', 'y', 'z', 'polarisation']].iloc[0], data[['x', 'y', 'z', 'polarisation']].iloc[-1]))
 
-        pl.time_stamp = 0
-        self.idt = dt
+        self.plotter.time_stamp = ti
+        self.plotter.idt = dt
+        self.plotter.timetxt = self.plotter.add_text("t=%g [s]"%self.plotter.time_stamp, position='lower_right', font_size=18)
+        
         def update_animation():
-            if ((self.dt <= 0) and (pl.time_stamp > 0)) or ((self.dt >= 0) and (pl.time_stamp < self.simtime)):
-                pl.time_stamp += self.dt
-                            
+            if ((self.plotter.dt < 0) and (self.plotter.time_stamp > ti)) or ((self.plotter.dt > 0) and (self.plotter.time_stamp < tf)):
+                self.plotter.time_stamp += self.plotter.dt
+                self.plotter.timetxt.SetText(1, "t=%g [s]"%self.plotter.time_stamp)
+                # self.plotter.update_text("t=%g [s]"%self.plotter.time_stamp, self.plotter.timetxt)
+                
                 interpolated_vals = []
                 for particle, interpolation_func in interpolation_functions.items():
-                    interpolated_vals.append(interpolation_func(pl.time_stamp))
+                    interpolated_vals.append(interpolation_func(self.plotter.time_stamp))
 
                 interpolated_vals = np.array(interpolated_vals)
                 cloud.points = 1000 * interpolated_vals[:, :3]
 
-                rgba = np.ones((cloud.n_faces, 4))# np.array(pv.Color(pcolor).int_rgba)[None] * np.ones((cloud.n_faces, 4))
-                rgba[:, 0] *= 255//2
-                rgba[:, 1] *= 255//2
-                rgba[:, 2] = 240
-                rgba[:, 0] += 75*interpolated_vals[:, 3]
-                rgba[:, 1] -= 75*interpolated_vals[:, 3]
-                rgba[:, 3] *= np.array(pl.time_stamp < df_ne['tend']).astype(int)
-                cloud["rgba"] = rgba
-
+                # rgba = np.ones((len(interpolated_vals), 4))# np.array(pv.Color(pcolor).int_rgba)[None] * np.ones((cloud.n_faces, 4))
+                cloud["rgba"][:, 0] = 255//2 + 75*interpolated_vals[:, 3]
+                cloud["rgba"][:, 1] = 255//2 - 75*interpolated_vals[:, 3]
+                cloud["rgba"][:, 3] = 1.0 * np.array(self.plotter.time_stamp < df_ne['tend']).astype(int)
+                
                 # self.plotter.render()
                 self.plotter.update()
 
                 if self.plotter.savegif:
                     self.plotter.write_frame()
             
-        self.plotter.add_slider_widget(self.speedanime, (-4, 4), value=1, pointa=(0.6, 0.1), pointb=(0.9, 0.1), slider_width=0.02, tube_width=0.005, color="white")
+        self.plotter.add_slider_widget(self.speedanime, (-4, 4), value=1, pointa=(0.5, 0.03), pointb=(0.8, 0.03), slider_width=0.02, tube_width=0.005, color="white")
 
         self.plotter.add_callback(update_animation, int(1000/fps), None)
         return self.plotter
 
 
 
-    
 # name of datafile
 # dfile = "000000000105"
 dfile = "000000000010"
@@ -461,13 +467,14 @@ dfile = "000000000010"
 da = data(dfile)
 
 # plots stl surface and magnetic source
-# pl, magactors = da.plotmag(opacity=0.01)
-pl, stlactors = da.plotstl(opacity=0.01)
+# pl = da.plotmag(opacity=0.01)
+pl = da.plotstl(opacity=0.01)
 
-df_ne = da.df['ne']
+# df_ne = da.df['ne']
 
 # pselect = df_ne[df_ne['xend'] > df_ne['xstart'] + 0.1]['particle']
 pselect = None #np.arange(1, da.df['ne'])
+# pselect = np.arange(1, 8)
 
 # plots neutrons start, end, and hits points.
 pl = da.plotlogs(ptype="n", state="start", pselect=pselect, color="lightgreen")
@@ -475,5 +482,5 @@ pl = da.plotlogs(ptype="n", state="end", pselect=pselect, color="deepskyblue")
 pl = da.plotlogs(ptype="n", state="hit", pselect=pselect, color="darkorchid")
 
 # # play animation
-pl = da.animate(fps=30, dt=0.01, pselect=pselect, minp=0, maxp=None)
+pl = da.animate(dt=0.01, fps=10, pselect=pselect, minp=0, maxp=None)
 
