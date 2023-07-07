@@ -429,6 +429,7 @@ class data:
                 background_color='grey',
             )
 
+        # self.plotter.rgba = 'H'
         self.plotter.rgba = 'polarisation'
         # callback = self.RGBACallback(self.plotter)
         # self.plotter.add_checkbox_button_widget(
@@ -520,7 +521,8 @@ class data:
                     rgba[:, 1:3] = 255 * self.linlin(interpolated_vals[:, 4], minE, maxE)[:, None]
                     # print(min(rgba[:, 0]), max(rgba[:, 0]))
                 elif self.plotter.rgba == 'H':
-                    rgba[:, 1:3] = 255 * self.linlin(interpolated_vals[:, 5], minH, maxH)[:, None]
+                    rgba[:, 0] = 255 * self.linlin(interpolated_vals[:, 5], minH, maxH)
+                    rgba[:, 1] = 255 - 255 * self.linlin(interpolated_vals[:, 5], minH, maxH)
 
                 rgba[:, 3] = 1.0 * np.array(self.plotter.time_stamp < df_ne['tend']).astype(int)
                 cloud["rgba"] = rgba
@@ -540,7 +542,7 @@ class data:
 
 # name of datafile
 # dfile = "000000000105"
-dfile = "000000000020"
+dfile = "000000000016"
 
 # instantiate data object
 da = data(dfile)
@@ -552,8 +554,8 @@ pl = da.plotstl(opacity=0.01)
 # df_ne = da.df['ne']
 
 # pselect = df_ne[df_ne['xend'] > df_ne['xstart'] + 0.1]['particle']
-pselect = None #np.arange(1, da.df['ne'])
-# pselect = np.arange(1, 8)
+# pselect = None #np.arange(1, da.df['ne'])
+pselect = np.arange(51, 200)
 
 # plots neutrons start, end, and hits points.
 pl = da.plotlogs(ptype="n", state="start", pselect=pselect, color="lightgreen")
@@ -561,5 +563,5 @@ pl = da.plotlogs(ptype="n", state="end", pselect=pselect, color="deepskyblue")
 pl = da.plotlogs(ptype="n", state="hit", pselect=pselect, color="darkorchid")
 
 # # play animation
-pl = da.animate(dt=0.01, fps=10, pselect=pselect, minp=0, maxp=None, minE=0, maxE=5e-8, minH=0, maxH=1e-6, displaypID=False)
+pl = da.animate(dt=0.01, fps=10, pselect=pselect, minp=0, maxp=None, minE=0, maxE=5e-8, minH=0, maxH=3e-7, displaypID=False)
 

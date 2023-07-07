@@ -10,7 +10,7 @@ simtype 1
 simcount 200
 
 # max. simulation time [s]
-simtime 10
+simtime 20
 
 # path of file containing materials, paths are assumed to be relative to this config file's path
 materials_file materials.in
@@ -63,16 +63,16 @@ logtype HDF5
 #ID	STLfile    	    	      	 	     	material_name    ignore_times
 # PENtrack_Test
 1	ignored						default
-2	STLs/tSPECT/aSPECT_tube.stl				PolishedSteel
-3	STLs/tSPECT/halbach.stl					PolishedSteel
-4	STLs/tSPECT/stabilisation_tubes.stl			PolishedSteel
-5	STLs/tSPECT/store/detector_store.stl			PolishedSteel
-6	STLs/tSPECT/store/foil_store.stl			PolishedSteel
-7	STLs/tSPECT/store/SF_copper_store.stl			PolishedSteel
-8	STLs/tSPECT/store/SF_tube_store.stl			PolishedSteel
-9	STLs/tSPECT/store/SF_quartztube_store.stl		PolishedSteel
-10	STLs/tSPECT/store/SF_quartztube1_store.stl		PolishedSteel
-11	STLs/tSPECT/store/SF_seperation_foil_store.stl		PolishedSteel
+2	STLs/tSPECT/aSPECT_tube.stl				Al
+3	STLs/tSPECT/halbach.stl					Al
+4	STLs/tSPECT/stabilisation_tubes.stl			Al
+5	STLs/tSPECT/store/detector_store.stl			Al
+6	STLs/tSPECT/store/foil_store.stl			UCNdet
+7	STLs/tSPECT/store/SF_copper_store.stl			Cu
+8	STLs/tSPECT/store/SF_tube_store.stl			Al
+9	STLs/tSPECT/store/SF_quartztube_store.stl		Al
+10	STLs/tSPECT/store/SF_quartztube1_store.stl		Al
+11	STLs/tSPECT/store/SF_seperation_foil_store.stl		Al
 
 
 
@@ -122,7 +122,7 @@ PhaseSpaceWeighting	0			# weight initial particle density by available phase spa
 
 ### initial energy range [eV] and spectrum of particles
 Emin 0e-9
-Emax 50e-9
+Emax 60e-9
 #Emin 100e-9 
 #Emax 300e-9
 #spectrum 1
@@ -193,8 +193,8 @@ polarization 0	# initial polarization is randomly chosen, weighted by this varia
 # 4 COMSOL	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt	1	0	1
 # 5 COMSOL	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt			1	0	1
 # 5 COMSOL	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
-4 COMSOL	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
-5 COMSOL	fields/meshes/Bfield_octupole-monoseg-tra-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
+# 4 COMSOL	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
+# 5 COMSOL	fields/meshes/Bfield_octupole-monoseg-tra-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
 
 # 5 COMSOL	fields/meshes/Bfield_octupole-monoseg-cyl-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
 
@@ -207,8 +207,8 @@ polarization 0	# initial polarization is randomly chosen, weighted by this varia
 # 5 TRICUBIC	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt	1	0	1
 # 4 TRICUBIC	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt	1	0	1
 # 5 TRICUBIC	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt			1	0	1
-# 4 TRICUBIC	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
-# 5 TRICUBIC	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
+4 TRICUBIC	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
+5 TRICUBIC	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
 
 
 # 4 TRICUBIC	fields/meshes/Bfield_octupole-monoseg-tra-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
