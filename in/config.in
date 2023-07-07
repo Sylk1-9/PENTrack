@@ -193,8 +193,8 @@ polarization 0	# initial polarization is randomly chosen, weighted by this varia
 # 4 COMSOL	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt	1	0	1
 # 5 COMSOL	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt			1	0	1
 # 5 COMSOL	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
-# 5 COMSOL	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
-# 5 COMSOL	fields/meshes/Bfield_octupole-monoseg-tra-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
+4 COMSOL	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
+5 COMSOL	fields/meshes/Bfield_octupole-monoseg-tra-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
 
 # 5 COMSOL	fields/meshes/Bfield_octupole-monoseg-cyl-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
 
@@ -207,8 +207,8 @@ polarization 0	# initial polarization is randomly chosen, weighted by this varia
 # 5 TRICUBIC	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx25_yzmax54_hyz3.txt	1	0	1
 # 4 TRICUBIC	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt	1	0	1
 # 5 TRICUBIC	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx20_yzmax54_hyz2.txt			1	0	1
-4 TRICUBIC	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
-5 TRICUBIC	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
+# 4 TRICUBIC	fields/meshes/Bfield_octupole-monoseg-cub-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
+# 5 TRICUBIC	fields/meshes/Bfield_coil-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt			1	0	1
 
 
 # 4 TRICUBIC	fields/meshes/Bfield_octupole-monoseg-tra-tric_xmin0_xmax2000_hx10_yzmax54_hyz1.txt	1	0	1
