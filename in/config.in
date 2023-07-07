@@ -7,10 +7,10 @@
 simtype 1
 
 # number of primary particles to be simulated
-simcount 200
+simcount 500
 
 # max. simulation time [s]
-simtime 20
+simtime 50
 
 # path of file containing materials, paths are assumed to be relative to this config file's path
 materials_file materials.in
@@ -69,10 +69,10 @@ logtype HDF5
 5	STLs/tSPECT/store/detector_store.stl			Al
 6	STLs/tSPECT/store/foil_store.stl			UCNdet
 7	STLs/tSPECT/store/SF_copper_store.stl			Cu
-8	STLs/tSPECT/store/SF_tube_store.stl			Al
-9	STLs/tSPECT/store/SF_quartztube_store.stl		Al
-10	STLs/tSPECT/store/SF_quartztube1_store.stl		Al
-11	STLs/tSPECT/store/SF_seperation_foil_store.stl		Al
+8	STLs/tSPECT/store/SF_tube_store.stl			PolishedSteel
+9	STLs/tSPECT/store/SF_quartztube_store.stl		PolishedSteel
+10	STLs/tSPECT/store/SF_quartztube1_store.stl		PolishedSteel
+11	STLs/tSPECT/store/SF_seperation_foil_store.stl		PolishedSteel
 
 
 

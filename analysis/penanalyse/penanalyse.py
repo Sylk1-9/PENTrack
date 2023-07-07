@@ -542,7 +542,7 @@ class data:
 
 # name of datafile
 # dfile = "000000000105"
-dfile = "000000000016"
+dfile = "000000000017"
 
 # instantiate data object
 da = data(dfile)
@@ -554,8 +554,9 @@ pl = da.plotstl(opacity=0.01)
 # df_ne = da.df['ne']
 
 # pselect = df_ne[df_ne['xend'] > df_ne['xstart'] + 0.1]['particle']
-# pselect = None #np.arange(1, da.df['ne'])
-pselect = np.arange(51, 200)
+pselect = None
+# psleect = np.arange(1, da.df['ne'])
+# pselect = np.arange(, 200)
 
 # plots neutrons start, end, and hits points.
 pl = da.plotlogs(ptype="n", state="start", pselect=pselect, color="lightgreen")
