@@ -56,7 +56,7 @@ logtype HDF5
 4	CAD/fill15/shifted/deckel_flansch.stl		PolishedSteel
 7	CAD/fill15/shifted/static_beamline.stl		PolishedSteel
 8	CAD/fill15/shifted/quartz_tube.stl		PolishedSteel
-15	CAD/fill15/shifted/det_900			PolishedSteel
+15	CAD/fill15/shifted/det_900.stl			UCNdet
 10	CAD/fill15/shifted/SF.stl			default
 #2	CAD/fill14/beamport_flange.stl			UCNdet
 #3	CAD/fill14/mirror_tubes.stl			PolishedSteel	
@@ -194,9 +194,9 @@ sourcemode	cylvolumeext
 #45 deg bent beamline
 #parameters		0	0.0899	0	360	0.001	0.0015	 -5.625   -0.00019  -0.7179
 #linear beamline + flange/shifted
-parameters		0	0.0899	0	360	0.001	0.0015	 -3.655   -0.00019  0
+#parameters		0	0.0899	0	360	0.001	0.0015	 -3.655   -0.00019  0
 #mirror beamline, kim origin
-#parameters 		0	0.0899	0	360	0.001	0.0015	 0	0	0
+parameters		0	0.0899	0	360	0.001	0.0015	 -3.655   -0.00019  -0.7179
 #		x_min	x_max	y_min	y_max	z_min	z_max	(boxvolume)
 #parameters      -0.014  -0.012  0.012  0.014  -0.0725  -0.0715
 #original parameters	1.2	1.21	-0.005	0.005	-0.005	0.005
