@@ -107,8 +107,7 @@ public:
    * @param sld Solid in which the particle is currently.
    * @param field TFieldManager containing all electromagnetic fields
    */
-  void PrintTrack(const std::unique_ptr<TParticle>& p, const value_type x1, const state_type &y1, const value_type x, const state_type& y,
-		  const state_type &spin, const solid &sld, const TFieldManager &field);
+  void PrintTrack(const std::unique_ptr<TParticle>& p, const value_type x1, const state_type &y1, const value_type x, const state_type& y, const state_type &spin, const solid &sld, const TFieldManager &field, bool force);
 
 
   /**

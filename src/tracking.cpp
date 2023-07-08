@@ -42,8 +42,12 @@ void TTracker::IntegrateParticle(std::unique_ptr<TParticle>& p, const double tma
 
   bool resetintegration = false;
 
-  logger->PrintTrack(p, x, y, x, y, p->GetFinalSpin(), p->GetFinalSolid(), field);
+  // std::cout << "print track init ? " << std::endl;
+  logger->PrintTrack(p, x, y, x, y, p->GetFinalSpin(), p->GetFinalSolid(), field, true); // add sly
+  // std::cout << "track printed init ?? " << std::endl;
 
+
+  
   bool flipspin = false;
   istringstream(particleconf["flipspin"]) >> flipspin;
 
@@ -130,7 +134,7 @@ void TTracker::IntegrateParticle(std::unique_ptr<TParticle>& p, const double tma
 
     IntegrateSpin(p, spin, stepper, x, y, SpinTimes, field, spininterpolatefields, SpinBmax, mc, flipspin); // calculate spin precession and spin-flip probability
 
-    logger->PrintTrack(p, stepper.previous_time(), stepper.previous_state(), x, y, spin, GetCurrentsolid(currentsolids), field);
+    logger->PrintTrack(p, stepper.previous_time(), stepper.previous_state(), x, y, spin, GetCurrentsolid(currentsolids), field, false);
 
     //		progress += 100*max(y[6]/tau, max((x - tstart)/(tmax - tstart), y[8]/maxtraj)) - progress.count();
 
@@ -148,6 +152,11 @@ void TTracker::IntegrateParticle(std::unique_ptr<TParticle>& p, const double tma
   }
 
   p->SetFinalState(x, y, spin, GetCurrentsolid(currentsolids));
+
+  // std::cout << "print track? " << std::endl;
+  logger->PrintTrack(p, x, y, x, y, p->GetFinalSpin(), p->GetFinalSolid(), field, true); // add sly
+  // std::cout << "track printed ?? " << std::endl;
+
   logger->Print(p, x, y, spin, geom, field);
 
 
@@ -482,7 +491,7 @@ void TTracker::IntegrateSpin(const std::unique_ptr<TParticle>& p, state_type &sp
 
 
   if (Babs2 > Bmax){ // if magnetic field grows above Bmax, collapse spin state to one of the two polarisation states
-  // if (Babs2 < Bmax){ // sly Todo
+    // if (Babs2 < Bmax){ // sly Todo
     p->DoPolarize(x2, y2, polarisation, flipspin, mc);
     spin[0] = B2[0]*y2[7]/Babs2;
     spin[1] = B2[1]*y2[7]/Babs2;
