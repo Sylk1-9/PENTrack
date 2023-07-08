@@ -361,44 +361,58 @@ class data:
         self.plotter = self.initplotter() if self.plotter is None else self.plotter
         self.plotter.savegif = False
         
-        df_nts = self.df['nt'] #.sort_values(['particle', 't'])
+        df_nt = self.df['nt'] #.sort_values(['particle', 't'])
         df_ne = self.df['ne']
+
         maxp = self.simcount if maxp is None else maxp
-        
+
+        # select particle from seelct list, sort entries.
         if pselect is not None:
-            df_nts = df_nts[df_nts['particle'].isin(pselect)]
+            df_nt = df_nt[df_nt['particle'].isin(pselect)]
             df_ne = df_ne[df_ne['particle'].isin(pselect)]
-        # else:
-        df_nts = df_nts[(df_nts['particle'] >= minp) & (df_nts['particle'] <= maxp)]
-        df_ne = df_ne[(df_ne['particle'] >= minp) & (df_ne['particle'] <= maxp)]
-            
-        df_nts = df_nts.sort_values(['particle', 't'])
+        else:
+            df_nt = df_nt[(df_nt['particle'] >= minp) & (df_nt['particle'] <= maxp)]
+            df_ne = df_ne[(df_ne['particle'] >= minp) & (df_ne['particle'] <= maxp)]
+
+        
+        df_nt = df_nt.sort_values(['particle', 't'])
         df_ne = df_ne.sort_values(['particle'])
 
-        minE = df_nts.min()['E'] if minE is None else minE
-        maxE = df_nts.max()['E'] if maxE is None else maxE
-
-        minH = df_nts.min()['H'] if minH is None else minH
-        maxH = df_nts.max()['H'] if maxH is None else maxH
-        
-        
+        # select entries with time between bounds
         if tf is not None:
-            df_nts = df_nts[df_nts['t'] < tf]
+            df_nt = df_nt[df_nt['t'] <= tf]
+            df_ne = df_ne[df_ne['tstart'] <= tf]
         else:
             tf = self.simtime
-        
-        # self.plotter.enable_depth_peeling()
-        cloud = pv.PolyData(1000 * df_ne[['xstart', 'ystart', 'zstart']].values)
 
-        rgba = np.array(pv.Color(pcolor).int_rgba)[None] * np.ones((cloud.n_faces, 4))
-        rgba[:, 1] = 255//2 + 75*df_ne['polstart'].values
-        rgba[:, 2] = 255//2 - 75*df_ne['polstart'].values
+        df_nt = df_nt[df_nt['t'] >= ti]
+        df_ne = df_ne[df_ne['tend'] >= ti]
+
+        pselect = df_nt['particle'].unique()
+        
+        df_nt_first = df_nt.groupby(['particle']).first()
+        df_nt_last = df_nt.groupby(['particle']).last()
+
+        # Get min and max kineatic (E) and total energies (H)
+        minE = df_nt.min()['E'] if minE is None else minE
+        maxE = df_nt.max()['E'] if maxE is None else maxE
+
+        minH = df_nt.min()['H'] if minH is None else minH
+        maxH = df_nt.max()['H'] if maxH is None else maxH
+
+        # Create cloud of points
+        cloud = pv.PolyData(1000 * df_nt_first[['x', 'y', 'z']].values)
+
+        rgba = np.ones((len(pselect), 4))
         rgba[:, 0] = 120
-        rgba[:, -1] = 1
+        rgba[:, 1] = 255//2 + 75*df_nt_first['polarisation'].values
+        rgba[:, 2] = 255//2 - 75*df_nt_first['polarisation'].values
+        rgba[:, 3] = 1 # opacity
         cloud["rgba"] = rgba
 
+        self.plotter.enable_depth_peeling()
         self.plotter.pactor = self.plotter.add_points(cloud, render_points_as_spheres=True, point_size=8, scalars="rgba", rgba=True, lighting=lighting)
-
+        # self.plotter.pactor = self.plotter.add_points(cloud, point_size=8, scalars="rgba", rgba=True, lighting=lighting)
         
         callback = self.SetVisibilityCallback(self.plotter.pactor)
         self.plotter.add_checkbox_button_widget(
@@ -430,7 +444,8 @@ class data:
             )
 
         # self.plotter.rgba = 'H'
-        self.plotter.rgba = 'polarisation'
+        # self.plotter.rgba = 'polarisation'
+        self.plotter.rgba = ''
         # callback = self.RGBACallback(self.plotter)
         # self.plotter.add_checkbox_button_widget(
         #     callback,
@@ -481,9 +496,9 @@ class data:
         )
 
         
-        interpolatevals = ['x', 'y', 'z', 'polarisation', 'E'] # H
+        interpolatevals = ['x', 'y', 'z', 'polarisation'] # E  H
         interpolation_functions = {}
-        for particle, data in df_nts.groupby('particle'):
+        for particle, data in df_nt.groupby('particle'):
             positions = data[interpolatevals].values
             times = data['t'].values
             interpolation_functions[particle] = scipy.interpolate.interp1d(times, positions, axis=0, bounds_error=False, fill_value=(data[interpolatevals].iloc[0], data[interpolatevals].iloc[-1]))
@@ -505,9 +520,9 @@ class data:
                     interpolated_vals.append(interpolation_func(self.plotter.time_stamp))
 
                 interpolated_vals = np.array(interpolated_vals)
-                cloud.points = 1000 * interpolated_vals[:, 0:3]
+                cloud.point = 1000 * interpolated_vals[:, 0:3]
 
-                rgba = 120 * np.ones((len(interpolated_vals), 4))
+                rgba = cloud["rgba"]
                 # np.array(pv.Color(pcolor).int_rgba)[None] * np.ones((cloud.n_faces, 4))
                 if self.plotter.rgba == 'polarisation':
                     rgba[:, 0] = 255//2 + 100*interpolated_vals[:, 3]
@@ -524,7 +539,7 @@ class data:
                     rgba[:, 0] = 255 * self.linlin(interpolated_vals[:, 5], minH, maxH)
                     rgba[:, 1] = 255 - 255 * self.linlin(interpolated_vals[:, 5], minH, maxH)
 
-                rgba[:, 3] = 1.0 * np.array(self.plotter.time_stamp < df_ne['tend']).astype(int)
+                rgba[:, 3] = 1.0 * np.array(self.plotter.time_stamp < df_nt_last['t']).astype(int)
                 cloud["rgba"] = rgba
                 
                 # self.plotter.render()
@@ -542,7 +557,8 @@ class data:
 
 # name of datafile
 # dfile = "000000000105"
-dfile = "000000000111"
+# dfile = "000000000111"
+dfile = "000000000017"
 
 # instantiate data object
 da = data(dfile)
@@ -558,13 +574,13 @@ pselect = None
 # psleect = np.arange(1, da.df['ne'])
 pselect = np.arange(1, 2000)
 
-# plots neutrons start, end, and hits points.
+# plots neutrons start, end, and hits point.
 pl = da.plotlogs(ptype="n", state="start", pselect=pselect, color="lightgreen")
 pl = da.plotlogs(ptype="n", state="end", pselect=pselect, color="deepskyblue")
 pl = da.plotlogs(ptype="n", state="hit", pselect=pselect, color="darkorchid")
 
 # # play animation
-pl = da.animate(dt=0.01, fps=10, pselect=pselect, minp=0, maxp=None, minE=0, maxE=5e-8, minH=0, maxH=3e-7, displaypID=False)
+pl = da.animate(ti=0, tf=5, dt=0.01, fps=10, pselect=pselect, minp=0, maxp=None, minE=0, maxE=5e-8, minH=0, maxH=3e-7, displaypID=False)
 
 
 
