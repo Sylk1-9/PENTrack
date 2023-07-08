@@ -198,11 +198,11 @@ TParticle* TVolumeSource::CreateParticle(TMCGenerator &mc, TGeometry &geometry, 
 	}
 	else{ // create particles uniformly distributed in volume
 		double t;
-		// do{ // Utkarsh
-		//   t = std::exp(normtimedist(mc));
-		// }while(!(0<t && t<fActiveTime));
+		do{ // Utkarsh
+		  t = std::exp(normtimedist(mc));
+		}while(!(0<t && t<fActiveTime));
  		
-		t = timedist(mc); // original
+		// t = timedist(mc); // original
 
 		double x, y, z;
 		RandomPointInSourceVolume(x, y, z, mc);
