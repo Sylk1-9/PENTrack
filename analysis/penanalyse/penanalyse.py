@@ -481,12 +481,12 @@ class data:
         )
 
         
-        
+        interpolatevals = ['x', 'y', 'z', 'polarisation', 'E'] # H
         interpolation_functions = {}
         for particle, data in df_nts.groupby('particle'):
-            positions = data[['x', 'y', 'z', 'polarisation', 'E', 'H']].values
+            positions = data[interpolatevals].values
             times = data['t'].values
-            interpolation_functions[particle] = scipy.interpolate.interp1d(times, positions, axis=0, bounds_error=False, fill_value=(data[['x', 'y', 'z', 'polarisation', 'E', 'H']].iloc[0], data[['x', 'y', 'z', 'polarisation', 'E', 'H']].iloc[-1]))
+            interpolation_functions[particle] = scipy.interpolate.interp1d(times, positions, axis=0, bounds_error=False, fill_value=(data[interpolatevals].iloc[0], data[interpolatevals].iloc[-1]))
 
         self.plotter.time_stamp = ti
         self.plotter.idt = dt
@@ -542,7 +542,7 @@ class data:
 
 # name of datafile
 # dfile = "000000000105"
-dfile = "000000000017"
+dfile = "000000000111"
 
 # instantiate data object
 da = data(dfile)
@@ -556,7 +556,7 @@ pl = da.plotstl(opacity=0.01)
 # pselect = df_ne[df_ne['xend'] > df_ne['xstart'] + 0.1]['particle']
 pselect = None
 # psleect = np.arange(1, da.df['ne'])
-# pselect = np.arange(, 200)
+pselect = np.arange(1, 2000)
 
 # plots neutrons start, end, and hits points.
 pl = da.plotlogs(ptype="n", state="start", pselect=pselect, color="lightgreen")
@@ -565,4 +565,10 @@ pl = da.plotlogs(ptype="n", state="hit", pselect=pselect, color="darkorchid")
 
 # # play animation
 pl = da.animate(dt=0.01, fps=10, pselect=pselect, minp=0, maxp=None, minE=0, maxE=5e-8, minH=0, maxH=3e-7, displaypID=False)
+
+
+
+# plt.figure()
+# [plt.plot(da.df["nt"][da.df["nt"]["particle"] == p]['t'], da.df["nt"][da.df["nt"]["particle"] == p]['H']) for p in da.df['ne']["particle"]]
+
 
