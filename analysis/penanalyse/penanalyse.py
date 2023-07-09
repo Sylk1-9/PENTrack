@@ -625,8 +625,9 @@ class data:
 
 # name of datafile
 # dfile = "000000000105"
-dfile = "000000000112"
+# dfile = "000000000112"
 # dfile = "000000000017"
+dfile = "000000000050"
 
 # instantiate data object
 da = data(dfile)
