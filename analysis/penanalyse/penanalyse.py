@@ -58,8 +58,10 @@ class data:
         # self.plotter.logsactor = {}
         # self.pactor = None
         self.loadata()
-        self.simcount = int(str(self.df['config']["GLOBAL"][3][1]).split(" ")[1].split("\\")[0])
-        self.simtime = int(str(self.df['config']["GLOBAL"][4][1]).split(" ")[1].split("\\")[0])
+        self.simcount = int(str(self.df['config']['GLOBAL'][3][1]).split("'")[1].replace("\\", ""))
+        # self.simcount = int(str(self.df['config']["GLOBAL"][3][1]).split(" ")[1].split("\\")[0])
+        self.simtime = int(str(self.df['config']['GLOBAL'][4][1]).split("'")[1].replace("\\", ""))
+        # self.simtime = int(str(self.df['config']["GLOBAL"][4][1]).split(" ")[1].split("\\")[0])
         if loadstl:
             self.loadstl()
         # self.axes = None
@@ -178,8 +180,8 @@ class data:
                 print("recording gif")
                 current_datetime = datetime.now()
                 formatted_datetime = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
-                self.gifname = self.spath + "/animation-%s-%s.gif" % (self.dfile, formatted_datetime)
-                self.plotter.open_gif(self.gifname, subrectangles=True, fps=self.fps)
+                self.gifname = self.spath + "/animation-%s-%s.gif" % (self.dfile.split("/")[-1], formatted_datetime)
+                self.plotter.open_gif(self.gifname, subrectangles=False, fps=self.fps)
             else:
                 print("saving and converting gif (please wait)")
                 self.plotter.open_gif(self.spath + "/dummy.gif")
@@ -453,8 +455,8 @@ class data:
                 
         rgba = np.ones((len(plist), 4))
         rgba[:, 0] = 120
-        rgba[:, 1] = 255//2 - 75*df_nt_first['polarisation'].values
-        rgba[:, 2] = 255//2 + 75*df_nt_first['polarisation'].values
+        rgba[:, 1] = 255//2 + 75*df_nt_first['polarisation'].values
+        rgba[:, 2] = 255//2 - 75*df_nt_first['polarisation'].values
         rgba[:, 3] = 1 # opacity
         self.plotter.pcloud["rgba"] = rgba
 
@@ -495,8 +497,8 @@ class data:
 
         
         # # self.plotter.rgba = 'H'
-        # self.plotter.rgba = 'polarisation'
-        self.plotter.rgba = ''
+        self.plotter.rgba = 'polarisation'
+        # self.plotter.rgba = ''
         # callback = self.RGBACallback(self.plotter)
         # self.plotter.add_checkbox_button_widget(
         #     callback,
@@ -599,14 +601,14 @@ class data:
                 
                 rgba = self.plotter.pcloud["rgba"]
                 if self.plotter.rgba == 'polarisation':
-                    rgba[p2up, 0] = 255//2 - 100*interpolated_vals[:, 3]
-                    rgba[p2up, 2] = 255//2 + 100*interpolated_vals[:, 3]
+                    rgba[:,0] = 255//2 + 75*interpolated_vals[:, 3]
+                    rgba[:,2] = 255//2 - 75*interpolated_vals[:, 3]
                     
                 elif self.plotter.rgba == 'E':
-                    rgba[p2up, 1:3] = 255 * self.linlin(interpolated_vals[:, 4], minE, maxE)[:, None]
+                    rgba[:,1:3] = 255 * self.linlin(interpolated_vals[:, 4], minE, maxE)[:, None]
                 elif self.plotter.rgba == 'H':
-                    rgba[p2up, 0] = 255 * self.linlin(interpolated_vals[:, 5], minH, maxH)
-                    rgba[p2up, 1] = 255 - 255 * self.linlin(interpolated_vals[:, 5], minH, maxH)
+                    rgba[:,0] = 255 * self.linlin(interpolated_vals[:, 5], minH, maxH)
+                    rgba[:,1] = 255 - 255 * self.linlin(interpolated_vals[:, 5], minH, maxH)
 
                 rgba[:, 3] = p2up #p.array(self.plotter.time_stamp < df_nt_last['t']).astype(int)
                 self.plotter.pcloud["rgba"] = rgba
@@ -628,7 +630,8 @@ class data:
 # name of datafile
 # dfile = "000000000105"
 # dfile = "000000000112"
-dfile = "000000000017"
+# dfile = "000000000017"
+dfile = "/saved/sf-conductor53"
 
 # instantiate data object
 da = data(dfile)
