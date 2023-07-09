@@ -154,7 +154,8 @@ void TTracker::IntegrateParticle(std::unique_ptr<TParticle>& p, const double tma
   p->SetFinalState(x, y, spin, GetCurrentsolid(currentsolids));
 
   // std::cout << "print track? " << std::endl;
-  logger->PrintTrack(p, x, y, x, y, p->GetFinalSpin(), p->GetFinalSolid(), field, true); // add sly
+  // logger->PrintTrack(p, x, y, x, y, p->GetFinalSpin(), p->GetFinalSolid(), field, true); // add sly
+  logger->PrintTrack(p, x, y, x, y, spin, GetCurrentsolid(currentsolids), field, true); // add sly
   // std::cout << "track printed ?? " << std::endl;
 
   logger->Print(p, x, y, spin, geom, field);
