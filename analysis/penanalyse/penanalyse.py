@@ -58,10 +58,10 @@ class data:
         # self.plotter.logsactor = {}
         # self.pactor = None
         self.loadata()
-        self.simcount = int(str(self.df['config']['GLOBAL'][3][1]).split("'")[1].replace("\\", ""))
-        # self.simcount = int(str(self.df['config']["GLOBAL"][3][1]).split(" ")[1].split("\\")[0])
-        self.simtime = int(str(self.df['config']['GLOBAL'][4][1]).split("'")[1].replace("\\", ""))
-        # self.simtime = int(str(self.df['config']["GLOBAL"][4][1]).split(" ")[1].split("\\")[0])
+        # self.simcount = int(str(self.df['config']['GLOBAL'][3][1]).split("'")[1].replace("\\", ""))
+        self.simcount = int(str(self.df['config']["GLOBAL"][3][1]).split(" ")[1].split("\\")[0])
+        # self.simtime = int(str(self.df['config']['GLOBAL'][4][1]).split("'")[1].replace("\\", ""))
+        self.simtime = int(str(self.df['config']["GLOBAL"][4][1]).split(" ")[1].split("\\")[0])
         if loadstl:
             self.loadstl()
         # self.axes = None
@@ -180,18 +180,21 @@ class data:
                 print("recording gif")
                 current_datetime = datetime.now()
                 formatted_datetime = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
-                self.gifname = self.spath + "/animation-%s-%s.gif" % (self.dfile.split("/")[-1], formatted_datetime)
-                self.plotter.open_gif(self.gifname, subrectangles=False, fps=self.fps)
+                self.gifname = self.spath + "/animation-%s-%s" % (self.dfile.split("/")[-1], formatted_datetime)
+                # self.plotter.open_gif(self.gifname+'.gif', subrectangles=True, fps=self.fps)
+                self.plotter.open_movie(self.gifname+'.mp4', framerate=self.fps, quality=4)
+                # p.open_movie("~/Desktop/foo.mp4")
             else:
                 print("saving and converting gif (please wait)")
-                self.plotter.open_gif(self.spath + "/dummy.gif")
-                if self.gifname is not None:
-                    pygifsicle.optimize(self.gifname) # For overwriting the original one
+                # self.plotter.open_gif(self.spath + "/dummy.gif")
+                self.plotter.open_movie(self.spath + "/dummy.mp4")
+                # if self.gifname is not None:
+                    # pygifsicle.optimize(self.gifname) # For overwriting the original one
 
     
     
     def initplotter(self):
-        plotter = pvqt.BackgroundPlotter(window_size=(2*1024, 2*768), multi_samples=2)
+        plotter = pvqt.BackgroundPlotter(window_size=(1920, 1080), multi_samples=4)
         plotter.show_bounds(color="black")
         plotter.set_background('aliceblue', top='white')
         return plotter
@@ -513,7 +516,7 @@ class data:
 
 
 
-        callback = self.RecordGifCallback(self.plotter, self.dfile, spath, fps=5)
+        callback = self.RecordGifCallback(self.plotter, self.dfile, spath, fps=fps)
         self.plotter.add_checkbox_button_widget(
             callback,
             value=False,
@@ -618,7 +621,7 @@ class data:
                     
                 if self.plotter.savegif:
                     self.plotter.write_frame()
-
+                    
                     
         self.plotter.add_slider_widget(self.speedanime, (-4, 4), value=1, pointa=(0.5, 0.03), pointb=(0.8, 0.03), slider_width=0.02, tube_width=0.005, color="aquamarine")
 
@@ -631,7 +634,8 @@ class data:
 # dfile = "000000000105"
 # dfile = "000000000112"
 # dfile = "000000000017"
-dfile = "/saved/sf-conductor53"
+dfile = "000000000016"
+# dfile = "/saved/sf-conductor62"
 
 # instantiate data object
 da = data(dfile)
@@ -642,9 +646,9 @@ pl = da.plotstl(opacity=0.01)
 
 df_ne = da.df['ne']
 
-# pselect = df_ne[df_ne['xend'] > df_ne['xstart'] + 0.1]['particle']
+# pselect = df_ne[df_ne['xend'] > df_ne['xstart'] + 0.5]['particle']
 pselect = None
-# pselect = np.arange(1, 200)
+# pselect = np.arange(1, 20000)
 
 # plots neutrons start, end, and hits point.
 pl = da.plotlogs(ptype="n", state="start", pselect=pselect, color="lightgreen")
@@ -652,7 +656,8 @@ pl = da.plotlogs(ptype="n", state="end", pselect=pselect, color="deeppink")
 pl = da.plotlogs(ptype="n", state="hit", pselect=pselect, color="deepskyblue")
 
 # # play animation
-pl = da.animate(ti=0, tf=None, dt=0.001, fps=10, pselect=pselect, minp=0, maxp=None, minE=0, maxE=5e-8, minH=0, maxH=3e-7, trail=True)
+# pl = da.animate(ti=0, tf=None, dt=0.001, fps=10, pselect=pselect, minp=0, maxp=None, minE=0, maxE=5e-8, minH=0, maxH=3e-7, trail=True)
+pl = da.animate(ti=0, tf=10, dt=0.001, fps=20, pselect=pselect, minp=0, maxp=None, minE=0, maxE=5e-8, minH=0, maxH=3e-7, trail=True)
 
 
 
