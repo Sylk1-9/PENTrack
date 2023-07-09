@@ -323,8 +323,6 @@ class data:
             
         positions = df_log[['x'+st, 'y'+st, 'z'+st]].values
         cloud = pv.PolyData(1000 * positions)
-
-        # cloud["colors"] = np.ones((cloud.n_faces, 3)) * 100
         
         actor = self.plotter.add_mesh(1000 * positions, color=color, render_points_as_spheres=True, point_size=6, lighting=lighting)
         self.plotter.logsactor[key+ltype+state] = actor
@@ -424,40 +422,43 @@ class data:
               
         # Create cloud of points
         self.plotter.pcloud = pv.PolyData(1000 * df_nt_first[['x', 'y', 'z']].values)
-        # self.plotter.pline = pv.PolyLine(np.vstack((start_point, end_point)))
 
-        self.plotter.plotTrail = trail
-        if trail:
-            self.plotter.plines = []
-            self.plotter.plactors = []
-            for inipos in df_nt_first[['x', 'y', 'z']].values:
-                pline = pv.PolyData(np.ones((10, 3)) * inipos[None])
-                plactor = self.plotter.add_mesh(pline, color="goldenrod", line_width=5)
-                plactor.SetVisibility(False)
-                self.plotter.plactors.append(plactor)
-                self.plotter.plines.append(pline)
+        # self.plotter.add_mesh(self.plotter.pcloud.delaunay_2d(), color='red', line_width=2)
 
-                callback = self.SetVisibilityCallback(self.plotter.plactors)
-                self.plotter.add_checkbox_button_widget(
-                    callback,
-                    value=False,
-                    position=(100, 60),
-                    size=30,
-                    border_size=1,
-                    color_on="goldenrod",
-                    color_off='grey',
-                    background_color='grey',
-                )
+
+
+        
+        # if trail:
+        self.plotter.plines = []
+        self.plotter.plactors = []
+        for inipos in df_nt_first[['x', 'y', 'z']].values:
+            pline = pv.PolyData(np.ones((10, 3)) * inipos[None])
+            plactor = self.plotter.add_points(pline, color=np.random.rand(3), style='points', point_size=6)
+            plactor.SetVisibility(False)
+            self.plotter.plactors.append(plactor)
+            self.plotter.plines.append(pline)
+
+        callback = self.SetVisibilityCallback(self.plotter.plactors)
+        self.plotter.add_checkbox_button_widget(
+            callback,
+            value=False,
+            position=(100, 60),
+            size=30,
+            border_size=1,
+            color_on="goldenrod",
+            color_off='grey',
+            background_color='grey',
+        )
 
                 
         rgba = np.ones((len(plist), 4))
         rgba[:, 0] = 120
-        rgba[:, 1] = 255//2 + 75*df_nt_first['polarisation'].values
-        rgba[:, 2] = 255//2 - 75*df_nt_first['polarisation'].values
+        rgba[:, 1] = 255//2 - 75*df_nt_first['polarisation'].values
+        rgba[:, 2] = 255//2 + 75*df_nt_first['polarisation'].values
         rgba[:, 3] = 1 # opacity
         self.plotter.pcloud["rgba"] = rgba
-        
 
+        
         # self.plotter.enable_depth_peeling()
         self.plotter.pactor = self.plotter.add_points(self.plotter.pcloud, render_points_as_spheres=True, point_size=8, scalars="rgba", rgba=True, lighting=lighting)
         # self.plotter.pactor = self.plotter.add_points(cloud, point_size=8, scalars="rgba", rgba=True, lighting=lighting)
@@ -588,17 +589,18 @@ class data:
                 newpoints = 1000 * interpolated_vals[:, 0:3]
                 self.plotter.pcloud.points = newpoints
 
-                if self.plotter.plotTrail:
-                    if self.plotter.plactors[0].GetVisibility():
-                        for particle, pline in enumerate(self.plotter.plines):
-                            self.push(pline.points, newpoints[particle])
+                # if self.plotter.plotTrail:
+                if self.plotter.plactors[0].GetVisibility():
+                    for particle, pline in enumerate(self.plotter.plines):
+                        pline.points = self.push(pline.points, newpoints[particle])
+
 
                 ###########
                 
                 rgba = self.plotter.pcloud["rgba"]
                 if self.plotter.rgba == 'polarisation':
-                    rgba[p2up, 0] = 255//2 + 100*interpolated_vals[:, 3]
-                    rgba[p2up, 2] = 255//2 - 100*interpolated_vals[:, 3]
+                    rgba[p2up, 0] = 255//2 - 100*interpolated_vals[:, 3]
+                    rgba[p2up, 2] = 255//2 + 100*interpolated_vals[:, 3]
                     
                 elif self.plotter.rgba == 'E':
                     rgba[p2up, 1:3] = 255 * self.linlin(interpolated_vals[:, 4], minE, maxE)[:, None]
@@ -626,8 +628,7 @@ class data:
 # name of datafile
 # dfile = "000000000105"
 # dfile = "000000000112"
-# dfile = "000000000017"
-dfile = "000000000050"
+dfile = "000000000017"
 
 # instantiate data object
 da = data(dfile)
@@ -639,17 +640,16 @@ pl = da.plotstl(opacity=0.01)
 df_ne = da.df['ne']
 
 # pselect = df_ne[df_ne['xend'] > df_ne['xstart'] + 0.1]['particle']
-# pselect = None
-# pselect = np.arange(1, da.df['ne'])
-pselect = np.arange(1, 200)
+pselect = None
+# pselect = np.arange(1, 200)
 
 # plots neutrons start, end, and hits point.
-# pl = da.plotlogs(ptype="n", state="start", pselect=pselect, color="lightgreen")
-# pl = da.plotlogs(ptype="n", state="end", pselect=pselect, color="deepskyblue")
-# pl = da.plotlogs(ptype="n", state="hit", pselect=pselect, color="deepskyblue")
+pl = da.plotlogs(ptype="n", state="start", pselect=pselect, color="lightgreen")
+pl = da.plotlogs(ptype="n", state="end", pselect=pselect, color="deeppink")
+pl = da.plotlogs(ptype="n", state="hit", pselect=pselect, color="deepskyblue")
 
 # # play animation
-pl = da.animate(ti=0, tf=40, dt=0.01, fps=30, pselect=pselect, minp=0, maxp=None, minE=0, maxE=5e-8, minH=0, maxH=3e-7)
+pl = da.animate(ti=0, tf=None, dt=0.001, fps=10, pselect=pselect, minp=0, maxp=None, minE=0, maxE=5e-8, minH=0, maxH=3e-7, trail=True)
 
 
 
