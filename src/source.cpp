@@ -132,7 +132,7 @@ TParticle* TSurfaceSource::CreateParticle(TMCGenerator &mc, TGeometry &geometry,
   std::polarization_distribution<double> pdist(polarization);
   int pol = pdist(mc); // randomly choose polarisation used for trajectory tracking
 
-  return TParticleSource::CreateParticl(tiemedist(mc), p[0], p[1], p[2], Ekin, phi, theta, pol, polarization, mc, geometry, field);
+  return TParticleSource::CreateParticle(timedist(mc), p[0], p[1], p[2], Ekin, phi, theta, pol, polarization, mc, geometry, field);
 }
 
 
