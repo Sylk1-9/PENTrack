@@ -201,7 +201,7 @@ TParticle* TVolumeSource::CreateParticle(TMCGenerator &mc, TGeometry &geometry, 
     //   t = std::exp(normtimedist(mc));
     // }while(!(0<t && t<fActiveTime));
  		
-    // t = timedist(mc); // original
+    t = timedist(mc); // original
 
     double x, y, z;
     RandomPointInSourceVolume(x, y, z, mc);

@@ -17,7 +17,7 @@ from colorsys import hls_to_rgb
 import numpy as np 
 from datetime import datetime
 # import imageio.v3 as iio
-import pygifsicle as pygifsicle
+# import pygifsicle as pygifsicle
 from itertools import compress
 
 def get_distinct_colors(n):
@@ -140,16 +140,7 @@ class data:
             else:
                 self.actors.SetVisibility(state)
                             
-                
-    # class SetRGBACallback:
-    #     """Helper callback to keep a reference to the actor being modified."""
-
-    #     def __init__(self, plotter):
-    #         self.plotter = plotter
-
-    #     def __call__(self, state):
-    #         if self.plotter.rgba == 'H'
-
+            
                 
     class ScreenshotCallback:
         """Helper callback to keep a reference to the actor being modified."""
@@ -458,8 +449,8 @@ class data:
                 
         rgba = np.ones((len(plist), 4))
         rgba[:, 0] = 120
-        rgba[:, 1] = 255//2 + 75*df_nt_first['polarisation'].values
-        rgba[:, 2] = 255//2 - 75*df_nt_first['polarisation'].values
+        rgba[:, 1] = 255//2 - 100*df_nt_first['polarisation'].values
+        rgba[:, 2] = 255//2 + 100*df_nt_first['polarisation'].values
         rgba[:, 3] = 1 # opacity
         self.plotter.pcloud["rgba"] = rgba
 
@@ -604,8 +595,8 @@ class data:
                 
                 rgba = self.plotter.pcloud["rgba"]
                 if self.plotter.rgba == 'polarisation':
-                    rgba[:,0] = 255//2 + 75*interpolated_vals[:, 3]
-                    rgba[:,2] = 255//2 - 75*interpolated_vals[:, 3]
+                    rgba[:,1] = 255//2 - 100*interpolated_vals[:, 3]
+                    rgba[:,2] = 255//2 + 100*interpolated_vals[:, 3]
                     
                 elif self.plotter.rgba == 'E':
                     rgba[:,1:3] = 255 * self.linlin(interpolated_vals[:, 4], minE, maxE)[:, None]
@@ -633,10 +624,11 @@ class data:
 # name of datafile
 # dfile = "000000000105"
 # dfile = "000000000112"
-# dfile = "000000000017"
 dfile = "000000000017"
+# dfile = "000000000030"
 # dfile = "/saved/sf-conductor62"
 
+# dfile = "000000000201"
 # instantiate data object
 da = data(dfile)
 
@@ -648,8 +640,8 @@ df_ne = da.df['ne']
 
 # pselect = df_ne[df_ne['xend'] > df_ne['xstart'] + 0.5]['particle']
 pselect = None
-# pselect = np.arange(1, 20000)
-
+pselect = np.arange(1, 2000)
+     
 # plots neutrons start, end, and hits point.
 pl = da.plotlogs(ptype="n", state="start", pselect=pselect, color="lightgreen")
 pl = da.plotlogs(ptype="n", state="end", pselect=pselect, color="deeppink")
@@ -657,11 +649,50 @@ pl = da.plotlogs(ptype="n", state="hit", pselect=pselect, color="deepskyblue")
 
 # # play animation
 # pl = da.animate(ti=0, tf=None, dt=0.001, fps=10, pselect=pselect, minp=0, maxp=None, minE=0, maxE=5e-8, minH=0, maxH=3e-7, trail=True)
-pl = da.animate(ti=0, tf=10, dt=0.001, fps=20, pselect=pselect, minp=0, maxp=None, minE=0, maxE=5e-8, minH=0, maxH=3e-7, trail=True)
+pl = da.animate(ti=0, tf=10, dt=0.001, fps=20, pselect=pselect, minp=0, maxp=None, minE=0, maxE=5e-8, minH=0, maxH=3e-7, trail=False)
 
 
 
 # plt.figure()
 # [plt.plot(da.df["nt"][da.df["nt"]["particle"] == p]['t'], da.df["nt"][da.df["nt"]["particle"] == p]['H']) for p in da.df['ne']["particle"]]
+
+
+
+
+# [plt.plot(da.df['nt'][da.df['nt']['particle'] == p]['x'], da.df['nt'][da.df['nt']['particle'] == p]['polarisation']) for p in np.arange(10)]
+
+
+# dfs = da.df['nt'][da.df['nt']['particle'] == 160]
+# plt.figure()
+# plt.subplot(2, 2, 1)
+# plt.plot(dfs['t'], dfs['H'])
+# plt.xlabel('t')
+# plt.ylabel('H')
+
+
+# plt.subplot(2, 2, 2)
+# plt.plot(dfs['t'], dfs['E'])
+# plt.xlabel('t')
+# plt.ylabel('E')
+
+
+# plt.subplot(2, 2, 3)
+# plt.plot(dfs['t'], dfs['dBxdx'] + dfs['dBydy'] + dfs['dBzdz'])
+# plt.xlabel('t')
+# plt.ylabel(r'$\sum_i dB_i/dx_i$')
+
+
+# plt.subplot(2, 2, 4)
+# plt.plot(dfs['t'], dfs['dBxdy'] - dfs['dBydx'])
+# plt.plot(dfs['t'], dfs['dBxdz'] - dfs['dBzdx'])
+# plt.plot(dfs['t'], dfs['dBydz'] - dfs['dBzdy'])
+# plt.ylabel(r'$dB_i/dx_j - dB_j/dx_i$')
+
+
+
+
+
+
+
 
 
