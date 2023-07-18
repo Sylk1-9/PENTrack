@@ -257,6 +257,10 @@ void TParticle::DoDecay(const double t, const state_type &y, TMCGenerator &mc, c
   for (auto s: secs) secondaries.push_back(unique_ptr<TParticle>(s));
 }
 
+void TParticle::DoPolarization(const double t, state_type &y, const double polarization, const bool flipspin, TMCGenerator &mc){  //added by Niki
+  y[7] = polarization ;
+}
+
 void TParticle::DoPolarize(const double t, state_type &y, const double polarization, const bool flipspin, TMCGenerator &mc){
   double flipprob = 0.5*(1 - y[7]*polarization);
   noflipprob *= 1. - flipprob;
