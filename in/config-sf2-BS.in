@@ -7,7 +7,7 @@
 simtype 1
 
 # number of primary particles to be simulated
-simcount 200
+simcount 10
 
 # max. simulation time [s]
 simtime 1
@@ -107,8 +107,8 @@ Enormal		0					# give particles an energy boost normal to surface (surface sourc
 PhaseSpaceWeighting	0			# weight initial particle density by available phase space (volume source only! see above)
 
 ### initial energy range [eV] and spectrum of particles
-Emin 50e-9
-Emax 60e-9
+Emin 0e-9
+Emax 100e-9
 #Emin 100e-9 
 #Emax 300e-9
 #spectrum 1
@@ -375,8 +375,8 @@ tmax 1e-5
 # I2.2 22*cos(38314864*t)
 
 # inverse polarisation
-I2.1 5*sin(38314864*t)
-I2.2 5*cos(38314864*t)
+I2.1 20*sin(38314864*t)
+I2.2 20*cos(38314864*t)
 
 
 #Bx 0                                # These are the field components used for the CustomBField defined in the FIELDS section

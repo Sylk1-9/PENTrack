@@ -5,8 +5,8 @@
 #PBS -l walltime=1:30:00
 #PBS -t 1-10 
 #PBS -N SampleRun
-#PBS -e /home/niklas/PENTrack-master/out/error.txt 
-#PBS -o /home/niklas/PENTrack-master/out/output.txt
+#PBS -e /home/sly/Work/Physics/Neutrons/tSPECT/PENtrack/pentrack/out/error.txt 
+#PBS -o /home/sly/Work/Physics/Neutrons/tSPECT/PENtrack/pentrack/out/output.txt
 #### For getting emails: PBS -M yourName@email.com #for receiving emails when certain tasks are complete (specified by PBS -m option): #PBS -m be #emails when the job is aborted(a),begins execution(b), is terminate(e)
 
 # Script testing out running multiple instances of a program

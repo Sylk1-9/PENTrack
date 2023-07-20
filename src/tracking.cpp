@@ -151,10 +151,12 @@ void TTracker::IntegrateParticle(std::unique_ptr<TParticle>& p, const double tma
     p->DoDecay(x, y, mc, geom, field);
   }
 
+  p->DoPolarize(x, y, y[7], flipspin, mc);  //added by Niki //project the polarisation aligned or anti-aligned to the B-field at the end of the Simulation
   p->SetFinalState(x, y, spin, GetCurrentsolid(currentsolids));
 
   // std::cout << "print track? " << std::endl;
-  logger->PrintTrack(p, x, y, x, y, p->GetFinalSpin(), p->GetFinalSolid(), field, true); // add sly
+  // logger->PrintTrack(p, x, y, x, y, p->GetFinalSpin(), p->GetFinalSolid(), field, true); // add sly
+  logger->PrintTrack(p, x, y, x, y, spin, GetCurrentsolid(currentsolids), field, true); // add sly
   // std::cout << "track printed ?? " << std::endl;
 
   logger->Print(p, x, y, spin, geom, field);
@@ -379,9 +381,7 @@ const solid& TTracker::GetCurrentsolid(vector<pair<solid, bool> > currentsolids)
 // }
 
 
-void TTracker::IntegrateSpin(const std::unique_ptr<TParticle>& p, state_type &spin, const dense_stepper_type &stepper,
-			     const double x2, state_type &y2, const std::vector<double> &times, const TFieldManager &field,
-			     const bool interpolatefields, const double Bmax, TMCGenerator &mc, const bool flipspin) const{
+void TTracker::IntegrateSpin(const std::unique_ptr<TParticle>& p, state_type &spin, const dense_stepper_type &stepper,  const double x2, state_type &y2, const std::vector<double> &times, const TFieldManager &field, const bool interpolatefields, const double Bmax, TMCGenerator &mc, const bool flipspin) const{
   value_type x1 = stepper.previous_time();
   if (p->GetGyromagneticRatio() == 0 || x1 == x2)
     return;
@@ -440,7 +440,7 @@ void TTracker::IntegrateSpin(const std::unique_ptr<TParticle>& p, state_type &sp
     }
 
 
-    dense_stepper_type spinstepper = boost::numeric::odeint::make_dense_output(1e-6, 1e-6, stepper_type());
+    dense_stepper_type spinstepper = boost::numeric::odeint::make_dense_output(1e-7, 1e-7, stepper_type());
     // dense_stepper_type spinstepper = boost::numeric::odeint::make_dense_output(1e-12, 1e-12, stepper_type()); // original
     spinstepper.initialize(spin, x1, std::abs(pi/p->GetGyromagneticRatio()/Babs1)); // initialize integrator with step size = half rotation
     // spinstepper.initialize(spin, x1, std::abs(pi/p->GetGyromagneticRatio()/Babs1/36)); // initialize integrator with step size = half rotation ToDo sly
@@ -490,11 +490,14 @@ void TTracker::IntegrateSpin(const std::unique_ptr<TParticle>& p, state_type &sp
   }
 
 
-  if (Babs2 > Bmax){ // if magnetic field grows above Bmax, collapse spin state to one of the two polarisation states
-    // if (Babs2 < Bmax){ // sly Todo
+  // if (Babs2 > Bmax){ // original // if magnetic field grows above Bmax, collapse spin state to one of the two polarisation states
+  // if (flipspin){ // add sly
+  p->DoPolarization(x2, y2, polarisation, flipspin, mc); //added by Niki
+  if (Babs2 > Bmax){
     p->DoPolarize(x2, y2, polarisation, flipspin, mc);
     spin[0] = B2[0]*y2[7]/Babs2;
     spin[1] = B2[1]*y2[7]/Babs2;
     spin[2] = B2[2]*y2[7]/Babs2;
   }
+  // }
 }
