@@ -292,6 +292,7 @@ void TLogger::PrintSpin(const std::unique_ptr<TParticle>& p, const value_type x,
   Log(p->GetName(), "spin", variables, default_titles);
 }
 
+
 void TLogger::Log(const std::string &particlename, const std::string &suffix, const std::map<std::string, double> &variables, const std::vector<std::string> &default_titles){
   vector<string> titles;
   vector<double> vars;
@@ -321,7 +322,6 @@ void TLogger::Log(const std::string &particlename, const std::string &suffix, co
 }
 
 
-
 void TTextLogger::DoLog(const std::string &particlename, const std::string &suffix, const std::vector<std::string> &titles, const std::vector<double> &vars){
 
   // std::cout << "\nThread " << std::this_thread::get_id() <<  " Do loggings " << std::endl << std::flush;
@@ -347,7 +347,6 @@ void TTextLogger::DoLog(const std::string &particlename, const std::string &suff
 	{
 	  throw std::runtime_error("Could not open " + outfile.native());
 	}
-
       
       file << std::setprecision(std::numeric_limits<double>::digits10) << std::flush;
       // copy(titles.begin(), titles.end(), ostream_iterator<string>(file, " "));
@@ -355,7 +354,6 @@ void TTextLogger::DoLog(const std::string &particlename, const std::string &suff
 	file << title << " ";
       }
       file << '\n';
-    
     }
 
     for(const auto& var : vars){
@@ -364,7 +362,6 @@ void TTextLogger::DoLog(const std::string &particlename, const std::string &suff
     // copy(vars.begin(), vars.end(), ostream_iterator<double>(file, " "));
     // file << '\n' << std::flush;
     file << '\n';
-
     // printf("Thread %s End log \n", oss.str().c_str());
   }
   catch (const std::length_error& le) {
@@ -463,8 +460,6 @@ TROOTLogger::~TROOTLogger() {
   ROOTfile->Write();
 
 }
-
-
 
 #endif
 
@@ -604,31 +599,6 @@ void THDF5Logger::DoLog(const std::string &particlename, const std::string &suff
 //   }
 // }
 
-
-
-// void THDF5Logger::DoLog(const std::string &particlename, const std::string &suffix, const std::vector<std::string> &titles, const std::vector<double> &vars){
-//     string name = particlename + suffix;
-//     size_t Nfields = titles.size();
-//     size_t offsets[Nfields];
-//     for (size_t i = 0; i < Nfields; ++i) offsets[i] = i * sizeof(double);
-
-//     if (H5Lexists(HDF5file, name.c_str(), H5P_DEFAULT) <= 0){
-//         const char *field_names[Nfields];
-//         hid_t field_types[Nfields];
-//         for (size_t i = 0; i < Nfields; ++i){
-//             field_names[i] = titles[i].c_str();
-//             field_types[i] = H5T_NATIVE_DOUBLE;
-//         }
-//         auto ret = H5TBmake_table(name.c_str(), HDF5file, name.c_str(), Nfields, 1, Nfields*sizeof(double), field_names, offsets, field_types, 10, nullptr, 1, vars.data());
-//         if (ret < 0) throw std::runtime_error("Could not create table " + name);
-//     }
-//     else{
-//         size_t sizes[Nfields];
-//         for (size_t i = 0; i < Nfields; ++i) sizes[i] = sizeof(double);
-//         auto ret = H5TBappend_records(HDF5file, name.c_str(), 1, Nfields*sizeof(double), offsets, sizes, vars.data());
-//         if (ret < 0) throw std::runtime_error("Could not write data to table " + name);
-//     }
-// }
 
 THDF5Logger::~THDF5Logger() {
   if (!isClosed) {

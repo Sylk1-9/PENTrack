@@ -365,31 +365,24 @@ class data:
 
         # Load and filter data
         df_nt = self.df['nt'] #.sort_values(['particle', 't'])
-        # df_ne = self.df['ne']
 
         maxp = self.simcount if maxp is None else maxp
 
         # select particle from seelct list, sort entries.
         if pselect is not None:
             df_nt = df_nt[df_nt['particle'].isin(pselect)]
-            # df_ne = df_ne[df_ne['particle'].isin(pselect)]
         else:
             df_nt = df_nt[(df_nt['particle'] >= minp) & (df_nt['particle'] <= maxp)]
-            # df_ne = df_ne[(df_ne['particle'] >= minp) & (df_ne['particle'] <= maxp)]
 
         
         df_nt = df_nt.sort_values(['particle', 't'])
-        # df_ne = df_ne.sort_values(['particle'])
 
         # select entries with time between bounds
-        if tf is not None:
-            df_nt = df_nt[df_nt['t'] <= tf]
-            # df_ne = df_ne[df_ne['tstart'] <= tf]
-        else:
-            tf = self.simtime
-
+        tf = tf if (tf is not None) and (tf < self.simtime) else self.simtime
+        ti = ti if ti < self.simtime else self.simtime
+        
+        df_nt = df_nt[df_nt['t'] <= tf]
         df_nt = df_nt[df_nt['t'] >= ti]
-        # df_ne = df_ne[df_ne['tend'] >= ti]
 
         # plist = df_nt['particle'].unique().astype(int)
                 
@@ -402,7 +395,6 @@ class data:
 
         minH = df_nt.min()['H'] if minH is None else minH
         maxH = df_nt.max()['H'] if maxH is None else maxH
-
 
         interpolatevals = ['x', 'y', 'z', 'polarisation'] # E  H
         interpolation_functions = []
@@ -420,9 +412,6 @@ class data:
         self.plotter.pcloud = pv.PolyData(1000 * df_nt_first[['x', 'y', 'z']].values)
 
         # self.plotter.add_mesh(self.plotter.pcloud.delaunay_2d(), color='red', line_width=2)
-
-
-
         
         # if trail:
         self.plotter.plines = []
@@ -446,14 +435,12 @@ class data:
             background_color='grey',
         )
 
-                
         rgba = np.ones((len(plist), 4))
         rgba[:, 0] = 120
         rgba[:, 1] = 255//2 - 100*df_nt_first['polarisation'].values
         rgba[:, 2] = 255//2 + 100*df_nt_first['polarisation'].values
         rgba[:, 3] = 1 # opacity
         self.plotter.pcloud["rgba"] = rgba
-
         
         # self.plotter.enable_depth_peeling()
         self.plotter.pactor = self.plotter.add_points(self.plotter.pcloud, render_points_as_spheres=True, point_size=8, scalars="rgba", rgba=True, lighting=lighting)
@@ -624,8 +611,8 @@ class data:
 # name of datafile
 # dfile = "000000000105"
 # dfile = "000000000112"
-dfile = "000000000017"
-# dfile = "000000000030"
+# dfile = "000000000017"
+dfile = "000000000031"
 # dfile = "/saved/sf-conductor62"
 
 # dfile = "000000000201"
@@ -662,31 +649,31 @@ pl = da.animate(ti=0, tf=10, dt=0.001, fps=20, pselect=pselect, minp=0, maxp=Non
 # [plt.plot(da.df['nt'][da.df['nt']['particle'] == p]['x'], da.df['nt'][da.df['nt']['particle'] == p]['polarisation']) for p in np.arange(10)]
 
 
-# dfs = da.df['nt'][da.df['nt']['particle'] == 160]
-# plt.figure()
-# plt.subplot(2, 2, 1)
-# plt.plot(dfs['t'], dfs['H'])
-# plt.xlabel('t')
-# plt.ylabel('H')
+dfs = da.df['nt'][da.df['nt']['particle'] == 31]
+plt.figure()
+plt.subplot(2, 2, 1)
+plt.plot(dfs['t'], dfs['H'])
+plt.xlabel('t')
+plt.ylabel('H')
 
 
-# plt.subplot(2, 2, 2)
-# plt.plot(dfs['t'], dfs['E'])
-# plt.xlabel('t')
-# plt.ylabel('E')
+plt.subplot(2, 2, 2)
+plt.plot(dfs['t'], dfs['E'])
+plt.xlabel('t')
+plt.ylabel('E')
 
 
-# plt.subplot(2, 2, 3)
-# plt.plot(dfs['t'], dfs['dBxdx'] + dfs['dBydy'] + dfs['dBzdz'])
-# plt.xlabel('t')
-# plt.ylabel(r'$\sum_i dB_i/dx_i$')
+plt.subplot(2, 2, 3)
+plt.plot(dfs['t'], dfs['dBxdx'] + dfs['dBydy'] + dfs['dBzdz'])
+plt.xlabel('t')
+plt.ylabel(r'$\sum_i dB_i/dx_i$')
 
 
-# plt.subplot(2, 2, 4)
-# plt.plot(dfs['t'], dfs['dBxdy'] - dfs['dBydx'])
-# plt.plot(dfs['t'], dfs['dBxdz'] - dfs['dBzdx'])
-# plt.plot(dfs['t'], dfs['dBydz'] - dfs['dBzdy'])
-# plt.ylabel(r'$dB_i/dx_j - dB_j/dx_i$')
+plt.subplot(2, 2, 4)
+plt.plot(dfs['t'], dfs['dBxdy'] - dfs['dBydx'])
+plt.plot(dfs['t'], dfs['dBxdz'] - dfs['dBzdx'])
+plt.plot(dfs['t'], dfs['dBydz'] - dfs['dBzdy'])
+plt.ylabel(r'$dB_i/dx_j - dB_j/dx_i$')
 
 
 

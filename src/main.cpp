@@ -256,8 +256,8 @@ int main(int argc, char **argv){
     // std::unique_ptr<TLogger> logger = CreateLogger(configin);
     std::shared_ptr<TLogger> logger = CreateLogger(configin);
     cout << "Simulating " << simcount << " " << source->GetParticleName() << "s...\n";
-    ThreadPool thread_pool;
-    thread_pool.Start(numthreads);
+    ThreadPool threadpool;
+    threadpool.Start(numthreads);
     progress_display progress(simcount);
 
     // std::vector<TTracker> trackers;
@@ -283,7 +283,7 @@ int main(int argc, char **argv){
 
     TTracker tracker(configin, logger);
     for (int iMC = 0; iMC < simcount; ++iMC) {
-      thread_pool.QueueJob([&]() {
+      threadpool.QueueJob([&]() {
 	SimulateParticles(1, source.get(), &mc, &geom, &field, &configin, &tracker, std::ref(ID_counter), std::ref(ntotalsteps), std::ref(progress));
       });
     }
@@ -294,10 +294,10 @@ int main(int argc, char **argv){
     //   thread_pool.QueueJob(std::bind(SimulateParticles, 1, source.get(), &mc, &geom, &field, &configin, &tracker, std::ref(ID_counter), std::ref(ntotalsteps), std::ref(progress)));
     // }
 
-    while (thread_pool.Busy()) {
+    while (threadpool.Busy()) {
       std::this_thread::yield();
     }
-    thread_pool.Stop();
+    threadpool.Stop();
 
     
   }    

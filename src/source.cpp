@@ -77,8 +77,8 @@ TParticleSource::TParticleSource(std::map<std::string, std::string> &sourceconf)
 
   timedist = std::piecewise_constant_distribution<double> (interval.begin(), interval.end(), weight.begin());
 	
-  double mean = 2.97;
-  double sigma =  0.8113;
+  double mean = 2.97; // Utkarsh
+  double sigma =  0.8113; // Utkarsh
   normtimedist = std::normal_distribution<double> (mean, sigma); // Utkarsh
 }
 
@@ -197,6 +197,7 @@ TParticle* TVolumeSource::CreateParticle(TMCGenerator &mc, TGeometry &geometry, 
   }
   else{ // create particles uniformly distributed in volume
     double t;
+    
     // do{ // Utkarsh
     //   t = std::exp(normtimedist(mc));
     // }while(!(0<t && t<fActiveTime));

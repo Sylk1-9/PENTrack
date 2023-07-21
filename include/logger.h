@@ -137,8 +137,7 @@ public:
    * @param trajectory_stepper Trajectory integrator used to calculate spin-precession axis at time t
    * @param field TFieldManager containing all electromagnetic fields
    */
-  void PrintSpin(const std::unique_ptr<TParticle>& p, const value_type x, const dense_stepper_type& spinstepper,
-		 const dense_stepper_type &trajectory_stepper, const TFieldManager &field);
+  void PrintSpin(const std::unique_ptr<TParticle>& p, const value_type x, const dense_stepper_type& spinstepper, const dense_stepper_type &trajectory_stepper, const TFieldManager &field);
 
 };
 

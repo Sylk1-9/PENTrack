@@ -74,8 +74,7 @@ public:
    *
    * @return Returns newly created particle, memory has to be freed by user
    */
-  TParticle* CreateParticle(const double t, const double x, const double y, const double z, const double E, const double phi, const double theta, const int polarisation, const double spinprojection,
-			    TMCGenerator &mc, const TGeometry &geometry, const TFieldManager &field);
+  TParticle* CreateParticle(const double t, const double x, const double y, const double z, const double E, const double phi, const double theta, const int polarisation, const double spinprojection, TMCGenerator &mc, const TGeometry &geometry, const TFieldManager &field);
 
 
   /**

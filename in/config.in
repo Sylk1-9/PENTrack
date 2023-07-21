@@ -7,10 +7,10 @@
 simtype 1
 
 # number of primary particles to be simulated
-simcount 200
+simcount 100
 
 # max. simulation time [s]
-simtime 20
+simtime 5
 
 # path of file containing materials, paths are assumed to be relative to this config file's path
 materials_file materials.in
