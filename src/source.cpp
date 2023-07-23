@@ -232,15 +232,11 @@ TParticleSource* CreateParticleSource(TConfig &config, const TGeometry &geometry
   else if (sourcemode == "cylsurface"){
     source = new TCylindricalSurfaceSource(sc);
   }
-  // else if (sourcemode == "cylsurfacext"){ // sly ToDo
-    // source = new TCylindricalSurfaceSourceExt(sc);
-  // }
   else if (sourcemode == "STLsurface"){
     source = new TSTLSurfaceSource(sc);
   }
   else
     throw std::runtime_error((boost::format("Could not load source %1%!") % sourcemode).str());
-  //	cout << '\n';
 
   return source;
 }

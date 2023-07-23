@@ -12,16 +12,28 @@ endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
 
-include_directories("alglib-3.15.0/cpp/src")
-add_library(alglib OBJECT alglib-3.15.0/cpp/src/alglibinternal.cpp
-  alglib-3.15.0/cpp/src/integration.cpp
-  alglib-3.15.0/cpp/src/optimization.cpp
-  alglib-3.15.0/cpp/src/alglibmisc.cpp
-  alglib-3.15.0/cpp/src/interpolation.cpp
-  alglib-3.15.0/cpp/src/solvers.cpp
-  alglib-3.15.0/cpp/src/ap.cpp
-  alglib-3.15.0/cpp/src/linalg.cpp
-  alglib-3.15.0/cpp/src/specialfunctions.cpp)
+# include_directories("alglib-3.15.0/cpp/src")
+# add_library(alglib OBJECT alglib-3.15.0/cpp/src/alglibinternal.cpp
+#   alglib-3.15.0/cpp/src/integration.cpp
+#   alglib-3.15.0/cpp/src/optimization.cpp
+#   alglib-3.15.0/cpp/src/alglibmisc.cpp
+#   alglib-3.15.0/cpp/src/interpolation.cpp
+#   alglib-3.15.0/cpp/src/solvers.cpp
+#   alglib-3.15.0/cpp/src/ap.cpp
+#   alglib-3.15.0/cpp/src/linalg.cpp
+#   alglib-3.15.0/cpp/src/specialfunctions.cpp)
+
+include_directories("alglib-cpp/src")
+add_library(alglib OBJECT alglib-cpp/src/alglibinternal.cpp
+  alglib-cpp/src/integration.cpp
+  alglib-cpp/src/optimization.cpp
+  alglib-cpp/src/alglibmisc.cpp
+  alglib-cpp/src/interpolation.cpp
+  alglib-cpp/src/solvers.cpp
+  alglib-cpp/src/ap.cpp
+  alglib-cpp/src/linalg.cpp
+  alglib-cpp/src/specialfunctions.cpp)
+
 
 include_directories("tricubic-1.0/src/libtricubic")
 add_library(libtricubic OBJECT tricubic-1.0/src/libtricubic/libtricubic.cpp tricubic-1.0/src/libtricubic/tricubic_utils.cpp)

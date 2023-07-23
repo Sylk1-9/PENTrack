@@ -53,6 +53,7 @@ namespace std{
     bool operator!=(const polarization_distribution<T> &rhs) const { return !(operator==(rhs)); } ///< inequality operator (compares internal parameters)
   };
 
+  
   /**
    * Generate random numbers between 0 and pi/2 following the Beckmann distribution with width << 1
    * 
@@ -74,6 +75,7 @@ namespace std{
     param_type param() const { return _p; } ///< returns stored parameter
     void param(const param_type &p){ _p = p; } ///< set stored parameter
 
+    
     /**
      * Return random numbers distributed according to Beckmann distribution with width p << 1
      * 
@@ -92,7 +94,6 @@ namespace std{
   };
 
 
-  
   /**
    * Generate random numbers between two values using inverse transform sampling.
    *
