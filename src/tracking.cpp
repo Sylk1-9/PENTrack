@@ -491,13 +491,13 @@ void TTracker::IntegrateSpin(const std::unique_ptr<TParticle>& p, state_type &sp
 
 
   // if (Babs2 > Bmax){ // original // if magnetic field grows above Bmax, collapse spin state to one of the two polarisation states
-  // if (flipspin){ // add sly
-  // p->DoPolarization(x2, y2, polarisation, flipspin, mc); //added by Niki
-  if (Babs2 > Bmax){
-    p->DoPolarize(x2, y2, polarisation, flipspin, mc);
-    spin[0] = B2[0]*y2[7]/Babs2;
-    spin[1] = B2[1]*y2[7]/Babs2;
-    spin[2] = B2[2]*y2[7]/Babs2;
+  if (flipspin){ // add sly
+    p->DoPolarization(x2, y2, polarisation, flipspin, mc); //added by Niki
+    if (Babs2 > Bmax){
+      p->DoPolarize(x2, y2, polarisation, flipspin, mc);
+      spin[0] = B2[0]*y2[7]/Babs2;
+      spin[1] = B2[1]*y2[7]/Babs2;
+      spin[2] = B2[2]*y2[7]/Babs2;
+    }
   }
-  // }
 }
