@@ -218,7 +218,7 @@ class data:
             self.plotter.add_checkbox_button_widget(self.SetVisibilityCallback(actor), value=True, position=(5.0, pos), size=self.cbsize, color_on=color)
             pos = pos + self.cbsize + (self.cbsize // 10)
         
-        self.plotter.add_slider_widget(self.opacity_stl, (0.0, 1.0), value=opacity, pointa=(0.04, 0.6), pointb=(0.04, 0.98),  slider_width=0.03, tube_width=0.006, color="black")
+        self.plotter.add_slider_widget(self.opacity_stl, (0.0, 1.0), value=opacity, pointa=(0.04, 0.6), pointb=(0.04, 0.98),  slider_width=0.01, tube_width=0.002, color="black", style='modern')
 
         return self.plotter
 
@@ -256,7 +256,7 @@ class data:
             pos = pos + size + (size // 10)
 
         self.plotter.magactors = [v for k,v in self.plotter.actors.items() if k not in prevactors]
-        self.plotter.add_slider_widget(self.opacity_mag, (0, 1), value=opacity, pointa=(0.1, 0.6), pointb=(0.1, 0.98),  slider_width=0.03, tube_width=0.006, color="black")
+        self.plotter.add_slider_widget(self.opacity_mag, (0, 1), value=opacity, pointa=(0.1, 0.6), pointb=(0.1, 0.98),  slider_width=0.01, tube_width=0.002, color="black", style='modern')
 
         return self.plotter
 
@@ -502,7 +502,7 @@ class data:
 
         self.plotter.add_checkbox_button_widget(self.speedanime, value=True, position=(900, 1), size=self.cbsize, color_on="aquamarine")
 
-        self.plotter.add_slider_widget(self.speedanime, (-4, 4), value=1, pointa=(0.5, 0.03), pointb=(0.8, 0.03), slider_width=0.02, tube_width=0.005, color="aquamarine")
+        self.plotter.add_slider_widget(self.speedanime, (-5, 5), value=1, pointa=(0.5, 0.03), pointb=(0.8, 0.03), slider_width=0.02, tube_width=0.005, color="aquamarine", style='modern', title_opacity=0)
 
         self.plotter.add_callback(update_animation, int(1000/fps), None)
         
@@ -522,7 +522,7 @@ dfile = "000000000034"
 da = data(dfile)
 
 # plots stl surface and magnetic source
-# pl = da.plotmag(opacity=0.01)
+pl = da.plotmag(opacity=0.01)
 pl = da.plotstl(opacity=0.01)
 
 df_ne = da.df['ne']
@@ -539,7 +539,7 @@ pl = da.plotlogs(ptype="n", state="hit", pselect=pselect, color="deepskyblue")
 # # play animation
 # pl = da.animate(ti=0, tf=None, dt=0.001, fps=10, pselect=pselect, minp=0, maxp=None, minE=0, maxE=5e-8, minH=0, maxH=3e-7)
 
-pl = da.animate(ti=0, tf=10, dt=0.001, fps=20, pselect=pselect, minp=0, maxp=None, minE=0, maxE=5e-8, minH=0, maxH=3e-7)
+pl = da.animate(ti=0, tf=10, dt=0.002, fps=20, pselect=pselect, minp=0, maxp=None, minE=0, maxE=5e-8, minH=0, maxH=3e-7)
 
 
 
