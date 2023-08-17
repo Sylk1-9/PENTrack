@@ -1,9 +1,0 @@
-Selection 1 (Mesh Edge)
-	Diameter	0.065996907 m
-	Radius	0.032998454 m
-	Length	0.207335400 m
-	Angle	360.00 deg
-	Center Position
-		X Position	-5.640700073 m
-		Y Position	-0.000191910 m
-		Z Position	-1.499997410 m
